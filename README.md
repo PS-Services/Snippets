@@ -17,9 +17,9 @@ A collection of PowerShell tools you can add to your profile.
 | Win | *nix | Script{.nowrap}           | Description                                                                                                                  |
 |-----|------|------------------|------------------------------------------------------------------------------------------------------------------------------|
 | :white_check_mark: | :white_check_mark:  | bing.ps1         | Search Bing from Powershell.                                                                                                 |
-| :white_check_mark: | :white_check_mark:  | clean-folder.ps1 | Remove all `bin` and `obj` folders in current path.                                                                          |
+| :white_check_mark: | :white_check_mark:  | clean&#x2011;folder.ps1 | Remove all `bin` and `obj` folders in current path.                                                                          |
 | :white_check_mark: | :white_check_mark:  | github.ps1       | set $env:GITHUB first to the root of your github repositories.  Then use `hub` or `hub <repository>` to go to those folders. |
-| :white_check_mark: | :white_check_mark:  | oh-my-posh.ps1   | Initializes Oh-My-Posh for the current PowerShell 
+| :white_check_mark: | :white_check_mark:  | oh&#x2011;my&#x2011;posh.ps1   | Initializes Oh-My-Posh for the current PowerShell 
 | :white_check_mark: |  | chocolatey.ps1   | Setup Chocolatey profile in PowerShell.                                                                                      |
 | :white_check_mark: |  | devmode.ps1      | Startup VS 2022 Dev Mode Tools.                                                                                              |
 | :white_check_mark: |  | repos.ps1        | Commands for **winget**, **scoop**, and **choco**                                                                            |
