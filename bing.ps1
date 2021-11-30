@@ -12,19 +12,20 @@ try {
   else {
     $env:dnscriptPath = $dnScript.Source
     if($env:Dotnet) {
-      $env:dnscriptPath = $env:dnscriptPath.Replace("$env:USERPROFILE\.dotnet", $env:Dotnet)
+      $env:dnscriptPath = $env:dnscriptPath.Replace("$env:USERPROFILE\.dotnet", $env:Dotnet).Replace("$env:USERPROFILE/.dotnet", $env:Dotnet)
     }
     
     $env:BingLocation = (Get-Location).ToString()
-    if (-not $env:BingLocation.EndsWith("\Snippets")) { $env:BingLocation = Join-Path $env:BingLocation -Child "Snippets" }
+    if (-not $env:BingLocation.EndsWith("Snippets")) { $env:BingLocation = Join-Path $env:BingLocation -Child "Snippets" }
     Write-Host "`$env:BingLocation: $env:BingLocation"
     $ApiKey = '3c7e251544ba414cbeacad9db55bdf6e'
 
     $env:BingApiKey = $ApiKey  
     function Search-Bing {
       $query = [System.String]::Join(' ', $args);
-      Write-Verbose "& $env:dnscriptPath $env:BingLocation\bing.csx `"$query`" --max=3" -Verbose:$Verbose
-      & $env:dnscriptPath $env:BingLocation\bing.csx "$query" --max=3
+      $csxPath = Join-Path $env:BingLocation -Child 'bing.csx' ;
+      Write-Verbose "& $env:dnscriptPath $csxPath `"$query`" --max=3" -Verbose:$Verbose
+      & $env:dnscriptPath $csxPath "$query" --max=3
     }
 
     Set-Alias -Name bing -Value Search-Bing -PassThru
