@@ -15,9 +15,9 @@ try {
       $env:dnscriptPath = $env:dnscriptPath.Replace("$env:USERPROFILE\.dotnet", $env:Dotnet).Replace("$env:USERPROFILE/.dotnet", $env:Dotnet)
     }
     
-    $env:BingLocation = (Get-Location).ToString()
+    $env:BingLocation = $env:Snippets
     if (-not $env:BingLocation.EndsWith("Snippets")) { $env:BingLocation = Join-Path $env:BingLocation -Child "Snippets" }
-    Write-Host "`$env:BingLocation: $env:BingLocation"
+    Write-Verbose "`$env:BingLocation: $env:BingLocation" -Verbose:$Verbose
     $ApiKey = '3c7e251544ba414cbeacad9db55bdf6e'
 
     $env:BingApiKey = $ApiKey  
