@@ -22,6 +22,8 @@ if ($IsLinux) {
             Write-Host 'Cannot find Oh-My-Posh and cannot install manually.'
         }
         else {
+            Set-Alias posh -Value $ohMyPosh -PassThru
+            
             Write-Verbose "`$ohMyPosh: $($ohMyPosh.Source)" -Verbose:$Verbose
 
             Write-Verbose "`$poshThemes: $($poshThemes)" -Verbose:$Verbose
