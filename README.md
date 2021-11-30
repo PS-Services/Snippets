@@ -2,13 +2,13 @@
 
 A collection of PowerShell tools you can add to your profile.
 
-## Windows: 
+## Windows
 
 1. Clone this repository to `$env:OneDrive/Documents/Snippets`
 2. In an Administrator elevated editor, edit `$PROFILE.AllUsersAllHosts`.  
 3. Add `$env:Snippets="$env:OneDrive/Documents/PowerShell/Snippets"` to the end and save it.
 
-## Linux, WSL, MacOS: 
+## Linux, WSL, MacOS
 
 1. Clone this repository to `/opt/microsoft/powershell/7/Snippets`
 2. In an Administrator elevated editor, edit `$PROFILE.AllUsersAllHosts`.  
@@ -19,7 +19,7 @@ A collection of PowerShell tools you can add to your profile.
 | :white_check_mark: | :white_check_mark:  | bing.ps1         | Search Bing from Powershell.                                                                                                 |
 | :white_check_mark: | :white_check_mark:  | clean&#x2011;folder.ps1 | Remove all `bin` and `obj` folders in current path.                                                                          |
 | :white_check_mark: | :white_check_mark:  | github.ps1       | **_Set `$env:GITHUB` first to the root of your github repositories._**  Use `hub` or `hub <repository>` to go to those folders. |
-| :white_check_mark: | :white_check_mark:  | oh&#x2011;my&#x2011;posh.ps1   | Initializes Oh-My-Posh for the current PowerShell 
+| :white_check_mark: | :white_check_mark:  | oh&#x2011;my&#x2011;posh.ps1   | Initializes Oh-My-Posh for the current PowerShell
 | :white_check_mark: |  | chocolatey.ps1   | Setup Chocolatey profile in PowerShell.                                                                                      |
 | :white_check_mark: |  | devmode.ps1      | Startup VS 2022 Dev Mode Tools.                                                                                              |
 | :white_check_mark: |  | repos.ps1        | Commands for **winget**, **scoop**, and **choco**                                                                            |
@@ -31,7 +31,7 @@ All scripts work in both PowerShell Core and Windows PowerShell 5.1!
 ## Example Windows `$PROFILE`
 
 ```powershell
-$env:Snippets="/opt/microsoft/powershell/7/Snippets"
+$env:Snippets="$env:OneDrive\Documents\PowerShell\Snippets"
 
 if ($env:VerboseStartup -eq 'true') {
     [switch]$Verbose = $true
@@ -58,13 +58,13 @@ try {
         }
     }
     else {
-        Write-Verbose "No directory found at [$env:Snippets]" -Verbose:$Verbose
+        Write-Verbose "No directory found at [$env:Snippets]" -Verbose:$Verbose~
     }
 
     Write-Verbose 'PowerShell Ready.' -Verbose:$Verbose
 }
 catch {
-    Write-Host $Error    
+    Write-Host $Error
 }
 finally {
     Write-Verbose "Leaving $Profile" -Verbose:$Verbose
@@ -110,7 +110,7 @@ try {
     Write-Verbose 'PowerShell Ready.' -Verbose:$Verbose
 }
 catch {
-    Write-Host $Error    
+    Write-Host $Error
 }
 finally {
     Write-Verbose "Leaving $Profile" -Verbose:$Verbose

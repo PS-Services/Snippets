@@ -26,6 +26,8 @@ if ($IsWindows) {
 
             if ($ompFolder.EndsWith('\shims')) {
                 $ompFolder += '\..\apps\oh-my-posh3\current\themes\'
+            } elseif ($ompFolder.EndsWith("AppData\Local\Programs\oh-my-posh\bin")) {
+                $ompFolder += '\..\themes\'
             }
 
             Write-Verbose "`$ompFolder: $($ompFolder)" -Verbose:$Verbose
