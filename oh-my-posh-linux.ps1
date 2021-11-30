@@ -2,7 +2,7 @@ param([switch]$Verbose = $false)
 if ($IsLinux) {
     try {
         $ohMyPosh = Get-Command /usr/local/bin/oh-my-posh
-        $poshThemes = "$env:USERPROFILE/.poshthemes"
+        $poshThemes = "$env:HOME/.poshthemes"
 
         if (-not $ohMyPosh) {
             sudo wget https://github.com/JanDeDobbeleer/oh-my-posh/releases/latest/download/posh-linux-amd64 -O /usr/local/bin/oh-my-posh
