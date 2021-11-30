@@ -15,7 +15,7 @@ try {
     Import-Module Microsoft.PowerShell.Utility
 
     if (-not (Test-Path $env:Snippets)) {
-        & /bin/bash -c mkdir -p $env:Snippets
+        & /bin/bash /usr/bin/mkdir "-p $env:Snippets"
         Set-Location $env:Snippets
         git clone https://github.com/sharpninja/Snippets.git
     }
