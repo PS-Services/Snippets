@@ -16,13 +16,13 @@ A collection of PowerShell tools you can add to your profile.
 
 | Win | *nix | Script           | Description                                                                                                                  |
 |-----|------|------------------|------------------------------------------------------------------------------------------------------------------------------|
-| [X] | [X]  | bing.ps1         | Search Bing from Powershell.                                                                                                 |
-| [X] | [X]  | clean-folder.ps1 | Remove all `bin` and `obj` folders in current path.                                                                          |
-| [X] | [X]  | github.ps1       | set $env:GITHUB first to the root of your github repositories.  Then use `hub` or `hub <repository>` to go to those folders. |
-| [X] | [X]  | oh-my-posh.ps1   | Initializes Oh-My-Posh for the current PowerShell 
-| [X] | [ ]  | chocolatey.ps1   | Setup Chocolatey profile in PowerShell.                                                                                      |
-| [X] | [ ]  | devmode.ps1      | Startup VS 2022 Dev Mode Tools.                                                                                              |
-| [X] | [ ]  | repos.ps1        | Commands for **winget**, **scoop**, and **choco**                                                                            |
+| :white_check_mark: | :white_check_mark:  | bing.ps1         | Search Bing from Powershell.                                                                                                 |
+| :white_check_mark: | :white_check_mark:  | clean-folder.ps1 | Remove all `bin` and `obj` folders in current path.                                                                          |
+| :white_check_mark: | :white_check_mark:  | github.ps1       | set $env:GITHUB first to the root of your github repositories.  Then use `hub` or `hub <repository>` to go to those folders. |
+| :white_check_mark: | :white_check_mark:  | oh-my-posh.ps1   | Initializes Oh-My-Posh for the current PowerShell 
+| :white_check_mark: |  | chocolatey.ps1   | Setup Chocolatey profile in PowerShell.                                                                                      |
+| :white_check_mark: |  | devmode.ps1      | Startup VS 2022 Dev Mode Tools.                                                                                              |
+| :white_check_mark: |  | repos.ps1        | Commands for **winget**, **scoop**, and **choco**                                                                            |
 
 Place calls to these files in your `$PROFILE`
 
