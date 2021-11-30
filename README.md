@@ -20,8 +20,9 @@ A collection of PowerShell tools you can add to your profile.
 | [x] | [x]  | clean-folder.ps1 | Remove all `bin` and `obj` folders in current path.                                                                          |
 | [x] | [x]  | github.ps1       | set $env:GITHUB first to the root of your github repositories.  Then use `hub` or `hub <repository>` to go to those folders. |
 | [x] | [ ]  | chocolatey.ps1   | Setup Chocolatey profile in PowerShell.                                                                                      |
+| [x] | [x]  | oh-my-posh.ps1   | Initializes Oh-My-Posh for the current PowerShell 
 | [x] | [ ]  | devmode.ps1      | Startup VS 2022 Dev Mode Tools.                                                                                              |
-| [x] | [ ]  | oh-my-posh.ps1   | Initializes Oh-My-Posh for the current PowerShell Session.                                                                   |
+Session.                                                                   |
 | [x] | [ ]  | repos.ps1        | Commands for **winget**, **scoop**, and **choco**                                                                            |
 
 Place calls to these files in your `$PROFILE`
