@@ -75,7 +75,7 @@ finally {
 ## Example Linux, Wsl, MacOS `$PROFILE`
 
 ```powershell
-$env:Snippets = "$env:OneDrive/Documents/PowerShell/Snippets"
+$env:Snippets = '/opt/microsoft/powershell/7/Snippets'
 
 if ($env:VerboseStartup -eq 'true') {
     [switch]$Verbose = $true
@@ -84,10 +84,13 @@ else {
     [switch]$Verbose = $false
 }
 
-Set-ExecutionPolicy -ExecutionPolicy Unrestricted -Scope Process
-
 try {
     Import-Module Microsoft.PowerShell.Utility
+
+    if (-not (Test-Path $env:Snippets)) {
+        Set-Location "/opt/microsoft/powershell/7/"
+        git clone https://github.com/sharpninja/Snippets.git
+    }
 
     if (Test-Path $env:Snippets) {
         Push-Location
