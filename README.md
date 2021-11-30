@@ -14,7 +14,7 @@ A collection of PowerShell tools you can add to your profile.
 2. In an Administrator elevated editor, edit `$PROFILE.AllUsersAllHosts`.  
 3. Add `$env:Snippets="/opt/microsoft/powershell/7/Snippets"` to the end and save it.
 
-| Win | *nix | Script{.nowrap}           | Description                                                                                                                  |
+| Win | *nix | Script           | Description                                                                                                                  |
 |-----|------|------------------|------------------------------------------------------------------------------------------------------------------------------|
 | :white_check_mark: | :white_check_mark:  | bing.ps1         | Search Bing from Powershell.                                                                                                 |
 | :white_check_mark: | :white_check_mark:  | clean&#x2011;folder.ps1 | Remove all `bin` and `obj` folders in current path.                                                                          |
