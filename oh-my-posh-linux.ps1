@@ -1,7 +1,8 @@
 param([switch]$Verbose = $false)
 if ($IsLinux) {
     try {
-        $ohMyPosh = Get-Command /usr/local/bin/oh-my-posh
+        $poshbin = "/usr/local/bin/oh-my-posh"
+        $ohMyPosh = Get-Command $poshbin -ErrorAction SilentlyContinue
         $poshThemes = "$env:HOME/.poshthemes"
 
         if (-not $ohMyPosh) {
@@ -14,7 +15,7 @@ if ($IsLinux) {
             chmod u+rw $poshThemes/*.json
             Remove-Item $poshThemes/themes.zip
 
-            $ohMyPosh = Get-Command /usr/local/bin/oh-my-posh
+            $ohMyPosh = Get-Command $poshbin -ErrorAction SilentlyContinue
         }
 
         if (-not $ohMyPosh) {
