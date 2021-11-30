@@ -22,7 +22,6 @@ A collection of PowerShell tools you can add to your profile.
 | [X] | [X]  | oh-my-posh.ps1   | Initializes Oh-My-Posh for the current PowerShell 
 | [X] | [ ]  | chocolatey.ps1   | Setup Chocolatey profile in PowerShell.                                                                                      |
 | [X] | [ ]  | devmode.ps1      | Startup VS 2022 Dev Mode Tools.                                                                                              |
-Session.                                                                   |
 | [X] | [ ]  | repos.ps1        | Commands for **winget**, **scoop**, and **choco**                                                                            |
 
 Place calls to these files in your `$PROFILE`
