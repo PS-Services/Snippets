@@ -1,7 +1,16 @@
 param([switch]$Verbose=$false)
 
 try {
-    oh-my-posh --init --shell pwsh --config C:\Users\kingd\OneDrive\Documents\PowerShell\ys.omp.json `
+    if($PSVersionTable.PSEdition -ieq "core") {
+        $powershell = "pwsh"
+    } else {
+        $powershell = "pwsh" # Temporary, cannot execute with powershell.exe
+    }
+
+    if(-not (get-command oh-my-posh)) {
+        . scoop install oh-my-posh3
+    }
+    oh-my-posh --init --shell $powershell --config $env:scoop\apps\oh-my-posh3\current\themes\ys.omp.json `
     | Invoke-Expression
 }
 catch {
