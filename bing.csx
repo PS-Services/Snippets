@@ -27,8 +27,6 @@ public class Bing
     // behavior across Bing API calls. See the reference documentation
     // for usage.
 
-    string _clientIdHeader = null;
-
     const string QUERY_PARAMETER = "?q=";  // Required
     const string MKT_PARAMETER = "&mkt=";  // Strongly suggested
     const string RESPONSE_FILTER_PARAMETER = "&responseFilter=";
@@ -69,9 +67,7 @@ public class Bing
 
             Console.WriteLine(queryString);
 
-            HttpResponseMessage response = await MakeRequestAsync(queryString);
-
-            //_clientIdHeader = response.Headers.GetValues("X-MSEdge-ClientID").FirstOrDefault();
+            var response = await MakeRequestAsync(queryString);
 
             // This example uses dictionaries instead of objects to access the response data.
 

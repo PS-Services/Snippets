@@ -12,21 +12,21 @@ else {
 }
 
 try {
-    Import-Module Microsoft.PowerShell.Utility
+    Import-Module Microsoft.PowerShell.Utility -Verbose:$Verbose
 
-    if (-not (Test-Path $env:Snippets)) {
-        & /bin/bash /usr/bin/mkdir "-p $env:Snippets"
-        Set-Location $env:Snippets
+    if (-not (Test-Path $env:Snippets -Verbose:$Verbose)) {
+        Invoke-Command "/usr/bin/mkdir" -ArgumentList @("-p", "$env:Snippets")
+        Set-Location $env:Snippets -Verbose:$Verbose
         git clone https://github.com/sharpninja/Snippets.git
     }
 
-    if (Test-Path $env:Snippets) {
-        Push-Location
-        Set-Location $env:Snippets
-        $snippets = Get-ChildItem *.ps1
-        Pop-Location
+    if (Test-Path $env:Snippets -Verbose:$Verbose) {
+        Push-Location -Verbose:$Verbose
+        Set-Location $env:Snippets -Verbose:$Verbose
+        $snippets = Get-ChildItem *.ps1 -Verbose:$Verbose
+        Pop-Location -Verbose:$Verbose
 
-        $snippets.FullName | ForEach-Object -Process {
+        $snippets.FullName | ForEach-Object -Verbose:$Verbose -Process {
             $snippet = $_
 
             . $snippet -Verbose:$Verbose
@@ -39,7 +39,7 @@ try {
     Write-Verbose 'PowerShell Ready.' -Verbose:$Verbose
 }
 catch {
-    Write-Host $Error    
+    Write-Error $_
 }
 finally {
     Write-Verbose "Leaving $Profile" -Verbose:$Verbose
