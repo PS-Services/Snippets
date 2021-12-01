@@ -84,6 +84,10 @@ finally {
 ```powershell
 $env:Snippets = '/opt/microsoft/powershell/7/Snippets'
 
+if(-not (Test-Path $env:Snippets)) {
+    $env:Snippets = "$env:HOME/.config/powershell"
+}
+
 if ($env:VerboseStartup -eq 'true') {
     [switch]$Verbose = $true
 }
@@ -92,20 +96,27 @@ else {
 }
 
 try {
-    Import-Module Microsoft.PowerShell.Utility
+    Import-Module Microsoft.PowerShell.Utility -Verbose:$Verbose
 
-    if (-not (Test-Path $env:Snippets)) {
-        Set-Location "/opt/microsoft/powershell/7/"
+    $env:Snippets = Join-Path $env:Snippets -Child Snippets
+
+    if (-not (Test-Path $env:Snippets -Verbose:$Verbose)) {
+        Invoke-Command "/usr/bin/mkdir" -ArgumentList @("-p", "$env:Snippets")
+        Set-Location $env:Snippets -Verbose:$Verbose
         git clone https://github.com/sharpninja/Snippets.git
+    } else {
+        Write-Verbose "Found $env:Snippets" -Verbose:$Verbose
     }
 
-    if (Test-Path $env:Snippets) {
-        Push-Location
-        Set-Location $env:Snippets
-        $snippets = Get-ChildItem *.ps1
-        Pop-Location
+    if (Test-Path $env:Snippets -Verbose:$Verbose) {
+        Write-Verbose "Found $env:Snippets (2)." -Verbose:$Verbose
 
-        $snippets.FullName | ForEach-Object -Process {
+        Push-Location -Verbose:$Verbose
+        Set-Location $env:Snippets -Verbose:$Verbose
+        $snippets = Get-ChildItem *.ps1 -Verbose:$Verbose
+        Pop-Location -Verbose:$Verbose
+
+        $snippets.FullName | ForEach-Object -Verbose:$Verbose -Process {
             $snippet = $_
 
             . $snippet -Verbose:$Verbose
@@ -118,7 +129,8 @@ try {
     Write-Verbose 'PowerShell Ready.' -Verbose:$Verbose
 }
 catch {
-    Write-Host $Error
+    Write-Verbose $_ -Verbose:$Verbose
+    Write-Error $_
 }
 finally {
     Write-Verbose "Leaving $Profile" -Verbose:$Verbose
