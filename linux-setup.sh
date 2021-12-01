@@ -1,5 +1,6 @@
 #!/bin/bash
 
+pushd
 pwsh=$(type -t pwsh)
 echo "pwsh: $pwsh"
 
@@ -120,3 +121,4 @@ else
         echo "Installation failed.  Cannot find $HOME/.config/powershell/Microsoft.PowerShell_profile.ps1"
     fi
 fi
+popd
