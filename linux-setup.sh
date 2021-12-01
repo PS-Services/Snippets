@@ -5,12 +5,10 @@ echo "pwsh: $pwsh"
 
 if [ ! $pwsh ]
 then
-    dotnet=$(type -t dotnet)
-    echo "dotnet: $dotnet"
-
+    dotnet=$(type -t dotnet);
     if [ ! $dotnet ]
     then
-        apt=$(type -t apt)
+        apt=$(type -t apt);
         if [ $apt ]
         then
             echo "Installing libicu with apt."
@@ -53,6 +51,8 @@ then
         echo "Updating ~/.profile"
         echo "export DOTNET_ROOT=\$HOME/dotnet" >> ~/.profile;
         echo "export PATH=\$PATH:\$HOME/dotnet:\$HOME/.dotnet/tools" >> ~/.profile;
+    else
+        echo "Dotnet is already installed."
     fi
 
     if [ $dotnet ]
@@ -76,17 +76,19 @@ then
         else
             echo "Installation failed.  Cannot find $HOME/.config/powershell/Microsoft.PowerShell_profile.ps1"
         fi
+    else
+        echo "Dotnet not found and unable to insstall it."
     fi
 else
     echo "Powershell already installed."
 
-    destination=$HOME/.config/powershell/Snippets
+    destination="$HOME/.config/powershell/Snippets"
     mkdir -p $destination;
     git clone https://github.com/sharpninja/Snippets.git
     cp Linux-ReadmeTest.ps9 $HOME/.config/powershell/Microsoft.PowerShell_profile.ps1
 
-    mkdir $HOME/.config/powershell
-    if [ -f $HOME/.config/powershell/Microsoft.PowerShell_profile.ps1 ]
+    mkdir "$HOME/.config/powershell"
+    if [ -f "$HOME/.config/powershell/Microsoft.PowerShell_profile.ps1" ]
     then
         echo "Installation succeeded.  Start PowerShell by typing 'pwsh'"
     else
