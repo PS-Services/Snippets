@@ -14,6 +14,8 @@ else {
 try {
     Import-Module Microsoft.PowerShell.Utility -Verbose:$Verbose
 
+    $env:Snippets = Join-Path $env:Snippets -Child Snippets
+
     if (-not (Test-Path $env:Snippets -Verbose:$Verbose)) {
         Invoke-Command "/usr/bin/mkdir" -ArgumentList @("-p", "$env:Snippets")
         Set-Location $env:Snippets -Verbose:$Verbose
@@ -24,6 +26,7 @@ try {
 
     if (Test-Path $env:Snippets -Verbose:$Verbose) {
         Write-Verbose "Found $env:Snippets (2)." -Verbose:$Verbose
+
         Push-Location -Verbose:$Verbose
         Set-Location $env:Snippets -Verbose:$Verbose
         $snippets = Get-ChildItem *.ps1 -Verbose:$Verbose
