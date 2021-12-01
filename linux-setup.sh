@@ -66,6 +66,7 @@ then
 
         destination=$HOME/.config/powershell/Snippets
         mkdir -p $destination;
+        cd $destination;
         git clone https://github.com/sharpninja/Snippets.git
         cp Linux-ReadmeTest.ps9 $HOME/.config/powershell/Microsoft.PowerShell_profile.ps1
 
@@ -84,6 +85,7 @@ else
 
     destination="$HOME/.config/powershell/Snippets"
     mkdir -p $destination;
+    cd $destination;
     git clone https://github.com/sharpninja/Snippets.git
     cp Linux-ReadmeTest.ps9 $HOME/.config/powershell/Microsoft.PowerShell_profile.ps1
 
