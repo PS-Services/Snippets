@@ -18,9 +18,12 @@ try {
         Invoke-Command "/usr/bin/mkdir" -ArgumentList @("-p", "$env:Snippets")
         Set-Location $env:Snippets -Verbose:$Verbose
         git clone https://github.com/sharpninja/Snippets.git
+    } else {
+        Write-Verbose "Found $env:Snippets" -Verbose:$Verbose
     }
 
     if (Test-Path $env:Snippets -Verbose:$Verbose) {
+        Write-Verbose "Found $env:Snippets (2)." -Verbose:$Verbose
         Push-Location -Verbose:$Verbose
         Set-Location $env:Snippets -Verbose:$Verbose
         $snippets = Get-ChildItem *.ps1 -Verbose:$Verbose
@@ -39,6 +42,7 @@ try {
     Write-Verbose 'PowerShell Ready.' -Verbose:$Verbose
 }
 catch {
+    Write-Verbose $_ -Verbose:$Verbose
     Write-Error $_
 }
 finally {
