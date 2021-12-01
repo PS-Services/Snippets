@@ -79,7 +79,7 @@ then
         GIT_TRACE_SHALLOW=true \
         git clone https://github.com/sharpninja/Snippets.git
 
-        cp $destination/Snippet/Linux-ReadmeTest.ps9 $HOME/.config/powershell/Microsoft.PowerShell_profile.ps1
+        cp $destination/Snippets/Linux-ReadmeTest.ps9 $HOME/.config/powershell/Microsoft.PowerShell_profile.ps1
 
         if [ -f $HOME/.config/powershell/Microsoft.PowerShell_profile.ps1 ]
         then
@@ -111,7 +111,7 @@ else
     GIT_TRACE_SHALLOW=true \
     git clone https://github.com/sharpninja/Snippets.git
 
-    cp $destination/Snippet/Linux-ReadmeTest.ps9 $HOME/.config/powershell/Microsoft.PowerShell_profile.ps1
+    cp $destination/Snippets/Linux-ReadmeTest.ps9 $HOME/.config/powershell/Microsoft.PowerShell_profile.ps1
 
     if [ -f "$HOME/.config/powershell/Microsoft.PowerShell_profile.ps1" ]
     then
