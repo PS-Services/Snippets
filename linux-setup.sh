@@ -79,9 +79,8 @@ then
         GIT_TRACE_SHALLOW=true \
         git clone https://github.com/sharpninja/Snippets.git
 
-        cp Linux-ReadmeTest.ps9 $HOME/.config/powershell/Microsoft.PowerShell_profile.ps1
+        cp $destination/Linux-ReadmeTest.ps9 $HOME/.config/powershell/Microsoft.PowerShell_profile.ps1
 
-        mkdir $HOME/.config/powershell
         if [ -f $HOME/.config/powershell/Microsoft.PowerShell_profile.ps1 ]
         then
             echo "Installation succeeded.  Start PowerShell by typing 'pwsh'"
@@ -114,9 +113,8 @@ else
     GIT_TRACE_SHALLOW=true \
     git clone https://github.com/sharpninja/Snippets.git
 
-    cp Linux-ReadmeTest.ps9 $HOME/.config/powershell/Microsoft.PowerShell_profile.ps1
+    cp $destination/Linux-ReadmeTest.ps9 $HOME/.config/powershell/Microsoft.PowerShell_profile.ps1
 
-    mkdir "$HOME/.config/powershell"
     if [ -f "$HOME/.config/powershell/Microsoft.PowerShell_profile.ps1" ]
     then
         echo "Installation succeeded.  Start PowerShell by typing 'pwsh'"
