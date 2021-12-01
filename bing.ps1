@@ -1,10 +1,10 @@
 param([switch]$Verbose = $false)
 
 try {
-  $dnScript = Get-Command dotnet-script
+  $dnScript = Get-Command dotnet-script -ErrorAction SilentlyContinue
   if (-not $dnScript) {
     & dotnet tool install dotnet-script -g
-    $dnScript = Get-Command dotnet-script
+    $dnScript = Get-Command dotnet-script -ErrorAction SilentlyContinue
   }
   if (-not $dnScript) {
     Write-Host "Cannot install dotnet-script"
