@@ -61,11 +61,11 @@ then
         # Install Powershell
         dotnet tool install --global PowerShell
 
-        pwsh=$(type -t pwsh)
-        echo "pwsh: $pwsh"
+        destination="$HOME/.config/powershell"
 
-        destination=$HOME/.config/powershell/Snippets
+        rm -f -r $destination
         mkdir -p $destination;
+
         cd $destination;
 
         GIT_TRACE=true \
@@ -79,7 +79,7 @@ then
         GIT_TRACE_SHALLOW=true \
         git clone https://github.com/sharpninja/Snippets.git
 
-        cp $destination/Linux-ReadmeTest.ps9 $HOME/.config/powershell/Microsoft.PowerShell_profile.ps1
+        cp $destination/Snippet/Linux-ReadmeTest.ps9 $HOME/.config/powershell/Microsoft.PowerShell_profile.ps1
 
         if [ -f $HOME/.config/powershell/Microsoft.PowerShell_profile.ps1 ]
         then
@@ -93,13 +93,11 @@ then
 else
     echo "Powershell already installed."
 
-    destination="$HOME/.config/powershell/Snippets"
-    if [ -d $destination ]
-    then
-        rm -f -r $destination
-    fi
+    destination="$HOME/.config/powershell"
 
+    rm -f -r $destination
     mkdir -p $destination;
+
     cd $destination;
 
     GIT_TRACE=true \
@@ -113,7 +111,7 @@ else
     GIT_TRACE_SHALLOW=true \
     git clone https://github.com/sharpninja/Snippets.git
 
-    cp $destination/Linux-ReadmeTest.ps9 $HOME/.config/powershell/Microsoft.PowerShell_profile.ps1
+    cp $destination/Snippet/Linux-ReadmeTest.ps9 $HOME/.config/powershell/Microsoft.PowerShell_profile.ps1
 
     if [ -f "$HOME/.config/powershell/Microsoft.PowerShell_profile.ps1" ]
     then
