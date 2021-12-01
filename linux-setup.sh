@@ -1,13 +1,10 @@
 #!/bin/bash
 
-pushd
-pwsh=$(type -t pwsh)
-echo "pwsh: $pwsh"
+pushd $(pwd)
 
-if [ ! $pwsh ]
+if [ ! $(type -t pwsh) ]
 then
-    dotnet=$(type -t dotnet);
-    if [ ! $dotnet ]
+    if [ ! $(type -t dotnet) ]
     then
         apt=$(type -t apt);
         if [ $apt ]
@@ -56,7 +53,7 @@ then
         echo "Dotnet is already installed."
     fi
 
-    if [ $dotnet ]
+    if [ $(type -t dotnet) ]
     then
         echo "Installing PowerShell as dotnet tool."
         # Install Powershell
