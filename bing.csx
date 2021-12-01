@@ -65,7 +65,7 @@ public class Bing
             queryString += TEXT_DECORATIONS_PARAMETER + Boolean.TrueString;
             queryString += COUNT_PARAMETER + max;
 
-            Console.WriteLine(queryString);
+            //Console.WriteLine(queryString);
 
             var response = await MakeRequestAsync(queryString);
 
@@ -641,6 +641,6 @@ public class Bing
     }
 }
 
-Console.WriteLine($"Args.Count: {Args.Count}");
+//Console.WriteLine($"Args.Count: {Args.Count}");
 
 new Bing().RunAsync(Args.ToArray()).Wait();
