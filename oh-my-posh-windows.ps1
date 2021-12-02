@@ -1,11 +1,11 @@
 param([switch]$Verbose = $false)
-if ($IsWindows) {
+if ($env:IsWindows) {
     try {
         if ($PSVersionTable.PSEdition -ieq 'core') {
             $powershell = 'pwsh'
         }
         else {
-            $powershell = 'powershell5'
+            $powershell = 'powershell'
         }
 
         $ohMyPosh = Get-Command oh-my-posh
