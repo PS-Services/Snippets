@@ -5,13 +5,13 @@ if ($IsWindows) {
             $powershell = 'pwsh'
         }
         else {
-            $powershell = 'pwsh' # Temporary, cannot execute with powershell.exe
+            $powershell = 'powershell5'
         }
 
         $ohMyPosh = Get-Command oh-my-posh
 
         if (-not $ohMyPosh) {
-            . scoop install oh-my-posh3
+            . scoop install 'https://github.com/JanDeDobbeleer/oh-my-posh/releases/latest/download/oh-my-posh.json'
 
             $ohMyPosh = Get-Command oh-my-posh
         }
@@ -26,6 +26,8 @@ if ($IsWindows) {
 
             if ($ompFolder.EndsWith('\shims')) {
                 $ompFolder += '\..\apps\oh-my-posh3\current\themes\'
+            } elseif ($ompFolder.EndsWith("scoop\apps\oh-my-posh\current\bin")) {
+                $ompFolder += '\..\themes\'
             } elseif ($ompFolder.EndsWith("AppData\Local\Programs\oh-my-posh\bin")) {
                 $ompFolder += '\..\themes\'
             }
