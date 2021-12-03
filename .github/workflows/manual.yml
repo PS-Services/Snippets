@@ -24,14 +24,14 @@ jobs:
         run: |
           rm .version
           dotnet tool install gitversion.tool -g
-          dotnet-gitversion /showvariable SemVer > ./.version
-          cat ./.version
+          dotnet-gitversion /showvariable SemVer > .version
+          cat .version
           git config --global user.email "ninja@thesharp.ninja"
           git config --global user.name "GitHub on behalf of Sharp Ninja"
           git stage ./.version
           git commit -m 'Updated `.version`' --allow-empty --status
           git push --repo='https://sharpninja:${{ secrets.GITHUB_TOKEN }}@github.com/sharpninja/Snippets.git'
-          version=$(cat ./.version)
+          export version='$(cat .version)'
           echo '::set-output name=version::$version'
           echo '$version'
 
