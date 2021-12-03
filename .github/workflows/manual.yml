@@ -27,7 +27,7 @@ jobs:
             git add '.version'
             git commit -m "Updated `.version`"
             git push
-            echo "::set-output name=version::$(cat .version)"
+            "::set-output name=version::$version"
 
       - uses: "marvinpinto/action-automatic-releases@latest"
         with:
