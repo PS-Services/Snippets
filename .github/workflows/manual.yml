@@ -31,8 +31,9 @@ jobs:
           git stage ./.version
           git commit -m 'Updated `.version`' --allow-empty --status
           git push --repo='https://sharpninja:${{ secrets.GITHUB_TOKEN }}@github.com/sharpninja/Snippets.git'
-          echo '::set-output name=version::$(cat ./.version)'
-          echo 'version::$(cat ./.version)'
+          version=$(cat ./.version)
+          echo '::set-output name=version::$version'
+          echo '$version'
 
       - uses: "marvinpinto/action-automatic-releases@latest"
         with:
