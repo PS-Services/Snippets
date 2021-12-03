@@ -22,10 +22,9 @@ jobs:
       - name: "Update Version"
         id: updateVersion
         run: |
-          dotnet tool install gitversion.tool -g
-          version=$(dotnet-gitversion /showvariable SemVer)
           rm .version
-          echo '$version' > ./.version
+          dotnet tool install gitversion.tool -g
+          dotnet-gitversion /showvariable SemVer > ./.version
           cat ./.version
           git config --global user.email "ninja@thesharp.ninja"
           git config --global user.name "GitHub on behalf of Sharp Ninja"
