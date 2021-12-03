@@ -26,9 +26,10 @@ jobs:
           dotnet tool install gitversion.tool -g
           dotnet-gitversion /showvariable SemVer > .version
           echo $(<.version)
-          export version=$(<.version)
-          if [ $version -eq '$(cat .version)' ]
+          export version="$(<.version)"
+          if [ $version -ne "$(cat .version)" ]
           then
+            echo "$version -ne \"$(cat .version)\""
             echo "Error!" 1>&2
             exit 64
           fi
