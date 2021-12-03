@@ -1,5 +1,13 @@
 param([switch]$Verbose = $false)
-if ($IsLinux) {
+
+if (-not $env:SnippetsInitialized) { 
+    $fileInfo = New-Object System.IO.FileInfo (Get-Item $PSScriptRoot).FullName
+    $path = $fileInfo.Directory.FullName;
+    . $path/Snippets/common.ps1; 
+    Initialize-Snippets -Verbose:$Verbose 
+}
+
+if ($env:IsLinux -ieq 'true') {
     try {
         $poshbin = "/usr/local/bin/oh-my-posh"
         $ohMyPosh = Get-Command $poshbin -ErrorAction SilentlyContinue

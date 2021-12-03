@@ -1,5 +1,12 @@
 param([switch]$Verbose = $false)
 
+if (-not $env:SnippetsInitialized) { 
+	$fileInfo = New-Object System.IO.FileInfo (Get-Item $PSScriptRoot).FullName
+	$path = $fileInfo.Directory.FullName;
+	. $path/Snippets/common.ps1; 
+	Initialize-Snippets -Verbose:$Verbose 
+}
+
 try {
 	if (-not $env:GITHUB) {
 		$env:GITHUB = (Get-ChildItem -Filter GitHub -Path C:\ -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1).FullName

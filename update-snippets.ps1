@@ -1,8 +1,15 @@
-if ($IsWindows) {
+if (-not $env:SnippetsInitialized) { 
+    $fileInfo = New-Object System.IO.FileInfo (Get-Item $PSScriptRoot).FullName
+    $path = $fileInfo.Directory.FullName;
+    . $path/Snippets/common.ps1; 
+    Initialize-Snippets -Verbose:$Verbose 
+}
+
+if ($env:IsWindows -ieq 'true') {
     $env:Snippets = "$env:OneDrive\Documents\PowerShell\Snippets"
 }
 else {
-    $env:Snippets = '/opt/microsoft/powershell/7/Snippets'
+    $env:Snippets = "$env:HOME/.config/powershell"
 }
 
 function Update-Snippets {

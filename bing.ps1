@@ -1,5 +1,12 @@
 param([switch]$Verbose = $false)
 
+if(-not $env:SnippetsInitialized) { 
+  $fileInfo = New-Object System.IO.FileInfo (Get-Item $PSScriptRoot).FullName
+  $path = $fileInfo.Directory.FullName;
+  . $path/Snippets/common.ps1; 
+  Initialize-Snippets -Verbose:$Verbose 
+}
+
 try {
   $dnScript = Get-Command dotnet-script -ErrorAction SilentlyContinue
   if (-not $dnScript) {

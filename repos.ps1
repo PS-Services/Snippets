@@ -1,5 +1,13 @@
 param([switch]$Verbose = $false)
-if ($env:IsWindows -or $IsWindows) {
+
+if (-not $env:SnippetsInitialized) { 
+  $fileInfo = New-Object System.IO.FileInfo (Get-Item $PSScriptRoot).FullName
+  $path = $fileInfo.Directory.FullName;
+  . $path/Snippets/common.ps1; 
+  Initialize-Snippets -Verbose:$Verbose 
+}
+
+if ($env:IsWindows -ieq 'true') {
   try {
     function Call-Winget {
       [CmdletBinding(PositionalBinding = $false)]
