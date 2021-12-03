@@ -27,7 +27,7 @@ jobs:
           echo '$version' > ./.version
           git config --global user.email "ninja@thesharp.ninja"
           git config --global user.name "GitHub on behalf of Sharp Ninja"
-          git add '.version'
+          git stage ./.version
           git commit -m 'Updated `.version`'
           git push --repo='https://sharpninja:${{ secrets.GITHUB_TOKEN }}@github.com/sharpninja/Snippets.git'
           echo '::set-output name=version::${version}'
