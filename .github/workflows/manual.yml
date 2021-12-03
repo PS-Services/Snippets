@@ -15,19 +15,20 @@ jobs:
     steps:
       - name: "Checkout source code"
         uses: "actions/checkout@v1"
+      - name: Setup latest .NET SDKs
+        uses: Elskom/setup-latest-dotnet@v1
+        with:
+          VERSION_MAJOR: 6
       - name: "Update Version"
         id: updateVersion
-        uses: Amadevus/pwsh-script@v2.0.1
-        with:
-          # PowerShell script to execute in Actions-hydrated context
-          script: |
-            dotnet tool install gitversion.tool -g
-            $version = & $gitversion /showvariable SemVer
-            $version | Out-File -FilePath '.version' -Encoding utf8NoBOM -force
-            git add '.version'
-            git commit -m 'Updated `.version`'
-            git push
-            echo ('::set-output name=version::{0}' -f $version)
+        run: |
+          dotnet tool install gitversion.tool -g
+          version=$(dotnet-gitversion /showvariable SemVer)
+          $version > '.version'
+          git add '.version'
+          git commit -m 'Updated `.version`'
+          git push
+          echo '::set-output name=version::$(cat .version)'
 
       - uses: "marvinpinto/action-automatic-releases@latest"
         with:
