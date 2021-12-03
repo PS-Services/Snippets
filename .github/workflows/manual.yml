@@ -27,14 +27,13 @@ jobs:
           dotnet-gitversion /showvariable SemVer > .version
           echo $(<.version)
           export version="$(<.version)"
-          if [ $version -ne "$(cat .version)" ]
+          if [ $version -eq '$(<.version)' ]
           then
             echo "$version -ne \"$(cat .version)\""
             echo "Error!" 1>&2
             exit 64
           fi
-          echo '::set-output name=version::$version'
-          echo '$version'
+          echo "::set-output name=version::$version"
           git config --global user.email "ninja@thesharp.ninja"
           git config --global user.name "GitHub on behalf of Sharp Ninja"
           git stage ./.version
