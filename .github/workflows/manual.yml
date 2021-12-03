@@ -29,7 +29,7 @@ jobs:
           git config --global user.name "GitHub on behalf of Sharp Ninja"
           git add '.version'
           git commit -m 'Updated `.version`'
-          git push --set-upstream origin master --repo='https://sharpninja:${{ secrets.GITHUB_TOKEN }}@github.com/sharpninja/Snippets.git'
+          git push master --repo='https://sharpninja:${{ secrets.GITHUB_TOKEN }}@github.com/sharpninja/Snippets.git'
           echo '::set-output name=version::$(cat .version)'
 
       - uses: "marvinpinto/action-automatic-releases@latest"
