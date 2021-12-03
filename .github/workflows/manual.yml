@@ -25,6 +25,8 @@ jobs:
           dotnet tool install gitversion.tool -g
           version=$(dotnet-gitversion /showvariable SemVer)
           echo '$version' > ./.version
+          git config --global user.email "ninja@thesharp.ninja"
+          git config --global user.name "GitHub on behalf of Sharp Ninja"
           git add '.version'
           git commit -m 'Updated `.version`'
           git push
