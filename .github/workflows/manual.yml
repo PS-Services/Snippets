@@ -25,7 +25,7 @@ jobs:
             $version = & $gitversion /showvariable SemVer
             $version | Out-File -FilePath '.version' -Encoding utf8NoBOM -force
             git add '.version'
-            git commit -m "Updated `.version`"
+            git commit -m 'Updated `.version`'
             git push
             echo ('::set-output name=version::{0}' -f $version)
 
