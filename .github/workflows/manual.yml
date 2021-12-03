@@ -24,7 +24,7 @@ jobs:
         run: |
           dotnet tool install gitversion.tool -g
           version=$(dotnet-gitversion /showvariable SemVer)
-          $version > '.version'
+          echo '$version' > ./.version
           git add '.version'
           git commit -m 'Updated `.version`'
           git push
