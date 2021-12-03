@@ -15,12 +15,23 @@ jobs:
     steps:
       - name: "Checkout source code"
         uses: "actions/checkout@v1"
-      - name: Read VERSION file
-        id: getversion
-        run: echo "::set-output name=version::$(cat .version)"
+      - name: "Update Version"
+        id: updateVersion
+        uses: Amadevus/pwsh-script@v2.0.1
+        with:
+          # PowerShell script to execute in Actions-hydrated context
+          script: |
+            dotnet tool install gitversion.tool -g
+            $version = & $gitversion /showvariable SemVer
+            $version | Out-File -FilePath '.version' -Encoding utf8NoBOM -force
+            git add '.version'
+            git commit -m "Updated `.version`"
+            git push
+            echo "::set-output name=version::$(cat .version)"
+
       - uses: "marvinpinto/action-automatic-releases@latest"
         with:
           repo_token: "${{ secrets.GITHUB_TOKEN }}"
-          automatic_release_tag: v${{ steps.getversion.outputs.version }}
+          automatic_release_tag: v${{ steps.updateVersion.outputs.version }}
           prerelease: false
           token: ${{ secrets.GITHUB_TOKEN }}    
