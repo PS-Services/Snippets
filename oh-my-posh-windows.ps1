@@ -1,5 +1,5 @@
 param([switch]$Verbose = $false)
-if ($env:IsWindows) {
+if ($env:IsWindows -or $IsWindows) {
     try {
         if ($PSVersionTable.PSEdition -ieq 'core') {
             $powershell = 'pwsh'

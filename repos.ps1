@@ -1,5 +1,5 @@
 param([switch]$Verbose = $false)
-if ($env:IsWindows) {
+if ($env:IsWindows -or $IsWindows) {
   try {
     function Call-Winget {
       [CmdletBinding(PositionalBinding = $false)]

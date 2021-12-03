@@ -1,5 +1,5 @@
 param([switch]$Verbose = $false)
-if ($IsWindows) {
+if ($env:IsWindows -or $IsWindows) {
     try {
         $env:ChocolateyInstall = "$env:USERPROFILE\.choco"
 

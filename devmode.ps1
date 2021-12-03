@@ -1,5 +1,5 @@
 param([switch]$Verbose = $false)
-if ($env:IsWindows) {
+if ($env:IsWindows -or $IsWindows) {
     try {
         function Start-DevMode {
             $developerPowerShell = [io.path]::GetFullPath($env:AllUsersProfile) + '\Start Menu\Programs\Visual Studio 2022\Visual Studio Tools\Developer PowerShell for VS 2022 Preview.lnk'
