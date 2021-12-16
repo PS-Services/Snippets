@@ -1,4 +1,9 @@
-param([switch]$Verbose = $false)
+param([switch]$VerboseSwitch = $false)
+
+# $Verbose=$true -or $VerboseSwitch
+$Verbose=$VerboseSwitch
+# Write-Verbose "[$script] [$env:SnippetsInitialized] -not `$env:SnippetsInitialized: $(-not $env:SnippetsInitialized)" -Verbose:$Verbose
+$script = $MyInvocation.MyCommand
 
 if (-not $env:SnippetsInitialized) { 
 	$fileInfo = New-Object System.IO.FileInfo (Get-Item $PSScriptRoot).FullName
@@ -18,16 +23,19 @@ try {
 			[switch]$V = $false
 		)
 
-		Write-Verbose "`$env:GITHUB:  [$($env:GITHUB)]" -Verbose:$V
-		Write-Verbose "`$Repository:  [$Repository]" -Verbose:$V
+		Write-Verbose "[$script] `$env:GITHUB:  [$($env:GITHUB)]" -Verbose:$V
+		Write-Verbose "[$script] `$Repository:  [$Repository]" -Verbose:$V
 		Set-Location (Join-Path $env:GITHUB -Child $Repository)
 	}
 
 	Set-Alias -Name hub -Value Set-LocationGitHub
+
+	return "Use ``hub`` to go to the GitHub folder."
 }
 catch {
 	Write-Host $Error    
 }
 finally {
-	Write-Verbose 'Leaving github.ps1' -Verbose:$Verbose
+	Write-Verbose '[github.ps1] Leaving...' -Verbose:$Verbose
+	$Verbose = $VerboseSwitch
 }

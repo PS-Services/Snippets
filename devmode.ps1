@@ -1,4 +1,9 @@
-param([switch]$Verbose = $false)
+param([switch]$VerboseSwitch = $false)
+
+# $Verbose=$true -or $VerboseSwitch
+$Verbose=$VerboseSwitch
+# Write-Verbose "[$script] [$env:SnippetsInitialized] -not `$env:SnippetsInitialized: $(-not $env:SnippetsInitialized)" -Verbose:$Verbose
+$script = $MyInvocation.MyCommand
 
 if (-not $env:SnippetsInitialized) { 
     $fileInfo = New-Object System.IO.FileInfo (Get-Item $PSScriptRoot).FullName
@@ -28,11 +33,17 @@ if ($env:IsWindows -ieq 'true') {
         }
 
         Set-Alias -Name devmode -Value Start-DevMode
+
+        return "Type ``devmode`` to enter VS2022 Developer Mode."
     }
     catch {
         Write-Host $Error    
     }
     finally {
-        Write-Verbose 'Leaving devmode.ps1' -Verbose:$Verbose
+        Write-Verbose '[devmode.ps1] Leaving...' -Verbose:$Verbose
+        $Verbose = $VerboseSwitch
     }
+} else {
+    $Verbose = $VerboseSwitch
+    return "Visual Studio 2022 not available on this system."
 }

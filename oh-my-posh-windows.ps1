@@ -1,4 +1,9 @@
-param([switch]$Verbose = $false)
+param([switch]$VerboseSwitch = $false)
+
+# $Verbose=$true -or $VerboseSwitch
+$Verbose=$VerboseSwitch
+# Write-Verbose "[$script] [$env:SnippetsInitialized] -not `$env:SnippetsInitialized: $(-not $env:SnippetsInitialized)" -Verbose:$Verbose
+$script = $MyInvocation.MyCommand
 
 if (-not $env:SnippetsInitialized) { 
     $fileInfo = New-Object System.IO.FileInfo (Get-Item $PSScriptRoot).FullName
@@ -28,7 +33,7 @@ if ($env:IsWindows -ieq 'true') {
             Write-Host 'Cannot find Oh-My-Posh and cannot install with scoop.'
         }
         else {
-            Write-Verbose "`$ohMyPosh: $($ohMyPosh.Source)" -Verbose:$Verbose
+            Write-Verbose "[$script] `$ohMyPosh: $($ohMyPosh.Source)" -Verbose:$Verbose
 
             $ompFolder = [System.IO.Path]::GetDirectoryName($ohMyPosh.Source)
 
@@ -40,14 +45,15 @@ if ($env:IsWindows -ieq 'true') {
                 $ompFolder += '\..\themes\'
             }
 
-            Write-Verbose "`$ompFolder: $($ompFolder)" -Verbose:$Verbose
+            Write-Verbose "[$script] `$ompFolder: $($ompFolder)" -Verbose:$Verbose
 
             if (Test-Path $ompFolder) {
                 oh-my-posh --init --shell $powershell --config $ompFolder\ys.omp.json `
                 | Invoke-Expression
+                return "OH-MY-POSH is ready."
             }
             else {
-                Write-Host "Could not locate $ompFolder\..\themes"
+                return "Could not locate $ompFolder\..\themes"
             }
         }
     }
@@ -55,6 +61,10 @@ if ($env:IsWindows -ieq 'true') {
         Write-Host $Error    
     }
     finally {
-        Write-Verbose 'Leaving oh-my-posh.ps1' -Verbose:$Verbose
+        Write-Verbose '[oh-my-posh.ps1] Leaving...' -Verbose:$Verbose
+        $Verbose = $VerboseSwitch
     }
+} else {
+    $Verbose = $VerboseSwitch
+    return "Wrong Operating System."
 }

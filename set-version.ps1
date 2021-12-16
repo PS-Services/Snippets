@@ -1,7 +1,12 @@
 using namespace System
 
-param([switch]$Verbose = $false)
-Push-Location
+param([switch]$VerboseSwitch = $false)
+
+# $Verbose=$true -or $VerboseSwitch
+$Verbose=$VerboseSwitch
+# Write-Verbose "[$script] [$env:SnippetsInitialized] -not `$env:SnippetsInitialized: $(-not $env:SnippetsInitialized)" -Verbose:$Verbose
+$script = $MyInvocation.MyCommand
+
 Push-Location
 try {
     if ((Get-Location).Path.EndsWith('PowerShell')) {
@@ -21,14 +26,36 @@ try {
     }
 
     $version = & $gitversion /showvariable FullSemVer
+    $path = Get-Location
+    
+    $versionFilePath = Join-Path (Get-Location) -Child ".version"
 
-    $version | Out-File -FilePath '.version' -Encoding utf8 -Force
+    if(-not (Test-Path $versionFilePath)) {
+        Write-Verbose "[$script] Writing $version to $versionFilePath" -Verbose:$Verbose
 
-    Write-Verbose "Current Semver is $version" -Verbose:$Verbose
+        echo $version > $versionFilePath
+        $result = (& git add $versionFilePath)
+        $result
+        $result = (& git commit -m "Added version")
+        $result
+    }
+
+    if(Test-Path $versionFilePath) {
+        Write-Verbose "[$script] `$versionFilePath ($versionFilePath) exists: $(Test-Path $versionFilePath)"  -Verbose:$Verbose
+
+        $verifiedVersion = Get-Content -Path $versionFilePath -Verbose:$Verbose
+
+        Write-Verbose "[$script] `$verifiedVersion: $verifiedVersion" -Verbose:$Verbose
+
+        Write-Verbose "[$script] Current Semver is $verifiedVersion" -Verbose:$Verbose
+    }
+
+    return "Current Semver is $verifiedVersion"
 }
 catch {
-    write-error $_
+    "Handled: $_"
 }
 finally {
     Pop-Location
+    $Verbose = $VerboseSwitch
 }

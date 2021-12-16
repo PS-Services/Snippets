@@ -1,4 +1,9 @@
-param([switch]$Verbose = $false)
+param([switch]$VerboseSwitch = $false)
+
+# $Verbose=$true -or $VerboseSwitch
+$Verbose=$VerboseSwitch
+# Write-Verbose "[$script] [$env:SnippetsInitialized] -not `$env:SnippetsInitialized: $(-not $env:SnippetsInitialized)" -Verbose:$Verbose
+$script = $MyInvocation.MyCommand
 
 if (-not $env:SnippetsInitialized) { 
   $fileInfo = New-Object System.IO.FileInfo (Get-Item $PSScriptRoot).FullName
@@ -28,10 +33,13 @@ try {
     | Remove-Item -Recurse:$R -Force:$F -Verbose:$V
 
   }
+
+  return "Execute ``Clean-Folder -r -f`` to remove ``bin`` and ``obj`` folders recursively."
 }
 catch {
   Write-Host $Error    
 }
 finally {
-  Write-Verbose 'Leaving clean-folder.ps1' -Verbose:$Verbose
+  Write-Verbose '[clean-folder.ps1] Leaving...' -Verbose:$Verbose
+  $Verbose = $VerboseSwitch
 }

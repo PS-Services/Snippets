@@ -1,4 +1,6 @@
 $env:Snippets = '/opt/microsoft/powershell/7/Snippets'
+$env:VerboseStartup = $null
+$thisScript = $MyInvocation.MyCommand
 
 if(-not (Test-Path $env:Snippets)) {
     $env:Snippets = "$env:HOME/.config/powershell"
@@ -11,43 +13,63 @@ else {
     [switch]$Verbose = $false
 }
 
+"`$Verbose: $Verbose"
+
 try {
+    Push-Location
+
     Import-Module Microsoft.PowerShell.Utility -Verbose:$Verbose
 
     $env:Snippets = Join-Path $env:Snippets -Child Snippets
 
     if (-not (Test-Path $env:Snippets -Verbose:$Verbose)) {
-        Invoke-Command "/usr/bin/mkdir" -ArgumentList @("-p", "$env:Snippets")
-        Set-Location $env:Snippets -Verbose:$Verbose
-        git clone https://github.com/sharpninja/Snippets.git
+        git clone "https://github.com/sharpninja/Snippets.git"
     } else {
-        Write-Verbose "Found $env:Snippets" -Verbose:$Verbose
+        Write-Verbose "[$thisScript] Found $env:Snippets" -Verbose:$Verbose
     }
 
     if (Test-Path $env:Snippets -Verbose:$Verbose) {
-        Write-Verbose "Found $env:Snippets (2)." -Verbose:$Verbose
+        Write-Verbose "[$thisScript] Found $env:Snippets (2)." -Verbose:$Verbose
 
         Push-Location -Verbose:$Verbose
         Set-Location $env:Snippets -Verbose:$Verbose
-        $snippets = Get-ChildItem *.ps1 -Verbose:$Verbose
+        $snippets = Get-ChildItem *.ps1 -Verbose:$Verbose -Exclude common.ps1
         Pop-Location -Verbose:$Verbose
 
+        $resultList = @()
+        # $snippets.FullName
         $snippets.FullName | ForEach-Object -Verbose:$Verbose -Process {
-            $snippet = $_
+            try {
+                $snippet = $_
+                $snippetName = Split-Path $snippet -Leaf
+                Write-Verbose "[$thisScript]->[$snippetName] Calling with: -Verbose:`$$Verbose" -Verbose:$Verbose
+                $result = $null
+                $result = . $snippet -Verbose:$Verbose
+            } catch {
+                Write-Error "[$thisScript]->[$snippetName] Error: $_"
+            } finally {
+                $report = "[$snippetName]->[ $result ]" 
+                $resultList += $report;
+            }
+        }
 
-            . $snippet -Verbose:$Verbose
+        if($resultList.Length -gt 0) {
+            "[$script] Snippet Results`n---`n$([System.String]::Join("`n", $resultList))`n---`n"
+
+        } else {
+            "[$script] No snippets where executed."
         }
     }
     else {
-        Write-Verbose "No directory found at [$env:Snippets]" -Verbose:$Verbose
+        Write-Verbose "[$thisScript] No directory found at [$env:Snippets]" -Verbose:$Verbose
     }
-
-    Write-Verbose 'PowerShell Ready.' -Verbose:$Verbose
 }
 catch {
-    Write-Verbose $_ -Verbose:$Verbose
-    Write-Error $_
+    Write-Error "[$thisScript] $_"
 }
 finally {
+    Pop-Location
     Write-Verbose "Leaving $Profile" -Verbose:$Verbose
 }
+
+Write-Verbose 'PowerShell Ready.' -Verbose:$Verbose

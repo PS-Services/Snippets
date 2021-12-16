@@ -1,4 +1,9 @@
-param([switch]$Verbose = $false)
+param([switch]$VerboseSwitch = $false)
+
+# $Verbose=$true -or $VerboseSwitch
+$Verbose=$VerboseSwitch
+# Write-Verbose "[$script] [$env:SnippetsInitialized] -not `$env:SnippetsInitialized: $(-not $env:SnippetsInitialized)" -Verbose:$Verbose
+$script = $MyInvocation.MyCommand
 
 if (-not $env:SnippetsInitialized) { 
   $fileInfo = New-Object System.IO.FileInfo (Get-Item $PSScriptRoot).FullName
@@ -32,7 +37,7 @@ if ($env:IsWindows -ieq 'true') {
         else {
           ''
         }
-        Write-Verbose "& $winGet $Command $Name -s $Store $i;"
+        Write-Verbose "[$script] & $winGet $Command $Name -s $Store $i;"
         & $winGet $Command $Name -s $Store $i;
         & refreshenv
       }
@@ -61,7 +66,7 @@ if ($env:IsWindows -ieq 'true') {
           ''
         }
         $c = "$Command $SubCommand".Trim()
-        Write-Verbose ". $scoop $c $Name;"
+        Write-Verbose "[$script] . $scoop $c $Name;"
         . $scoop $c $Name;
         & refreshenv
       }
@@ -90,7 +95,7 @@ if ($env:IsWindows -ieq 'true') {
           ''
         }
         $c = "$Command $SubCommand".Trim()
-        Write-Verbose "sudo $choco $c $Name -y -PassThru;"
+        Write-Verbose "[$script] sudo $choco $c $Name -y -PassThru;"
         sudo $choco $c $Name -y -PassThru;
         & refreshenv
       }
@@ -132,11 +137,17 @@ if ($env:IsWindows -ieq 'true') {
     Set-Alias -Name scp -Value Call-Scoop -PassThru
     Set-Alias -Name ch -Value Call-Choco -PassThru
     Set-Alias -Name repos -Value Call-All -PassThru
+
+    return "Repos aliases configured."
   }
   catch {
     Write-Host $Error    
   }
   finally {
-    Write-Verbose 'Leaving repos.ps1' -Verbose:$Verbose
+    Write-Verbose '[repos.ps1] Leaving...' -Verbose:$Verbose
+    $Verbose = $VerboseSwitch
   }
+} else {
+  $Verbose = $VerboseSwitch
+  return "Wrong Operating System."
 }
