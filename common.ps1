@@ -7,8 +7,8 @@ function Set-SnippetsLocation {
 function Initialize-Snippets {
     param([switch]$VerboseSwitch = $false)
 
-    #$Verbose=$true -or $VerboseSwitch
-    $Verbose=$VerboseSwitch
+    $Verbose=$true -or $VerboseSwitch
+    #$Verbose=$VerboseSwitch
     # Write-Verbose "[$script] [$env:SnippetsInitialized] -not `$env:SnippetsInitialized: $(-not $env:SnippetsInitialized)" -Verbose:$Verbose
     $script = $MyInvocation.MyCommand
 
@@ -59,14 +59,15 @@ function Initialize-Snippets {
             Write-Verbose "[$script] `$env:IsWindows: $env:IsWindows" -Verbose:$Verbose
             Write-Verbose "[$script] `$env:IsUnix: $env:IsUnix" -Verbose:$Verbose
 
+            $env:SnippetsInitialized="$true"
+
             if($env:IsUnix -eq "$true") { return "Powershell ready for Unix-like System."}
             elseif($env:IsDesktop -eq "$true") { return "Windows Powershell is ready."}
             else { return "Powershell Core is ready." }
         }
     }
     finally {
-        $env:SnippetsInitialized="$true"
-        # Write-Verbose "[$script] [$env:SnippetsInitialized] -not `$env:SnippetsInitialized: $(-not $env:SnippetsInitialized)" -Verbose:$Verbose
+        Write-Verbose "[$script] [$env:Snippetscode Initialized] -not `$env:SnippetsInitialized: $(-not $env:SnippetsInitialized)" -Verbose:$Verbose
 
         Pop-Location -Verbose:$Verbose
         $Verbose = $VerboseSwitch
