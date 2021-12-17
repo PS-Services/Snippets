@@ -167,7 +167,7 @@ Check-Dotnet;
 Continue-With "${__result}" "Install-PowerShell" "1: Dotnet not found and unable to install it.";
 Continue-With "${__result}" "Setup-Snippets" "2: Powershell not found and unable to install it.";
 
-popd
+popd &> /dev/null
 
 if [ "${__result}" != "0" ] ; then
     echo "Failed to Setup Snippets with exit code: ${__result}"
