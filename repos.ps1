@@ -133,10 +133,10 @@ if ($env:IsWindows -ieq 'true') {
       return $results
     }
 
-    Set-Alias -Name wg -Value Call-Winget -PassThru
-    Set-Alias -Name scp -Value Call-Scoop -PassThru
-    Set-Alias -Name ch -Value Call-Choco -PassThru
-    Set-Alias -Name repos -Value Call-All -PassThru
+    set-alias -Description "Snippets: WinGet" -Name wg -Value Call-Winget -PassThru
+    set-alias -Description "Snippets: Scoop" -Name scp -Value Call-Scoop -PassThru
+    set-alias -Description "Snippets: Chocolatey" -Name ch -Value Call-Choco -PassThru
+    set-alias -Description "Snippets: All Repos" -Name repos -Value Call-All -PassThru
 
     return "Repos aliases configured."
   }

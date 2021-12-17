@@ -1,12 +1,18 @@
 param([switch]$VerboseSwitch = $false)
 
+function Set-SnippetsLocation {
+    Set-Location "$env:Snippets"
+}
+
 function Initialize-Snippets {
-    param([switch]$Verbose = $false)
+    param([switch]$VerboseSwitch = $false)
 
     # $Verbose=$true -or $VerboseSwitch
-$Verbose=$VerboseSwitch
+    $Verbose=$VerboseSwitch
     # Write-Verbose "[$script] [$env:SnippetsInitialized] -not `$env:SnippetsInitialized: $(-not $env:SnippetsInitialized)" -Verbose:$Verbose
     $script = $MyInvocation.MyCommand
+
+    Set-Alias -Description 'Snippets: Go to Snippets Folder' -Verbose:$Verbose -Scope Global -Name snipps -Value Set-SnippetsLocation -PassThru
 
     Push-Location
     try {
@@ -52,8 +58,8 @@ $Verbose=$VerboseSwitch
             Write-Verbose "[$script] `$env:IsWindows: $env:IsWindows" -Verbose:$Verbose
             Write-Verbose "[$script] `$env:IsUnix: $env:IsUnix" -Verbose:$Verbose
 
-            if($env:IsUnix) { return "Powershell ready for Unix-like System."}
-            elseif($env:IsDesktop) { return "Windows Powershell is ready."}
+            if($env:IsUnix -eq "$true") { return "Powershell ready for Unix-like System."}
+            elseif($env:IsDesktop -eq "$true") { return "Windows Powershell is ready."}
             else { return "Powershell Core is ready." }
         }
     }

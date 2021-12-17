@@ -40,7 +40,7 @@ try {
       & $env:dnscriptPath $csxPath "$query" --max=3
     }
 
-    Set-Alias -Name bing -Value Search-Bing -PassThru
+    set-alias -Description "Snippets: Search Bing" -Name bing -Value Search-Bing -PassThru
 
     return "Search Bing by typing ``bing SEARCH``"
   }

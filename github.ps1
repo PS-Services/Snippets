@@ -28,7 +28,7 @@ try {
 		Set-Location (Join-Path $env:GITHUB -Child $Repository)
 	}
 
-	Set-Alias -Name hub -Value Set-LocationGitHub
+	set-alias -Description "Snippets: Go to GitHub folder [$env:GitHub]" -Name hub -Value Set-LocationGitHub
 
 	return "Use ``hub`` to go to the GitHub folder."
 }
