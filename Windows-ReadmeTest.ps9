@@ -7,7 +7,7 @@ $exclusions += '*Linux*'
 # EXCLUSIONS-END
 
 if((-not $env:Snippets) -or (-not (Test-Path $env:Snippets))) {
-    $env:Snippets = "$env:HOME/.config/powershell"
+    $env:Snippets = "$env:ONEDRIVE/Documents/Powershell"
 }
 
 if ($env:VerboseStartup -eq 'true') {
