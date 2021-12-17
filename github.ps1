@@ -1,6 +1,6 @@
 param([switch]$VerboseSwitch = $false)
 
-# $Verbose=$true -or $VerboseSwitch
+#$Verbose=$true -or $VerboseSwitch
 $Verbose=$VerboseSwitch
 # Write-Verbose "[$script] [$env:SnippetsInitialized] -not `$env:SnippetsInitialized: $(-not $env:SnippetsInitialized)" -Verbose:$Verbose
 $script = $MyInvocation.MyCommand
@@ -14,8 +14,17 @@ if (-not $env:SnippetsInitialized) {
 
 try {
 	if (-not $env:GITHUB) {
-		$env:GITHUB = (Get-ChildItem -Filter GitHub -Path C:\ -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1).FullName
+		if($env:IsWindows -ieq 'true') {
+			$hintPath = "C:\"
+		} else {
+			$hintPath = "~"
+		}
+		Write-Verbose "[$script] searching for 'github' in [$hintPath]" -Verbose:$Verbose
+		$env:GITHUB = (Get-ChildItem -Filter github -Path $hintPath -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1).FullName
+		$description="Snippets: Go to GitHub folder [$env:GITHUB]"
 	}
+
+	Write-Verbose "[$script] `$env:GITHUB set to [$env:GITHUB]" -Verbose:$Verbose
 
 	function Set-LocationGitHub {
 		param(
@@ -25,10 +34,10 @@ try {
 
 		Write-Verbose "[$script] `$env:GITHUB:  [$($env:GITHUB)]" -Verbose:$V
 		Write-Verbose "[$script] `$Repository:  [$Repository]" -Verbose:$V
-		Set-Location (Join-Path $env:GITHUB -Child $Repository)
+		Set-Location (Join-Path $env:GITHUB -Child $Repository) -Verbose:$V
 	}
 
-	set-alias -Description "Snippets: Go to GitHub folder [$env:GitHub]" -Name hub -Value Set-LocationGitHub
+	set-alias -Description $description -Name hub -Value Set-LocationGitHub
 
 	return "Use ``hub`` to go to the GitHub folder."
 }
