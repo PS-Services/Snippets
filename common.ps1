@@ -12,7 +12,7 @@ function Initialize-Snippets {
     # Write-Verbose "[$script] [$env:SnippetsInitialized] -not `$env:SnippetsInitialized: $(-not $env:SnippetsInitialized)" -Verbose:$Verbose
     $script = $MyInvocation.MyCommand
 
-    $alias = set-alias -Verbose:$Verbose -Scope Global -Description "Snippets: [common] Go to Snippets folder [$env:Snippets]" -Verbose:$Verbose -Name snipps -Value Set-SnippetsLocation -PassThru
+    $alias = set-alias -Verbose:$Verbose -Scope Global -Description "Snippets: [common] Go to Snippets folder [$env:Snippets]" -Name snipps -Value Set-SnippetsLocation
 
     Push-Location
     try {
