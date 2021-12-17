@@ -95,6 +95,10 @@ function Execute-OMP {
     return $result
 }
 
-$alias = set-alias -Verbose:$Verbose -Scope Global -Description "Snippets: [ps] OH-MY-POSH" -Name posh -Value Execute-OMP -PassThru
+if ($env:IsUnix -ieq 'true') {
+    $alias = set-alias -Verbose:$Verbose -Scope Global -Description "Snippets: [ps] OH-MY-POSH" -Name posh -Value Execute-OMP -PassThru
 
-return "Registered alias for OH-MY-POSH"
+    return "Registered alias for OH-MY-POSH"
+} else {
+    return "Wrong Operating System."
+}
