@@ -96,7 +96,7 @@ finally {
 
 Get-Alias -Verbose:$MasterVerbose `
     | Where-Object -Property Description -imatch 'snippet' -Verbose:$MasterVerbose `
-    | Sort-Object -Property Description -Verbose:$MasterVerbose `
+    | Sort-Object -Property Description, Name -Verbose:$MasterVerbose `
     | Format-Table Name, Description -AutoSize -Verbose:$MasterVerbose
 
 Write-Verbose 'PowerShell Ready.' -Verbose:$MasterVerbose
