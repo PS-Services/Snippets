@@ -1,75 +1,75 @@
-$env:Snippets = '/opt/microsoft/powershell/7/Snippets'
-$env:VerboseStartup = $null
-$thisScript = $MyInvocation.MyCommand
+# $env:VerboseStartup = 'true'
+$profileScript = Split-Path $PROFILE -Leaf
 
-if(-not (Test-Path $env:Snippets)) {
+if((-not $env:Snippets) -or (-not (Test-Path $env:Snippets))) {
     $env:Snippets = "$env:HOME/.config/powershell"
 }
 
 if ($env:VerboseStartup -eq 'true') {
-    [switch]$Verbose = $true
+    [switch]$MasterVerbose = $true
 }
 else {
-    [switch]$Verbose = $false
+    [switch]$MasterVerbose = $false
 }
 
-"`$Verbose: $Verbose"
-
 try {
-    Push-Location
+    Push-Location -Verbose:$MasterVerbose
 
-    Import-Module Microsoft.PowerShell.Utility -Verbose:$Verbose
+    Import-Module Microsoft.PowerShell.Utility #-Verbose:$MasterVerbose
 
-    $env:Snippets = Join-Path $env:Snippets -Child Snippets
+    $env:Snippets = Join-Path $env:Snippets -Child Snippets -Verbose:$MasterVerbose
 
-    if (-not (Test-Path $env:Snippets -Verbose:$Verbose)) {
+    if (-not (Test-Path $env:Snippets -Verbose:$MasterVerbose)) {
         git clone "https://github.com/sharpninja/Snippets.git"
     } else {
-        Write-Verbose "[$thisScript] Found $env:Snippets" -Verbose:$Verbose
+        Write-Verbose "[$profileScript] Found $env:Snippets" -Verbose:$MasterVerbose
     }
 
-    if (Test-Path $env:Snippets -Verbose:$Verbose) {
-        Write-Verbose "[$thisScript] Found $env:Snippets (2)." -Verbose:$Verbose
-
-        Push-Location -Verbose:$Verbose
-        Set-Location $env:Snippets -Verbose:$Verbose
-        $snippets = Get-ChildItem *.ps1 -Verbose:$Verbose -Exclude common.ps1
-        Pop-Location -Verbose:$Verbose
+    if (Test-Path $env:Snippets -Verbose:$MasterVerbose) {
+        Push-Location -Verbose:$MasterVerbose
+        Set-Location $env:Snippets -Verbose:$MasterVerbose
+        $snippets = Get-ChildItem *.ps1 -Verbose:$MasterVerbose -Exclude common.ps1
+        Pop-Location -Verbose:$MasterVerbose
 
         $resultList = @()
-        # $snippets.FullName
-        $snippets.FullName | ForEach-Object -Verbose:$Verbose -Process {
+        $snippets.FullName | ForEach-Object -Verbose:$MasterVerbose -Process {
             try {
                 $snippet = $_
                 $snippetName = Split-Path $snippet -Leaf
-                Write-Verbose "[$thisScript]->[$snippetName] Calling with: -Verbose:`$$Verbose" -Verbose:$Verbose
+                Write-Verbose "[$profileScript]->[$snippetName] Calling with: -Verbose:`$$MasterVerbose" -Verbose:$MasterVerbose
                 $result = $null
-                $result = . $snippet -Verbose:$Verbose
-            } catch {
-                Write-Error "[$thisScript]->[$snippetName] Error: $_"
-            } finally {
-                $report = "[$snippetName]->[ $result ]" 
+                $result = . $snippet -Verbose:$MasterVerbose
+            }
+            catch {
+                Write-Error "[$profileScript]->[$snippetName] Error: $_"
+            }
+            finally {
+                $report = "[$snippetName]->[ $result ]"
                 $resultList += $report;
             }
         }
 
-        if($resultList.Length -gt 0) {
-            "[$script] Snippet Results`n---`n$([System.String]::Join("`n", $resultList))`n---`n"
-
-        } else {
-            "[$script] No snippets where executed."
+        if ($resultList.Length -gt 0) {
+            "[$profileScript] Snippet Results`n---`n$([System.String]::Join("`n", $resultList))`n---`n"
+        }
+        else {
+            "[$profileScript] No snippets where executed."
         }
     }
     else {
-        Write-Verbose "[$thisScript] No directory found at [$env:Snippets]" -Verbose:$Verbose
+        Write-Verbose "[$profileScript] No directory found at [$env:Snippets]" -Verbose:$MasterVerbose
     }
 }
 catch {
-    Write-Error "[$thisScript] $_"
+    Write-Error "[$profileScript] $_"
 }
 finally {
     Pop-Location
-    Write-Verbose "Leaving $Profile" -Verbose:$Verbose
+    Write-Verbose "Leaving $Profile" -Verbose:$MasterVerbose
 }
 
-Write-Verbose 'PowerShell Ready.' -Verbose:$Verbose
+Get-Alias -Verbose:$MasterVerbose `
+    | Where-Object -Property Description -imatch 'snippet' -Verbose:$MasterVerbose `
+    | Format-Table Name, Description -AutoSize -Verbose:$MasterVerbose
+
+Write-Verbose 'PowerShell Ready.' -Verbose:$MasterVerbose

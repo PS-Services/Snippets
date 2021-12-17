@@ -38,7 +38,7 @@ if ($env:IsWindows -ieq 'true') {
             }
         }
 
-        Set-Alias -Description 'Snippets: Start VS2022 Developer Mode' -Name devmode -Value Start-DevMode
+        Set-Alias -Description 'Snippets: [common] Start VS2022 Developer Mode' -Name devmode -Value Start-DevMode
 
         return "Type ``devmode`` to enter VS2022 Developer Mode."
     }

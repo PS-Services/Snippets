@@ -35,7 +35,7 @@ function Update-Snippets {
     }
 }
 
-set-alias -Description "Snippets: Update Snippets from GitHub." -Verbose:$Verbose -Name snipup -Value Update-Snippets
+set-alias -Description "Snippets: [common] Update Snippets from GitHub." -Verbose:$Verbose -Name snipup -Value Update-Snippets
 
 $Verbose = $VerboseSwitch
 

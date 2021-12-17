@@ -21,7 +21,7 @@ try {
 		}
 		Write-Verbose "[$script] searching for 'github' in [$hintPath]" -Verbose:$Verbose
 		$env:GITHUB = (Get-ChildItem -Filter github -Path $hintPath -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1).FullName
-		$description="Snippets: Go to GitHub folder [$env:GITHUB]"
+		$description="Snippets: [common] Go to GitHub folder [$env:GITHUB]"
 	}
 
 	Write-Verbose "[$script] `$env:GITHUB set to [$env:GITHUB]" -Verbose:$Verbose

@@ -51,7 +51,7 @@ if ($env:IsUnix -ieq 'true') {
             } 
 
             if (Test-Path $poshThemes) {
-                set-alias -Description "Snippets: OH-MY-POSH" posh -Value $ohMyPosh -PassThru -Verbose:$Verbose
+                set-alias -Description "Snippets: [common] OH-MY-POSH" posh -Value $ohMyPosh -PassThru -Verbose:$Verbose
 
                 Write-Verbose "[$script] `$ohMyPosh: $($ohMyPosh.Source)" -Verbose:$Verbose
 
