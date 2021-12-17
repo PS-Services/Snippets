@@ -50,7 +50,9 @@ try {
         Write-Verbose "[$script] Current Semver is $verifiedVersion" -Verbose:$Verbose
     }
 
-    return "Current Semver is $verifiedVersion"
+    $env:SnippetsVersion=$verifiedVersion
+
+    return "Current Semver is ${env:SnippetsVersion}"
 }
 catch {
     "Handled: $_"

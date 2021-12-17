@@ -96,6 +96,8 @@ else
     if [ -f "$HOME/.config/powershell/Microsoft.PowerShell_profile.ps1" ]
     then
         echo "Installation succeeded.  Start PowerShell by typing 'pwsh'"
+
+        pwsh -c "profileup -Verbose"
     else
         echo "Installation failed.  Cannot find $HOME/.config/powershell/Microsoft.PowerShell_profile.ps1"
     fi
