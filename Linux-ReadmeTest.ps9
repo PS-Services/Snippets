@@ -1,6 +1,11 @@
 # $env:VerboseStartup = 'true'
 $profileScript = Split-Path $PROFILE -Leaf
 
+$exclusions=@()
+# EXCLUSIONS-START
+$exclusions += '*Windows*','repos*','choco*'
+# EXCLUSIONS-END
+
 if((-not $env:Snippets) -or (-not (Test-Path $env:Snippets))) {
     $env:Snippets = "$env:HOME/.config/powershell"
 }
@@ -17,7 +22,9 @@ try {
 
     Import-Module Microsoft.PowerShell.Utility #-Verbose:$MasterVerbose
 
-    $env:Snippets = Join-Path $env:Snippets -Child Snippets -Verbose:$MasterVerbose
+    if((Split-Path $env:Snippets -Leaf) -ieq 'powershell') {
+        $env:Snippets = Join-Path $env:Snippets -Child Snippets -Verbose:$MasterVerbose
+    }
 
     if (-not (Test-Path $env:Snippets -Verbose:$MasterVerbose)) {
         git clone "https://github.com/sharpninja/Snippets.git"
@@ -28,7 +35,12 @@ try {
     if (Test-Path $env:Snippets -Verbose:$MasterVerbose) {
         Push-Location -Verbose:$MasterVerbose
         Set-Location $env:Snippets -Verbose:$MasterVerbose
-        $snippets = Get-ChildItem *.ps1 -Verbose:$MasterVerbose -Exclude common.ps1
+
+        $exclusions += 'common.ps1'
+        Write-Verbose -Verbose:$MasterVerbose -Message "[$profileScript] Exclusions: $exclusions"
+
+        $snippets = Get-ChildItem *.ps1 -Verbose:$MasterVerbose -Exclude $exclusions
+
         Pop-Location -Verbose:$MasterVerbose
 
         $resultList = [ordered]@{ }
@@ -36,16 +48,27 @@ try {
             try {
                 $snippet = $_
                 $snippetName = Split-Path $snippet -Leaf
-                Write-Verbose "[$profileScript]->[$snippetName] Calling with: -Verbose:`$$MasterVerbose" -Verbose:$MasterVerbose
-                $result = $null
-                $result = . $snippet -Verbose:$MasterVerbose
+                if($snippetName){
+                    Write-Verbose "[$profileScript]->[$snippetName] Calling with: -Verbose:`$$MasterVerbose" -Verbose:$MasterVerbose
+                    $result = $null
+                    $result = . $snippet -Verbose:$MasterVerbose
+                }
             }
             catch {
                 $err=$_.ErrorRecord?.ToString() ?? $_.ToString()
                 $result="[Error:] ${err}"
             }
             finally {
-                $resultList.Add($snippetName,$result)
+                if($null -ne $snippetName){
+                    $resultList.Add($snippetName,$result)
+                } elseif ($null -ne $_) {
+                    $resultList.Add($_,$result)
+                } elseif ($null -ne $err) {
+                    $resultList.Add($err.ToString(),$result)
+                } else {
+                    $counter += 1
+                    $resultList.Add("${counter}: `$null",$result)
+                }
             }
         }
 

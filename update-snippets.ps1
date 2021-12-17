@@ -38,8 +38,10 @@ function Update-Profile {
             $startLine='# SNIPPETS BEGIN'
             $endLine='# SNIPPETS END'
 
-            if($env:IsWindows) { $readmeFile = "${env:Snippets}/Windows-ReadmeTest.ps9" }
+            if($env:IsWindows -ieq "true") { $readmeFile = "${env:Snippets}/Windows-ReadmeTest.ps9" }
             else { $readmeFile = "${env:Snippets}/Linux-ReadmeTest.ps9" }
+
+            Write-Verbose -Verbose:$Verbose -Message "[$script] Source File: [$readmeFile] Exists: $(Test-Path $readmeFile)"
 
             $readme = Get-Content $readmeFile
 
