@@ -12,27 +12,33 @@ if (-not $env:SnippetsInitialized) {
   Initialize-Snippets -Verbose:$Verbose 
 }
 
-try {
-  function Clean-Folder {
-    param(
-      [String[]]$P = @('obj', 'bin'),
-      [switch]$R = $false,
-      [switch]$F = $false,
-      [switch]$V = $false
-    )
-    if ($V) {
-      Write-Host "`$P: $P"
-      Write-Host "`$R: $R"
-      Write-Host "`$F: $F"
-      Write-Host "`$V: $V"
-    }
+function Clean-Folder {
+  param(
+    [String[]]$P = @('obj', 'bin'),
+    [switch]$R = $false,
+    [switch]$F = $false,
+    [switch]$V = $false
+  )
+  Write-Verbose -Verbose:$V -Message "`$P: $P"
+  Write-Verbose -Verbose:$V -Message "`$R: $R"
+  Write-Verbose -Verbose:$V -Message "`$F: $F"
+  Write-Verbose -Verbose:$V -Message "`$V: $V"
 
-    #gci bin,obj -r
+  #gci bin,obj -r
 
-    Get-ChildItem $P -Recurse:$R -Verbose:$V `
-    | Remove-Item -Recurse:$R -Force:$F -Verbose:$V
+  $items = Get-ChildItem $P -Recurse:$R -Verbose:$V -ErrorAction SilentlyContinue
 
+  if($items) {
+    Write-Verbose -Verbose:$V -Message "Removing ${items.length} items"
+    $items | Remove-Item -Recurse:$R -Force:$F -Verbose:$V -ErrorAction Stop
+  } else {
+    $itemsString=[System.String]::Join(',', $P)
+    Write-Verbose -Verbose:$V -Message "No items that match [$itemsString] were found to delete."
   }
+}
+
+try {
+  $alias = set-alias -Verbose:$Verbose -Scope Global -Description "Snippets: [common] Clean-Folder" -Name clean -Value Clean-Folder -PassThru
 
   return "Execute ``Clean-Folder -r -f`` to remove ``bin`` and ``obj`` folders recursively."
 }

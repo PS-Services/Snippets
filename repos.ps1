@@ -133,10 +133,10 @@ if ($env:IsWindows -ieq 'true') {
       return $results
     }
 
-    set-alias -Description "Snippets: [repos] WinGet" -Name wg -Value Call-Winget -PassThru
-    set-alias -Description "Snippets: [repos] Scoop" -Name scp -Value Call-Scoop -PassThru
-    set-alias -Description "Snippets: [repos] Chocolatey" -Name ch -Value Call-Choco -PassThru
-    set-alias -Description "Snippets: [repos] All Repos" -Name repos -Value Call-All -PassThru
+    $alias = set-alias -Verbose:$Verbose -Scope Global -Description "Snippets: [repos] WinGet" -Name wg -Value Call-Winget -PassThru
+    $alias = set-alias -Verbose:$Verbose -Scope Global -Description "Snippets: [repos] Scoop" -Name scp -Value Call-Scoop -PassThru
+    $alias = set-alias -Verbose:$Verbose -Scope Global -Description "Snippets: [repos] Chocolatey" -Name ch -Value Call-Choco -PassThru
+    $alias = set-alias -Verbose:$Verbose -Scope Global -Description "Snippets: [repos] All Repos" -Name repos -Value Call-All -PassThru
 
     return "Repos aliases configured."
   }
