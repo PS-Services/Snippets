@@ -84,9 +84,6 @@ function Setup-OMP {
 }
 
 function Execute-OMP {
-    Write-Verbose -Verbose:$Verbose -Message "[Execute-OMP] Setup-OMP: [$(Setup-OMP -Verbose:$Verbose)]"
-    Write-Verbose -Verbose:$Verbose -Message "[Execute-OMP] `$env:ohMyPosh `$args: [$env:ohMyPosh $args]"
-
     $scriptBlock = { & (Get-Item $env:ohMyPosh) $args }
     $result = Invoke-Command -Verbose:$Verbose -ScriptBlock $scriptBlock -ArgumentList $args
 
@@ -96,6 +93,10 @@ function Execute-OMP {
 }
 
 if ($env:IsUnix -ieq 'true') {
+    $setupResult = Setup-OMP -Verbose:$Verbose
+    Write-Verbose -Verbose:$Verbose -Message "[$script] Setup-OMP: [$setupResult]"
+    Write-Verbose -Verbose:$Verbose -Message "[$script] `$env:ohMyPosh `$args: [$env:ohMyPosh $args]"
+
     $alias = set-alias -Verbose:$Verbose -Scope Global -Description "Snippets: [ps] OH-MY-POSH" -Name posh -Value Execute-OMP -PassThru
 
     return "Registered alias for OH-MY-POSH"
