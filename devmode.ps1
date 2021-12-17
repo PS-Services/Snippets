@@ -28,8 +28,14 @@ if ($env:IsWindows -ieq 'true') {
             [System.Runtime.Interopservices.Marshal]::ReleaseComObject($objShell) | Out-Null
             [System.Runtime.Interopservices.Marshal]::ReleaseComObject($objshortcut) | Out-Null
 
-            Import-Module 'C:\Program Files\Microsoft Visual Studio\2022\Preview\Common7\Tools\Microsoft.VisualStudio.DevShell.dll'; 
-            Enter-VsDevShell $env:vsDevModeCode -SkipAutomaticLocation -DevCmdArguments '-arch=x64 -host_arch=x64'
+            try {
+                Push-Location
+                Import-Module 'C:\Program Files\Microsoft Visual Studio\2022\Preview\Common7\Tools\Microsoft.VisualStudio.DevShell.dll'; 
+                Enter-VsDevShell $env:vsDevModeCode -SkipAutomaticLocation -DevCmdArguments '-arch=x64 -host_arch=x64'
+            }
+            finally {
+                Pop-Location
+            }
         }
 
         Set-Alias -Name devmode -Value Start-DevMode
