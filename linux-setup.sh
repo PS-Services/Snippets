@@ -124,7 +124,9 @@ function Setup-Snippets {
         exit $(echo "${__result}" | tr -dc '0-9')
     fi
 
-    cp -f "$HOME/.config/powershell/Snippets/Linux-ReadmeTest.ps9" "$HOME/.config/powershell/Microsoft.PowerShell_profile.ps1"
+    echo "# SNIPPETS BEGIN" > "$HOME/.config/powershell/Microsoft.PowerShell_profile.ps1"
+    cat "$HOME/.config/powershell/Snippets/Linux-ReadmeTest.ps9" >> "$HOME/.config/powershell/Microsoft.PowerShell_profile.ps1"
+    echo "# SNIPPETS END" >> "$HOME/.config/powershell/Microsoft.PowerShell_profile.ps1"
 
     if [ -f "$HOME/.config/powershell/Microsoft.PowerShell_profile.ps1" ]
     then
