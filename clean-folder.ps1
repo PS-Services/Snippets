@@ -38,7 +38,7 @@ function Clean-Folder {
 }
 
 try {
-  $alias = set-alias -Verbose:$Verbose -Scope Global -Description "Snippets: [common] Clean-Folder" -Name clean -Value Clean-Folder -PassThru
+  $alias = set-alias -Verbose:$Verbose -Scope Global -Description "Snippets: [dev] Clean-Folder" -Name clean -Value Clean-Folder -PassThru
 
   return "Execute ``Clean-Folder -r -f`` to remove ``bin`` and ``obj`` folders recursively."
 }
@@ -46,6 +46,6 @@ catch {
   Write-Host $Error    
 }
 finally {
-  Write-Verbose '[clean-folder.ps1] Leaving...' -Verbose:$Verbose
+  Write-Verbose "[$script] Leaving..." -Verbose:$Verbose
   $Verbose = $VerboseSwitch
 }

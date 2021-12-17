@@ -7,16 +7,17 @@ function Set-SnippetsLocation {
 function Initialize-Snippets {
     param([switch]$VerboseSwitch = $false)
 
-    # $Verbose=$true -or $VerboseSwitch
+    #$Verbose=$true -or $VerboseSwitch
     $Verbose=$VerboseSwitch
     # Write-Verbose "[$script] [$env:SnippetsInitialized] -not `$env:SnippetsInitialized: $(-not $env:SnippetsInitialized)" -Verbose:$Verbose
     $script = $MyInvocation.MyCommand
 
-    $alias = set-alias -Verbose:$Verbose -Scope Global -Description "Snippets: [common] Go to Snippets folder [$env:Snippets]" -Name snipps -Value Set-SnippetsLocation
+    $alias = set-alias -Verbose:$Verbose -Scope Global -Description "Snippets: [snippets] Go to Snippets folder [$env:Snippets]" -Name snipps -Value Set-SnippetsLocation
 
     Push-Location
     try {
         if($env:SnippetsInitialized) { 
+            Write-Verbose "[$script] Snippets already initialized." -Verbose:$Verbose
             return $env:SnippetsInitialized 
         }
         else {

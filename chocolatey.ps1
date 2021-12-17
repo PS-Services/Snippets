@@ -30,7 +30,7 @@ if ($env:IsWindows -ieq 'true') {
         Write-Host $Error    
     }
     finally {
-        Write-Verbose '[chocolatey.ps1] Leaving...' -Verbose:$Verbose
+        Write-Verbose "[$script] Leaving..." -Verbose:$Verbose
         $Verbose = $VerboseSwitch
     }
 } else {

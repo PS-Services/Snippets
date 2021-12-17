@@ -38,7 +38,7 @@ if ($env:IsWindows -ieq 'true') {
             }
         }
 
-        $alias = set-alias -Verbose:$Verbose -Scope Global -Description 'Snippets: [common] Start VS2022 Developer Mode' -Name devmode -Value Start-DevMode
+        $alias = set-alias -Verbose:$Verbose -Scope Global -Description 'Snippets: [dev] Start VS2022 Developer Mode' -Name devmode -Value Start-DevMode
 
         return "Type ``devmode`` to enter VS2022 Developer Mode."
     }
