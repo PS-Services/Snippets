@@ -14,7 +14,7 @@ fi
 if [ "${__result}" != "0" ] ; then
     echo "Failed to Uninstall Snippets with exit code: ${__result}"
 else
-    echo "Succesfully Uninstalled Snippets with exit code: ${__result}"
+    echo "Succesfully Uninstalled Snippets with exit code: ${__result}" 
 fi
 
 exit $(echo "${__result}" | tr -dc '0-9')
