@@ -28,6 +28,7 @@ try {
 
     if (-not (Test-Path $env:Snippets -Verbose:$MasterVerbose)) {
         git clone "https://github.com/sharpninja/Snippets.git"
+        if($LASTEXITCODE -ne 0) { throw "git clone `"https://github.com/sharpninja/Snippets.git`" failed with: $LASTEXITCODE" }
     } else {
         Write-Verbose "[$profileScript] Found $env:Snippets" -Verbose:$MasterVerbose
     }

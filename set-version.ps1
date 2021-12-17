@@ -33,11 +33,19 @@ try {
     if(-not (Test-Path $versionFilePath)) {
         Write-Verbose "[$script] Writing $version to $versionFilePath" -Verbose:$Verbose
 
-        echo $version > $versionFilePath
-        $result = (& git add $versionFilePath)
-        $result
-        $result = (& git commit -m "Added version")
-        $result
+        Write-Output $version > $versionFilePath
+
+        git add $versionFilePath
+
+        if ($LASTEXITCODE -ne 0) {
+            throw "git add $versionFilePath failed with: $LASTEXITCODE"
+        }
+
+        git commit -m "Added version"
+
+        if ($LASTEXITCODE -ne 0) {
+            throw "git commit -m `"Added version`" failed with: $LASTEXITCODE"
+        }
     }
 
     if(Test-Path $versionFilePath) {

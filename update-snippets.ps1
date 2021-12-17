@@ -94,6 +94,9 @@ function Update-Snippets {
             Push-Location
             Set-Location $env:Snippets
             & git pull
+            if ($LASTEXITCODE -ne 0) {
+                throw "git pull failed with: $LASTEXITCODE" 
+            }
 
             $exitCode = $LASTEXITCODE
 
