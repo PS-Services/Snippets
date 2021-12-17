@@ -7,8 +7,8 @@ function Set-SnippetsLocation {
 function Initialize-Snippets {
     param([switch]$VerboseSwitch = $false)
 
-    $Verbose=$true -or $VerboseSwitch
-    #$Verbose=$VerboseSwitch
+    #$Verbose=$true -or $VerboseSwitch
+    $Verbose=$VerboseSwitch
     # Write-Verbose "[$script] [$env:SnippetsInitialized] -not `$env:SnippetsInitialized: $(-not $env:SnippetsInitialized)" -Verbose:$Verbose
     $script = $MyInvocation.MyCommand
 
