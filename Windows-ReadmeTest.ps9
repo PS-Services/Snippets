@@ -1,12 +1,12 @@
 # $env:VerboseStartup = 'true'
 $profileScript = Split-Path $PROFILE -Leaf
 
-$exclusions=@()
+$exclusions = @()
 # EXCLUSIONS-START
 $exclusions += '*Linux*'
 # EXCLUSIONS-END
 
-if((-not $env:Snippets) -or (-not (Test-Path $env:Snippets))) {
+if ((-not $env:Snippets) -or (-not (Test-Path $env:Snippets))) {
     $env:Snippets = "$env:ONEDRIVE/Documents/Powershell"
 }
 
@@ -22,14 +22,17 @@ try {
 
     Import-Module Microsoft.PowerShell.Utility #-Verbose:$MasterVerbose
 
-    if((Split-Path $env:Snippets -Leaf) -ieq 'powershell') {
+    if ((Split-Path $env:Snippets -Leaf) -ieq 'powershell') {
         $env:Snippets = Join-Path $env:Snippets -Child Snippets -Verbose:$MasterVerbose
     }
 
     if (-not (Test-Path $env:Snippets -Verbose:$MasterVerbose)) {
-        git clone "https://github.com/sharpninja/Snippets.git"
-        if($LASTEXITCODE -ne 0) { throw "git clone `"https://github.com/sharpninja/Snippets.git`" failed with: $LASTEXITCODE" }
-    } else {
+        git clone 'https://github.com/sharpninja/Snippets.git'
+        if ($LASTEXITCODE -ne 0) {
+            throw "git clone `"https://github.com/sharpninja/Snippets.git`" failed with: $LASTEXITCODE" 
+        }
+    }
+    else {
         Write-Verbose "[$profileScript] Found $env:Snippets" -Verbose:$MasterVerbose
     }
 
@@ -49,26 +52,29 @@ try {
             try {
                 $snippet = $_
                 $snippetName = Split-Path $snippet -Leaf
-                if($snippetName){
+                if ($snippetName) {
                     Write-Verbose "[$profileScript]->[$snippetName] Calling with: -Verbose:`$$MasterVerbose" -Verbose:$MasterVerbose
                     $result = $null
                     $result = . $snippet -Verbose:$MasterVerbose
                 }
             }
             catch {
-                $err=$_.ErrorRecord?.ToString() ?? $_.ToString()
-                $result="[Error:] ${err}"
+                $err = "$_"
+                $result = "[Error:] ${err}"
             }
             finally {
-                if($null -ne $snippetName){
-                    $resultList.Add($snippetName,$result)
-                } elseif ($null -ne $_) {
-                    $resultList.Add($_,$result)
-                } elseif ($null -ne $err) {
-                    $resultList.Add($err.ToString(),$result)
-                } else {
+                if ($null -ne $snippetName) {
+                    $resultList.Add($snippetName, $result)
+                }
+                elseif ($null -ne $_) {
+                    $resultList.Add($_, $result)
+                }
+                elseif ($null -ne $err) {
+                    $resultList.Add($err.ToString(), $result)
+                }
+                else {
                     $counter += 1
-                    $resultList.Add("${counter}: `$null",$result)
+                    $resultList.Add("${counter}: `$null", $result)
                 }
             }
         }
@@ -76,8 +82,8 @@ try {
         if ($resultList.Length -gt 0) {
             # "[$profileScript] Snippet Results`n---`n$([System.String]::Join("`n", $resultList))`n---`n"
             $resultList `
-                | Sort-Object -Property key `
-                | Format-Table @{Label="Snippet"; Expression={$_.Name}}, @{Label="Result"; Expression={$_.Value}}
+            | Sort-Object -Property key `
+            | Format-Table @{Label = 'Snippet'; Expression = { $_.Name } }, @{Label = 'Result'; Expression = { $_.Value } }
         }
         else {
             "[$profileScript] No snippets where executed."
@@ -96,8 +102,8 @@ finally {
 }
 
 Get-Alias -Verbose:$MasterVerbose `
-    | Where-Object -Property Description -imatch 'snippet' -Verbose:$MasterVerbose `
-    | Sort-Object -Property Description, Name -Verbose:$MasterVerbose `
-    | Format-Table Name, Description -AutoSize -Verbose:$MasterVerbose
+| Where-Object -Property Description -imatch 'snippet' -Verbose:$MasterVerbose `
+| Sort-Object -Property Description, Name -Verbose:$MasterVerbose `
+| Format-Table Name, Description -AutoSize -Verbose:$MasterVerbose
 
 Write-Verbose 'PowerShell Ready.' -Verbose:$MasterVerbose
