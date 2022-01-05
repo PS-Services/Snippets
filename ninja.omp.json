@@ -137,7 +137,7 @@
                       ],
                     "properties": {
                       "always_enabled": true,
-                      "template": "{{ .EXIT_CODE }}"
+                      "template": "{{ .Code: .Text }}"
                     }
                   },
                 {
