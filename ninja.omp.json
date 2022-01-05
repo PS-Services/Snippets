@@ -137,7 +137,7 @@
                       ],
                     "properties": {
                       "always_enabled": true,
-                      "template": "{{ .Code: .Text }}"
+                      "template": "{{.Code}}: {{.Text}}"
                     }
                   },
                 {
