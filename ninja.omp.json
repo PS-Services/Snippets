@@ -103,7 +103,9 @@
                     "foreground": "#ffffff",
                     "background": "#6CA35E",
                     "properties": {
-                      "prefix": " \uE718 "
+                        "prefix": " \uE718 ",
+                      "fetch_package_manager": true,
+                      "display_mode": "files"
                     }
                   },
                 {
@@ -111,18 +113,18 @@
                     "style": "plain",
                     "foreground": "#00ffff",
                     "properties": {
+                        "prefix": " <white><b>#</b></> ",
                         "display_mode": "files"
                     }
                 },
                 {
                     "type": "executiontime",
                     "style": "plain",
-                    "powerline_symbol": "\uE0B0",
                     "foreground": "#ffffff",
                     "properties": {
                       "threshold": 500,
                       "style": "austin",
-                      "prefix": " <#fefefe>\ufbab</> "
+                      "prefix": " <#fefefe>⌚</> "
                     }
                   },
                   {
@@ -130,20 +132,29 @@
                     "style": "plain",
                     "foreground": "#ffffff",
                     "background_templates": [
-                        "{{ if gt .Code 0 }}#e91e63{{ end }}"
-                      ],
-                      "foreground_templates": [
-                        "{{ if gt .Code 0 }}yellow{{ end }}"
+                        "{{ if gt .Code 0 }}#9c1442{{ end }}"
                       ],
                     "properties": {
-                      "always_enabled": true,
-                      "template": "{{.Code}}: {{.Text}}"
+                        "prefix": " ‼ ",
+                        "postfix": " ‼ ",
+                      "always_enabled": false,
+                      "template": "{{.Code}}<yellow>:</> {{ .Text }}"
                     }
+                  },
+                  {
+                    "type":"sysinfo",
+                    "foreground": "#8f43f3",
+                    "properties": {
+                      "precision": 1,
+                      "prefix": " 💻 ",
+                      "template":"<#fefefe>{{ round (subf 100.0 .PhysicalPercentUsed) .Precision}}</><yellow>% 🆓</> <#fefefe>{{(index .CPU 0).Cores}}</><yellow><b>⨉ ±</b></><#fefefe>{{round (divf (index .CPU 0).Mhz 1000.0) .Precision }}</> Ghz"
+                    },
+                    "style":"plain"
                   },
                 {
                     "type": "text",
                     "style": "plain",
-                    "foreground": "lightRed",
+                    "foreground": "#ff2100",
                     "properties": {
                         "prefix": "",
                         "text": "$",
