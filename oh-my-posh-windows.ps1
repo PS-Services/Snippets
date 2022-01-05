@@ -21,7 +21,7 @@ function Setup-OMP {
                 $powershell = 'pwsh'
             }
             else {
-                $powershell = 'powershell'
+                $powershell = 'pwsh'
             }
 
             $ohMyPosh = Get-Command oh-my-posh
@@ -40,28 +40,13 @@ function Setup-OMP {
 
                 $ompFolder = [System.IO.Path]::GetDirectoryName($ohMyPosh.Source)
 
-                if ($ompFolder.EndsWith('\shims')) {
-                    $ompFolder += '\..\apps\oh-my-posh3\current\themes\'
-                } elseif ($ompFolder.EndsWith("scoop\apps\oh-my-posh\current\bin")) {
-                    $ompFolder += '\..\themes\'
-                } elseif ($ompFolder.EndsWith("AppData\Local\Programs\oh-my-posh\bin")) {
-                    $ompFolder += '\..\themes\'
-                }
+                $env:ohMyPosh=$ohMyPosh.Source
 
-                Write-Verbose "[$script] `$ompFolder: $($ompFolder)" -Verbose:$Verbose
+                Write-Verbose -Verbose:$Verbose -Message "(oh-my-posh --init --shell $powershell --config `"$PSScriptRoot\ninja.omp.json`" | Invoke-Expression)"
 
-                if (Test-Path $ompFolder) {
-                    $env:ohMyPosh=$ohMyPosh.Source
-                    Write-Verbose "[$script] `$env:ohMyPosh: [$env:ohMyPosh]" -Verbose:$Verbose
-                    Write-Verbose "[$script] `$ompFolder: [$ompFolder]" -Verbose:$Verbose
-
-                    $log = (oh-my-posh --init --shell $powershell --config $ompFolder\ys.omp.json | Invoke-Expression)
-                    if(-not $log -or $log.Length -eq 0) { $log = "Exit Code: $LASTEXITCODE" }
-                    return "OH-MY-POSH startup: [$log]"
-                }
-                else {
-                    return "Could not locate $ompFolder\..\themes"
-                }
+                $log = (oh-my-posh --init --shell $powershell --config "$PSScriptRoot\ninja.omp.json" | Invoke-Expression)
+                if(-not $log -or $log.Length -eq 0) { $log = "Exit Code: $LASTEXITCODE" }
+                return "OH-MY-POSH startup: [$log]"
             }
         }
         catch {

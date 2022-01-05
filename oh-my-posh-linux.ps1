@@ -21,7 +21,7 @@ function Setup-OMP {
         try {
             $poshbin = "/usr/local/bin/oh-my-posh"
             $ohMyPosh = Get-Command $poshbin -ErrorAction SilentlyContinue
-            $poshThemes = "$env:HOME/.poshthemes"
+            $poshThemes = "~/.config/powershell/Snippets"
 
             if (-not $ohMyPosh) {
                 $log = @(sudo wget https://github.com/JanDeDobbeleer/oh-my-posh/releases/latest/download/posh-linux-amd64 -O /usr/local/bin/oh-my-posh)
@@ -39,27 +39,10 @@ function Setup-OMP {
                 return "Could not locate or install OH-MY-POSH"
             }
             else {
-                if (-not (Test-Path $poshThemes)) {
-                    $log = @(mkdir $poshThemes)
-                    $log += wget https://github.com/JanDeDobbeleer/oh-my-posh/releases/latest/download/themes.zip -O ~/.poshthemes/themes.zip
-                    $log += unzip $poshThemes/themes.zip -d ~/.poshthemes
-                    $log += chmod u+rw $poshThemes/*.json
-                    $log += Remove-Item $poshThemes/themes.zip
-                    Write-Verbose "[$script] OH-MY-POSH Themes Install Log:`n---`n$($log.Join("`n"))`n---" -Verbose:$Verbose
-
-                    if (Test-Path $poshThemes) {
-                        Write-Verbose "[$script] Installed OH-MY-POSH themes to [$poshThemes]." -Verbose:$Verbose
-                    } else {
-                        Write-Verbose "[$script] Cannot find OH-MY-POSH themes and cannot install manually." -Verbose:$Verbose
-                    }
-                } 
-
                 if (Test-Path $poshThemes) {
                     $env:ohMyPosh=$ohMyPosh.Source
-                    Write-Verbose "[$script] `$env:ohMyPosh: [$env:ohMyPosh]" -Verbose:$Verbose
-                    Write-Verbose "[$script] `$poshThemes: [$poshThemes]" -Verbose:$Verbose
 
-                    $log = (oh-my-posh --init --shell pwsh --config "$poshThemes/ys.omp.json" | Invoke-Expression)
+                    $log = (oh-my-posh --init --shell pwsh --config "$poshThemes/ninja.omp.json" | Invoke-Expression)
                     if(-not $log -or $log.Length -eq 0) { $log = "Exit Code: $LASTEXITCODE" }
                     return "OH-MY-POSH startup: [$log]"
                 }
