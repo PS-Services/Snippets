@@ -23,17 +23,6 @@
             "newline": true,
             "segments": [
                 {
-                    "type": "os",
-                    "style": "plain",
-                    "foreground": "#26C6DA",
-                    "properties": {
-                        "macos": "Mac",
-                        "windows": "Win",
-                        "ubuntu": "Ubuntu",
-                        "postfix": "\u2800"
-                    }
-                },
-                {
                     "type": "shell",
                     "style": "plain",
                     "foreground": "#26C6DA",
@@ -47,20 +36,13 @@
                     }
                 },
                 {
-                    "type": "text",
+                    "type": "os",
                     "style": "plain",
-                    "foreground": "lightBlue",
+                    "foreground": "#26C6DA",
                     "properties": {
-                        "prefix": "",
-                        "text": "#"
-                    }
-                },
-                {
-                    "type": "root",
-                    "style": "plain",
-                    "foreground": "red",
-                    "properties": {
-                        "root_icon": "%"
+                        "macos": "Mac",
+                        "prefix": "\u2800",
+                        "postfix": "\u2800"
                     }
                 },
                 {
@@ -115,6 +97,25 @@
             "alignment": "left",
             "newline": true,
             "segments": [
+                {
+                    "type": "dotnet",
+                    "style": "plain",
+                    "foreground": "#00ffff",
+                    "properties": {
+                        "display_mode": "files"
+                    }
+                },
+                {
+                    "type": "executiontime",
+                    "style": "plain",
+                    "powerline_symbol": "\uE0B0",
+                    "foreground": "#ffffff",
+                    "properties": {
+                      "threshold": 500,
+                      "style": "austin",
+                      "prefix": " <#fefefe>\ufbab</> "
+                    }
+                  },
                 {
                     "type": "text",
                     "style": "plain",
