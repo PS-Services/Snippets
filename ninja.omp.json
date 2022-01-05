@@ -116,6 +116,22 @@
                       "prefix": " <#fefefe>\ufbab</> "
                     }
                   },
+                  {
+                    "type": "exit",
+                    "style": "plain",
+                    "foreground": "#ffffff",
+                    "background_templates": [
+                        "{{ if gt .Code 0 }}#e91e63{{ end }}"
+                      ],
+                      "foreground_templates": [
+                        "{{ if gt .Code 0 }}yellow{{ end }}"
+                      ],
+                    "properties": {
+                      "always_enabled": true,
+                      "template": "\uE23A",
+                      "prefix": "<#193549>\uE0B0</> "
+                    }
+                  },
                 {
                     "type": "text",
                     "style": "plain",
