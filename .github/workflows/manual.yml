@@ -29,9 +29,9 @@ jobs:
           dotnet-gitversion /showvariable SemVer > .version
           echo $(<.version)
           export version="$(<.version)"
-          if [ $version -eq '$(<.version)' ]
+          if [ '$version' == '$(<.version)' ]
           then
-            echo "$version -ne \"$(cat .version)\""
+            echo "$version == \"$(cat .version)\""
             echo "Error!" 1>&2
             exit 64
           fi
@@ -47,4 +47,4 @@ jobs:
           repo_token: "${{ secrets.GITHUB_TOKEN }}"
           automatic_release_tag: v${{ steps.updateVersion.outputs.version }}
           prerelease: false
-          token: ${{ secrets.GITHUB_TOKEN }}    
+          
