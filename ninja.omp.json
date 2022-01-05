@@ -98,6 +98,15 @@
             "newline": true,
             "segments": [
                 {
+                    "type": "node",
+                    "style": "plain",
+                    "foreground": "#ffffff",
+                    "background": "#6CA35E",
+                    "properties": {
+                      "prefix": " \uE718 "
+                    }
+                  },
+                {
                     "type": "dotnet",
                     "style": "plain",
                     "foreground": "#00ffff",
