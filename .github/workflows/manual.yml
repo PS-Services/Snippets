@@ -5,6 +5,8 @@ name: CreateRelease
 # Controls when the action will run. Workflow runs when manually triggered using the UI
 # or API.
 on:
+  release:
+    types: [edited,created]
   workflow_dispatch:
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
@@ -27,9 +29,9 @@ jobs:
           dotnet-gitversion /showvariable SemVer > .version
           echo $(<.version)
           export version="$(<.version)"
-          if [ $version -eq '$(<.version)' ]
+          if [ '$version' == '$(<.version)' ]
           then
-            echo "$version -ne \"$(cat .version)\""
+            echo "$version == \"$(cat .version)\""
             echo "Error!" 1>&2
             exit 64
           fi
@@ -45,4 +47,4 @@ jobs:
           repo_token: "${{ secrets.GITHUB_TOKEN }}"
           automatic_release_tag: v${{ steps.updateVersion.outputs.version }}
           prerelease: false
-          token: ${{ secrets.GITHUB_TOKEN }}    
+          

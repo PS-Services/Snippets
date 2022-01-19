@@ -13,13 +13,13 @@ try {
         Set-Location Snippets
     }
 
-    $gitversion = "echo"; # Get-Command dotnet-gitversion -Verbose:$Verbose -ErrorAction SilentlyContinue
+    $gitversion = Get-Command dotnet-gitversion -Verbose:$Verbose -ErrorAction SilentlyContinue
 
     if (-not $gitversion) {
         & dotnet tool install gitversion.tool -g
     }
 
-    $gitversion = "echo"; # Get-Command dotnet-gitversion -Verbose:$Verbose -ErrorAction SilentlyContinue
+    $gitversion = Get-Command dotnet-gitversion -Verbose:$Verbose -ErrorAction SilentlyContinue
 
     if (-not $gitversion) {
         throw 'Cannot find or install dotnet-gitversion.'
