@@ -37,7 +37,7 @@ try {
       $query = [System.String]::Join(' ', $args);
       $csxPath = Join-Path $env:BingLocation -Child 'bing.csx' ;
       Write-Verbose "[$script] & $env:dnscriptPath $csxPath `"$query`" --max=3" -Verbose:$Verbose
-      & $env:dnscriptPath $csxPath "$query" --max=3
+      & $env:dnscriptPath $csxPath "$query" --max=3 --no-cache
     }
 
     $alias = set-alias -Verbose:$Verbose -Scope Global -Description "Snippets: [search] Search Bing" -Name bing -Value Search-Bing -PassThru
