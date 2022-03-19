@@ -1,168 +1,164 @@
 {
-    "$schema": "https://raw.githubusercontent.com/JanDeDobbeleer/oh-my-posh/main/themes/schema.json",
-    "blocks": [
+  "$schema": "https://raw.githubusercontent.com/JanDeDobbeleer/oh-my-posh/main/themes/schema.json",
+  "blocks": [
+    {
+      "alignment": "left",
+      "segments": [
         {
-            "type": "prompt",
-            "alignment": "left",
-            "segments": [
-                {
-                    "type": "python",
-                    "style": "plain",
-                    "foreground": "white",
-                    "properties": {
-                        "prefix": "(",
-                        "postfix": ")",
-                        "display_version": false
-                    }
-                }
-            ]
-        },
-        {
-            "type": "prompt",
-            "alignment": "left",
-            "newline": true,
-            "segments": [
-                {
-                    "type": "shell",
-                    "style": "plain",
-                    "foreground": "#26C6DA",
-                    "properties": {
-                        "postfix": "\u2800",
-                        "prefix": "\u2800",
-                        "mapped_shell_names": {
-                            "pwsh": "Core",
-                            "powershell": "Desktop"
-                        }
-                    }
-                },
-                {
-                    "type": "os",
-                    "style": "plain",
-                    "foreground": "#26C6DA",
-                    "properties": {
-                        "macos": "Mac",
-                        "prefix": "\u2800",
-                        "postfix": "\u2800"
-                    }
-                },
-                {
-                    "type": "session",
-                    "style": "plain",
-                    "properties": {
-                        "user_info_separator": " <darkGray>@</> ",
-                        "prefix": "",
-                        "user_color": "cyan",
-                        "host_color": "green"
-                    }
-                },
-                {
-                    "type": "path",
-                    "style": "plain",
-                    "foreground": "lightYellow",
-                    "properties": {
-                        "prefix": "<darkGray>in </>",
-                        "style": "full"
-                    }
-                },
-                {
-                    "type": "git",
-                    "style": "plain",
-                    "properties": {
-                        "prefix": "<darkGray>on</> <white>git:</>",
-                        "template": "{{ .HEAD }}"
-                    }
-                },
-                {
-                    "type": "time",
-                    "style": "plain",
-                    "foreground": "darkGray",
-                    "properties": {
-                        "prefix": "[",
-                        "postfix": "]"
-                    }
-                },
-                {
-                    "type": "exit",
-                    "style": "plain",
-                    "foreground": "red",
-                    "properties": {
-                        "template": "C:{{ if gt .Code 0 }}{{ .Code }}{{ end }}",
-                        "always_numeric": true
-                    }
-                }
-            ]
-        },
-        {
-            "type": "prompt",
-            "alignment": "left",
-            "newline": true,
-            "segments": [
-                {
-                    "type": "node",
-                    "style": "plain",
-                    "foreground": "#ffffff",
-                    "background": "#6CA35E",
-                    "properties": {
-                        "prefix": " \uE718 ",
-                      "fetch_package_manager": true,
-                      "display_mode": "files"
-                    }
-                  },
-                {
-                    "type": "dotnet",
-                    "style": "plain",
-                    "foreground": "#00ffff",
-                    "properties": {
-                        "prefix": " <white><b>#</b></> ",
-                        "display_mode": "files"
-                    }
-                },
-                {
-                    "type": "executiontime",
-                    "style": "plain",
-                    "foreground": "#ffffff",
-                    "properties": {
-                      "threshold": 500,
-                      "style": "austin",
-                      "prefix": " <#fefefe>⌚</> "
-                    }
-                  },
-                  {
-                    "type": "exit",
-                    "style": "plain",
-                    "foreground": "#ffffff",
-                    "background_templates": [
-                        "{{ if gt .Code 0 }}#9c1442{{ end }}"
-                      ],
-                    "properties": {
-                        "prefix": " ‼ ",
-                        "postfix": " ‼ ",
-                      "always_enabled": false,
-                      "template": "{{.Code}}<yellow>:</> {{ .Text }}"
-                    }
-                  },
-                  {
-                    "type":"sysinfo",
-                    "foreground": "#8f43f3",
-                    "properties": {
-                      "precision": 1,
-                      "prefix": " 💻 ",
-                      "template":"<#fefefe>{{ round (subf 100.0 .PhysicalPercentUsed) .Precision}}</><yellow>% 🆓</> <#fefefe>{{(index .CPU 0).Cores}}</><yellow><b>⨉ ±</b></><#fefefe>{{round (divf (index .CPU 0).Mhz 1000.0) .Precision }}</> Ghz"
-                    },
-                    "style":"plain"
-                  },
-                {
-                    "type": "text",
-                    "style": "plain",
-                    "foreground": "#ff2100",
-                    "properties": {
-                        "prefix": "",
-                        "text": "$",
-                        "postfix": ""
-                    }
-                }
-            ]
+          "foreground": "white",
+          "properties": {
+            "fetch_version": false,
+            "template": "({{ if .Error }}{{ .Error }}{{ else }}{{ if .Venv }}{{ .Venv }} {{ end }}{{ .Full }}{{ end }})"
+          },
+          "style": "plain",
+          "type": "python"
         }
-    ],
-    "final_space": true
+      ],
+      "type": "prompt"
+    },
+    {
+      "alignment": "left",
+      "newline": true,
+      "segments": [
+        {
+          "type": "root",
+          "style": "powerline",
+          "powerline_symbol": "\uE0B0",
+          "foreground": "#111111",
+          "background": "#ffff66",
+          "properties": {
+            "template": "\uF0E7"
+          }
+        },
+        {
+          "foreground": "#26C6DA",
+          "properties": {
+            "mapped_shell_names": {
+              "powershell": "Desktop",
+              "pwsh": "Core"
+            },
+            "template": "\u2800{{ .Name }}\u2800"
+          },
+          "style": "plain",
+          "type": "shell"
+        },
+        {
+          "foreground": "#26C6DA",
+          "properties": {
+            "template": "\u2800{{ if .WSL }}WSL at {{ end }}{{.Icon}}\u2800"
+          },
+          "style": "plain",
+          "type": "os"
+        },
+        // {
+        //   "properties": {
+        //     "template": "{{ if .SSHSession }}\uf817 {{ end }}<cyan>{{ .UserName }}</> <darkGray>@</> <green>{{ .HostName }}</> "
+        //   },
+        //   "style": "plain",
+        //   "type": "session"
+        // },
+        {
+          "foreground": "lightYellow",
+          "properties": {
+            "style": "full",
+            "template": "<darkGray>in </>{{ .Path }} "
+          },
+          "style": "plain",
+          "type": "path"
+        },
+        {
+          "properties": {
+            "template": "<darkGray>on</> <white>git:</>{{ .HEAD }} "
+          },
+          "style": "plain",
+          "type": "git"
+        },
+        {
+            "type": "time",
+            "style": "plain",
+          "foreground": "darkGray",
+          "properties": {
+            "time_format": "3:04:05 PM"
+          }
+        },
+        {
+          "foreground": "red",
+          "properties": {
+            "template": " C:{{ if gt .Code 0 }}{{ .Code }}{{ end }} "
+          },
+          "style": "plain",
+          "type": "exit"
+        }
+      ],
+      "type": "prompt"
+    },
+    {
+      "alignment": "left",
+      "newline": true,
+      "segments": [
+        {
+          "background": "#6CA35E",
+          "foreground": "#ffffff",
+          "properties": {
+            "display_mode": "files",
+            "fetch_package_manager": true,
+            "template": " \ue718 {{ if .PackageManagerIcon }}{{ .PackageManagerIcon }} {{ end }}{{ .Full }} "
+          },
+          "style": "plain",
+          "type": "node"
+        },
+        {
+          "foreground": "#00ffff",
+          "properties": {
+            "display_mode": "files",
+            "template": " <white><b>#</b></> {{ if .Unsupported }}\uf071{{ else }}{{ .Full }}{{ end }} "
+          },
+          "style": "plain",
+          "type": "dotnet"
+        },
+        {
+          "foreground": "#ffffff",
+          "properties": {
+            "style": "austin",
+            "template": " <#fefefe>\u231a</> {{ .FormattedMs }} ",
+            "threshold": 500
+          },
+          "style": "plain",
+          "type": "executiontime"
+        },
+        {
+          "background_templates": [
+            "{{ if gt .Code 0 }}#9c1442{{ end }}"
+          ],
+          "foreground": "#ffffff",
+          "properties": {
+            "always_enabled": false,
+            "template": " \u203c {{.Code}}<yellow>:</> {{ .Meaning }} \u203c "
+          },
+          "style": "plain",
+          "type": "exit"
+        },
+        {
+          "foreground": "#8f43f3",
+          "properties": {
+            "precision": 1,
+            "template": " 💻 <#fefefe>{{ round (subf 100.0 .PhysicalPercentUsed) .Precision}}</><yellow>% 🆓</> <#fefefe>{{(index .CPU 0).Cores}}</><yellow><b>\u2a09 ±</b></><#fefefe>{{round (divf (index .CPU 0).Mhz 1000.0) .Precision }}</> Ghz "
+          },
+          "style": "plain",
+          "type": "sysinfo"
+        },
+        {
+          "style": "plain",
+          "type": "text",
+          "foreground": "#ff2100",
+          "properties": {
+            "text": "$"
+          }
+        }
+      ],
+      "type": "prompt"
+    }
+  ],
+  "final_space": true,
+  "version": 1
 }
