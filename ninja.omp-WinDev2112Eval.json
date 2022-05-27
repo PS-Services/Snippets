@@ -1,0 +1,145 @@
+{
+  "$schema": "https://raw.githubusercontent.com/JanDeDobbeleer/oh-my-posh/main/themes/schema.json",
+  "blocks": [
+    {
+      "alignment": "left",
+      "segments": [
+        {
+          "foreground": "white",
+          "properties": {
+            "fetch_version": false
+          },
+          "style": "plain",
+          "template": "({{ if .Error }}{{ .Error }}{{ else }}{{ if .Venv }}{{ .Venv }} {{ end }}{{ .Full }}{{ end }})",
+          "type": "python"
+        }
+      ],
+      "type": "prompt"
+    },
+    {
+      "alignment": "left",
+      "newline": true,
+      "segments": [
+        {
+          "foreground": "#26C6DA",
+          "properties": {
+            "mapped_shell_names": {
+              "powershell": "Desktop",
+              "pwsh": "Core"
+            }
+          },
+          "style": "plain",
+          "template": "\u2800{{ .Name }}\u2800",
+          "type": "shell"
+        },
+        {
+          "foreground": "#26C6DA",
+          "properties": {
+            "macos": "Mac"
+          },
+          "style": "plain",
+          "template": "\u2800{{ if .WSL }}WSL at {{ end }}{{.Icon}}\u2800",
+          "type": "os"
+        },
+        {
+          "style": "plain",
+          "template": "{{ if .SSHSession }}\uf817 {{ end }}<cyan>{{ .UserName }}</> <darkGray>@</> <green>{{ .HostName }}</> ",
+          "type": "session"
+        },
+        {
+          "foreground": "lightYellow",
+          "properties": {
+            "style": "full"
+          },
+          "style": "plain",
+          "template": "<darkGray>in </>{{ .Path }} ",
+          "type": "path"
+        },
+        {
+          "style": "plain",
+          "template": "<darkGray>on</> <white>git:</>{{ .HEAD }} ",
+          "type": "git"
+        },
+        {
+          "foreground": "darkGray",
+          "style": "plain",
+          "template": "[{{ .CurrentDate | date .Format }}]",
+          "type": "time"
+        },
+        {
+          "foreground": "red",
+          "style": "plain",
+          "template": " C:{{ if gt .Code 0 }}{{ .Code }}{{ end }} ",
+          "type": "exit"
+        }
+      ],
+      "type": "prompt"
+    },
+    {
+      "alignment": "left",
+      "newline": true,
+      "segments": [
+        {
+          "background": "#6CA35E",
+          "foreground": "#ffffff",
+          "properties": {
+            "display_mode": "files",
+            "fetch_package_manager": true
+          },
+          "style": "plain",
+          "template": " \ue718 {{ if .PackageManagerIcon }}{{ .PackageManagerIcon }} {{ end }}{{ .Full }} ",
+          "type": "node"
+        },
+        {
+          "foreground": "#00ffff",
+          "properties": {
+            "display_mode": "files"
+          },
+          "style": "plain",
+          "template": " <white><b>#</b></> {{ if .Unsupported }}\uf071{{ else }}{{ .Full }}{{ end }} ",
+          "type": "dotnet"
+        },
+        {
+          "foreground": "#ffffff",
+          "properties": {
+            "style": "austin",
+            "threshold": 500
+          },
+          "style": "plain",
+          "template": " <#fefefe>\u231a</> {{ .FormattedMs }} ",
+          "type": "executiontime"
+        },
+        {
+          "background_templates": [
+            "{{ if gt .Code 0 }}#9c1442{{ end }}"
+          ],
+          "foreground": "#ffffff",
+          "properties": {
+            "always_enabled": false
+          },
+          "style": "plain",
+          "template": " \u203c {{.Code}}<yellow>:</> {{ .Meaning }} \u203c ",
+          "type": "exit"
+        },
+        {
+          "foreground": "#8f43f3",
+          "properties": {
+            "precision": 1
+          },
+          "style": "plain",
+          "template": " 💻 <#fefefe>{{ round (subf 100.0 .PhysicalPercentUsed) .Precision}}</><yellow>% 🆓</> <#fefefe>{{(index .CPU 0).Cores}}</><yellow><b>\u2a09 ±</b></><#fefefe>{{round (divf (index .CPU 0).Mhz 1000.0) .Precision }}</> Ghz ",
+          "type": "sysinfo"
+        },
+        {
+          "foreground": "#ff2100",
+          "style": "plain",
+          "template": "$",
+          "type": "text"
+        }
+      ],
+      "type": "prompt"
+    }
+  ],
+  "final_space": true,
+  "version": 2
+}

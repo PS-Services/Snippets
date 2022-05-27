@@ -1,0 +1,168 @@
+{
+    "$schema": "https://raw.githubusercontent.com/JanDeDobbeleer/oh-my-posh/main/themes/schema.json",
+    "blocks": [
+        {
+            "type": "prompt",
+            "alignment": "left",
+            "segments": [
+                {
+                    "type": "python",
+                    "style": "plain",
+                    "foreground": "white",
+                    "properties": {
+                        "prefix": "(",
+                        "postfix": ")",
+                        "display_version": false
+                    }
+                }
+            ]
+        },
+        {
+            "type": "prompt",
+            "alignment": "left",
+            "newline": true,
+            "segments": [
+                {
+                    "type": "shell",
+                    "style": "plain",
+                    "foreground": "#26C6DA",
+                    "properties": {
+                        "postfix": "\u2800",
+                        "prefix": "\u2800",
+                        "mapped_shell_names": {
+                            "pwsh": "Core",
+                            "powershell": "Desktop"
+                        }
+                    }
+                },
+                {
+                    "type": "os",
+                    "style": "plain",
+                    "foreground": "#26C6DA",
+                    "properties": {
+                        "macos": "Mac",
+                        "prefix": "\u2800",
+                        "postfix": "\u2800"
+                    }
+                },
+                {
+                    "type": "session",
+                    "style": "plain",
+                    "properties": {
+                        "user_info_separator": " <darkGray>@</> ",
+                        "prefix": "",
+                        "user_color": "cyan",
+                        "host_color": "green"
+                    }
+                },
+                {
+                    "type": "path",
+                    "style": "plain",
+                    "foreground": "lightYellow",
+                    "properties": {
+                        "prefix": "<darkGray>in </>",
+                        "style": "full"
+                    }
+                },
+                {
+                    "type": "git",
+                    "style": "plain",
+                    "properties": {
+                        "prefix": "<darkGray>on</> <white>git:</>",
+                        "template": "{{ .HEAD }}"
+                    }
+                },
+                {
+                    "type": "time",
+                    "style": "plain",
+                    "foreground": "darkGray",
+                    "properties": {
+                        "prefix": "[",
+                        "postfix": "]"
+                    }
+                },
+                {
+                    "type": "exit",
+                    "style": "plain",
+                    "foreground": "red",
+                    "properties": {
+                        "template": "C:{{ if gt .Code 0 }}{{ .Code }}{{ end }}",
+                        "always_numeric": true
+                    }
+                }
+            ]
+        },
+        {
+            "type": "prompt",
+            "alignment": "left",
+            "newline": true,
+            "segments": [
+                {
+                    "type": "node",
+                    "style": "plain",
+                    "foreground": "#ffffff",
+                    "background": "#6CA35E",
+                    "properties": {
+                        "prefix": " \uE718 ",
+                      "fetch_package_manager": true,
+                      "display_mode": "files"
+                    }
+                  },
+                {
+                    "type": "dotnet",
+                    "style": "plain",
+                    "foreground": "#00ffff",
+                    "properties": {
+                        "prefix": " <white><b>#</b></> ",
+                        "display_mode": "files"
+                    }
+                },
+                {
+                    "type": "executiontime",
+                    "style": "plain",
+                    "foreground": "#ffffff",
+                    "properties": {
+                      "threshold": 500,
+                      "style": "austin",
+                      "prefix": " <#fefefe>⌚</> "
+                    }
+                  },
+                  {
+                    "type": "exit",
+                    "style": "plain",
+                    "foreground": "#ffffff",
+                    "background_templates": [
+                        "{{ if gt .Code 0 }}#9c1442{{ end }}"
+                      ],
+                    "properties": {
+                        "prefix": " ‼ ",
+                        "postfix": " ‼ ",
+                      "always_enabled": false,
+                      "template": "{{.Code}}<yellow>:</> {{ .Text }}"
+                    }
+                  },
+                  {
+                    "type":"sysinfo",
+                    "foreground": "#8f43f3",
+                    "properties": {
+                      "precision": 1,
+                      "prefix": " 💻 ",
+                      "template":"<#fefefe>{{ round (subf 100.0 .PhysicalPercentUsed) .Precision}}</><yellow>% 🆓</> <#fefefe>{{(index .CPU 0).Cores}}</><yellow><b>⨉ ±</b></><#fefefe>{{round (divf (index .CPU 0).Mhz 1000.0) .Precision }}</> Ghz"
+                    },
+                    "style":"plain"
+                  },
+                {
+                    "type": "text",
+                    "style": "plain",
+                    "foreground": "#ff2100",
+                    "properties": {
+                        "prefix": "",
+                        "text": "$",
+                        "postfix": ""
+                    }
+                }
+            ]
+        }
+    ],
+    "final_space": true
+}
