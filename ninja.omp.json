@@ -7,10 +7,10 @@
         {
           "foreground": "white",
           "properties": {
-            "fetch_version": false,
-            "template": "({{ if .Error }}{{ .Error }}{{ else }}{{ if .Venv }}{{ .Venv }} {{ end }}{{ .Full }}{{ end }})"
+            "fetch_version": false
           },
           "style": "plain",
+          "template": "({{ if .Error }}{{ .Error }}{{ else }}{{ if .Venv }}{{ .Venv }} {{ end }}{{ .Full }}{{ end }})",
           "type": "python"
         }
       ],
@@ -21,14 +21,12 @@
       "newline": true,
       "segments": [
         {
-          "type": "root",
-          "style": "powerline",
-          "powerline_symbol": "\uE0B0",
-          "foreground": "#111111",
           "background": "#ffff66",
-          "properties": {
-            "template": "\uF0E7"
-          }
+          "foreground": "#111111",
+          "powerline_symbol": "\ue0b0",
+          "style": "powerline",
+          "template": "\uf0e7",
+          "type": "root"
         },
         {
           "foreground": "#26C6DA",
@@ -36,57 +34,44 @@
             "mapped_shell_names": {
               "powershell": "Desktop",
               "pwsh": "Core"
-            },
-            "template": "\u2800{{ .Name }}\u2800"
+            }
           },
           "style": "plain",
+          "template": "\u2800{{ .Name }}\u2800",
           "type": "shell"
         },
         {
           "foreground": "#26C6DA",
-          "properties": {
-            "template": "\u2800{{ if .WSL }}WSL at {{ end }}{{.Icon}}\u2800"
-          },
           "style": "plain",
+          "template": "\u2800{{ if .WSL }}WSL at {{ end }}{{.Icon}}\u2800",
           "type": "os"
         },
-        // {
-        //   "properties": {
-        //     "template": "{{ if .SSHSession }}\uf817 {{ end }}<cyan>{{ .UserName }}</> <darkGray>@</> <green>{{ .HostName }}</> "
-        //   },
-        //   "style": "plain",
-        //   "type": "session"
-        // },
         {
           "foreground": "lightYellow",
           "properties": {
-            "style": "full",
-            "template": "<darkGray>in </>{{ .Path }} "
+            "style": "full"
           },
           "style": "plain",
+          "template": "<darkGray>in </>{{ .Path }} ",
           "type": "path"
         },
         {
-          "properties": {
-            "template": "<darkGray>on</> <white>git:</>{{ .HEAD }} "
-          },
           "style": "plain",
+          "template": "<darkGray>on</> <white>git:</>{{ .HEAD }} ",
           "type": "git"
         },
         {
-            "type": "time",
-            "style": "plain",
           "foreground": "darkGray",
           "properties": {
             "time_format": "3:04:05 PM"
-          }
+          },
+          "style": "plain",
+          "type": "time"
         },
         {
           "foreground": "red",
-          "properties": {
-            "template": " C:{{ if gt .Code 0 }}{{ .Code }}{{ end }} "
-          },
           "style": "plain",
+          "template": " C:{{ if gt .Code 0 }}{{ .Code }}{{ end }} ",
           "type": "exit"
         }
       ],
@@ -101,29 +86,29 @@
           "foreground": "#ffffff",
           "properties": {
             "display_mode": "files",
-            "fetch_package_manager": true,
-            "template": " \ue718 {{ if .PackageManagerIcon }}{{ .PackageManagerIcon }} {{ end }}{{ .Full }} "
+            "fetch_package_manager": true
           },
           "style": "plain",
+          "template": " \ue718 {{ if .PackageManagerIcon }}{{ .PackageManagerIcon }} {{ end }}{{ .Full }} ",
           "type": "node"
         },
         {
           "foreground": "#00ffff",
           "properties": {
-            "display_mode": "files",
-            "template": " <white><b>#</b></> {{ if .Unsupported }}\uf071{{ else }}{{ .Full }}{{ end }} "
+            "display_mode": "files"
           },
           "style": "plain",
+          "template": " <white><b>#</b></> {{ if .Unsupported }}\uf071{{ else }}{{ .Full }}{{ end }} ",
           "type": "dotnet"
         },
         {
           "foreground": "#ffffff",
           "properties": {
             "style": "austin",
-            "template": " <#fefefe>\u231a</> {{ .FormattedMs }} ",
             "threshold": 500
           },
           "style": "plain",
+          "template": " <#fefefe>\u231a</> {{ .FormattedMs }} ",
           "type": "executiontime"
         },
         {
@@ -132,33 +117,33 @@
           ],
           "foreground": "#ffffff",
           "properties": {
-            "always_enabled": false,
-            "template": " \u203c {{.Code}}<yellow>:</> {{ .Meaning }} \u203c "
+            "always_enabled": false
           },
           "style": "plain",
+          "template": " \u203c {{.Code}}<yellow>:</> {{ .Meaning }} \u203c ",
           "type": "exit"
         },
         {
           "foreground": "#8f43f3",
           "properties": {
-            "precision": 1,
-            "template": " 💻 <#fefefe>{{ round (subf 100.0 .PhysicalPercentUsed) .Precision}}</><yellow>% 🆓</> <#fefefe>{{(index .CPU 0).Cores}}</><yellow><b>\u2a09 ±</b></><#fefefe>{{round (divf (index .CPU 0).Mhz 1000.0) .Precision }}</> Ghz "
+            "precision": 1
           },
           "style": "plain",
+          "template": " 💻 <#fefefe>{{ round (subf 100.0 .PhysicalPercentUsed) .Precision}}</><yellow>% 🆓</> <#fefefe>{{(index .CPU 0).Cores}}</><yellow><b>\u2a09 ±</b></><#fefefe>{{round (divf (index .CPU 0).Mhz 1000.0) .Precision }}</> Ghz ",
           "type": "sysinfo"
         },
         {
-          "style": "plain",
-          "type": "text",
           "foreground": "#ff2100",
           "properties": {
             "text": "$"
-          }
+          },
+          "style": "plain",
+          "type": "text"
         }
       ],
       "type": "prompt"
     }
   ],
   "final_space": true,
-  "version": 1
+  "version": 2
 }

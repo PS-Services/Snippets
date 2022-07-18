@@ -15,23 +15,10 @@ if (-not $env:SnippetsInitialized) {
 if ($env:IsWindows -ieq 'true') {
     try {
         function Start-DevMode {
-            $developerPowerShell = [io.path]::GetFullPath($env:AllUsersProfile) + '\Start Menu\Programs\Visual Studio 2022\Visual Studio Tools\Developer PowerShell for VS 2022 Preview.lnk'
-            $objShell = New-Object -com 'Wscript.Shell'
-
-            $objshortcut = $objShell.CreateShortcut($developerPowerShell)
-
-            $arguments = $objshortcut.Arguments
-
-            $slug = 'Enter-VsDevShell'
-            $env:vsDevModeCode = $arguments.Substring($arguments.indexOf($slug) + $slug.Length + 1).Split('}')[0]
-
-            [System.Runtime.Interopservices.Marshal]::ReleaseComObject($objShell) | Out-Null
-            [System.Runtime.Interopservices.Marshal]::ReleaseComObject($objshortcut) | Out-Null
-
             try {
                 Push-Location
-                Import-Module 'C:\Program Files\Microsoft Visual Studio\2022\Preview\Common7\Tools\Microsoft.VisualStudio.DevShell.dll'; 
-                Enter-VsDevShell $env:vsDevModeCode -SkipAutomaticLocation -DevCmdArguments '-arch=x64 -host_arch=x64'
+                Set-Location 'C:\Program Files\Microsoft Visual Studio\2022\Preview\Common7\Tools'
+                . .\Launch-VsDevShell.ps1 -Arch arm64 -HostArch amd64 -VsWherePath (Get-Command vswhere).source
             }
             finally {
                 Pop-Location
@@ -43,7 +30,7 @@ if ($env:IsWindows -ieq 'true') {
         return "Type ``devmode`` to enter VS2022 Developer Mode."
     }
     catch {
-        Write-Host $Error    
+        Write-Host $Error
     }
     finally {
         Write-Verbose '[devmode.ps1] Leaving...' -Verbose:$Verbose

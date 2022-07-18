@@ -33,7 +33,7 @@ try {
     if (-not (Test-Path $env:Snippets -Verbose:$MasterVerbose)) {
         git clone 'https://github.com/sharpninja/Snippets.git'
         if ($LASTEXITCODE -ne 0) {
-            throw "git clone `"https://github.com/sharpninja/Snippets.git`" failed with: $LASTEXITCODE" 
+            throw "git clone `"https://github.com/sharpninja/Snippets.git`" failed with: $LASTEXITCODE"
         }
     }
     else {
@@ -48,6 +48,7 @@ try {
         Write-Verbose -Verbose:$MasterVerbose -Message "[$profileScript] Exclusions: $exclusions"
 
         $snippets = Get-ChildItem *.ps1 -Verbose:$MasterVerbose -Exclude $exclusions
+        $snippets += Get-ChildItem *.ps1 -Path 3rdParty -Verbose:$MasterVerbose -Exclude $exclusions
 
         Pop-Location -Verbose:$MasterVerbose
 
@@ -96,6 +97,16 @@ try {
     else {
         Write-Verbose "[$profileScript] No directory found at [$env:Snippets]" -Verbose:$MasterVerbose
     }
+
+    function Invoke-Audio {
+        param([string]$target)
+
+        $audioConverter = "C:\GitHub\AudioConverter\src\AudioConverter\bin\Debug\AudioConverter.exe";
+
+        & $audioConverter $target --root 'c:\Users\kingd\Music'
+    }
+
+    Set-Alias -Name 'audio' -Value 'Invoke-Audio' -PassThru
 }
 catch {
     Write-Error "[$profileScript] $_"
