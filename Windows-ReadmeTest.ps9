@@ -4,6 +4,7 @@ $profileScript = Split-Path $PROFILE -Leaf
 $exclusions = @()
 # EXCLUSIONS-START
 $exclusions += '*Linux*'
+$exclusions += '*ConvertFrom-WingetStdout.ps1'
 # EXCLUSIONS-END
 
 if ((-not $env:Snippets) -or (-not (Test-Path $env:Snippets))) {
@@ -48,7 +49,9 @@ try {
         Write-Verbose -Verbose:$MasterVerbose -Message "[$profileScript] Exclusions: $exclusions"
 
         $snippets = Get-ChildItem *.ps1 -Verbose:$MasterVerbose -Exclude $exclusions
-        $snippets += Get-ChildItem *.ps1 -Path 3rdParty -Verbose:$MasterVerbose -Exclude $exclusions
+        $thirdParty = Get-ChildItem *.ps1 -Path $thirdPartPath -Recurse -Verbose:$MasterVerbose -Exclude $exclusions
+
+        $snippets += $thirdParty
 
         Pop-Location -Verbose:$MasterVerbose
 
@@ -107,6 +110,7 @@ try {
     }
 
     Set-Alias -Name 'audio' -Value 'Invoke-Audio' -PassThru
+    Set-Alias -Name pwg -Value "$env:Snippets\3rdParty\parse-winget\ConvertFrom-WingetStdout.ps1" -PassThru
 }
 catch {
     Write-Error "[$profileScript] $_"
