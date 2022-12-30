@@ -67,7 +67,7 @@ function Install-Dotnet {
 
     echo
 
-    url="https://download.visualstudio.microsoft.com/download/pr/17b6759f-1af0-41bc-ab12-209ba0377779/e8d02195dbf1434b940e0f05ae086453/dotnet-sdk-6.0.100-linux-x64.tar.gz";
+    url="https://download.visualstudio.microsoft.com/download/pr/7fe73a07-575d-4cb4-b2d3-c23d89e5085f/d8b2b7e1c0ed99c1144638d907c6d152/dotnet-sdk-7.0.101-linux-x64.tar.gz";
     echo "Downlading $url" &> /dev/tty
     curl -o dotnet-sdk-6.0.100-linux-x64.tar.gz --verbose $url;
 
