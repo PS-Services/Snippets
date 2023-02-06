@@ -5,11 +5,13 @@ $Verbose=$VerboseSwitch
 # Write-Verbose "[$script] [$env:SnippetsInitialized] -not `$env:SnippetsInitialized: $(-not $env:SnippetsInitialized)" -Verbose:$Verbose
 $script = $MyInvocation.MyCommand
 
-if (-not $env:SnippetsInitialized) { 
+Write-Verbose $MyInvocation
+
+if (-not $env:SnippetsInitialized) {
   $fileInfo = New-Object System.IO.FileInfo (Get-Item $PSScriptRoot).FullName
   $path = $fileInfo.Directory.FullName;
-  . $path/Snippets/common.ps1; 
-  Initialize-Snippets -Verbose:$Verbose 
+  . $path/Snippets/common.ps1;
+  Initialize-Snippets -Verbose:$Verbose
 }
 
 if ($env:IsWindows -ieq 'true') {
@@ -25,14 +27,73 @@ if ($env:IsWindows -ieq 'true') {
       )
 
       if ($Install) {
-        $Command = 'install' 
+        $Command = 'install'
       }
+
+      @params = @()
+
+      switch($Command){
+        ((-ieq "search") -or (-ieq "find")) {
+          @params += "search";
+          @params += "-q";
+          @params += $Name;
+          @params += "-s";
+          @params += "winget";
+        }
+
+        (-ieq "install") {
+          @params += "install";
+          @params += "-q";
+          @params += $Name;
+          @params += "-s";
+          @params += "winget";
+        }
+
+        (-ieq "upgrade") {
+          @params += "upgrade";
+          @params += "-q";
+          @params += $Name;
+          @params += "-s";
+          @params += "winget";
+        }
+
+        ((-ieq "uninstall") -or (-ieq "remove")) {
+          @params += "uninstall";
+          @params += "-q";
+          @params += $Name;
+          @params += "-s";
+          @params += "winget";
+        }
+
+        ((-ieq "show") -or (-ieq "details") -or (-ieq "info")) {
+          @params += "show";
+          @params += "-q";
+          @params += $Name;
+          @params += "-s";
+          @params += "winget";
+        }
+
+        ((-ieq "update") -or (-ieq "refresh")) {
+          @params += "update";
+          @params += "-s";
+          @params += "winget";
+        }
+
+        default {
+          @params += $Command;
+          @params += $Name;
+          @params += "-s";
+          @params += "winget";
+        }
+      }
+
+      Write-Verbose "[$script] Parameters: [$params]"
 
       $winGet = Get-Command winget.exe
 
       if ($winGet) {
         $i = if ($Interactive) {
-          '-i' 
+          '-i'
         }
         else {
           ''
@@ -60,7 +121,7 @@ if ($env:IsWindows -ieq 'true') {
 
       if ($scoop) {
         $SubCommand = if ($SubCommand) {
-          $SubCommand 
+          $SubCommand
         }
         else {
           ''
@@ -89,7 +150,7 @@ if ($env:IsWindows -ieq 'true') {
 
       if ($choco) {
         $SubCommand = if ($SubCommand) {
-          $SubCommand 
+          $SubCommand
         }
         else {
           ''
@@ -111,7 +172,7 @@ if ($env:IsWindows -ieq 'true') {
         [switch]$Interactive = $false
       )
 
-      if (-not $Name) { 
+      if (-not $Name) {
         if ($SubCommand) {
           $Name = $SubCommand;
           $SubCommand = $null;
@@ -129,7 +190,7 @@ if ($env:IsWindows -ieq 'true') {
       $results += @('End scoop', '')
       $results += Call-Choco -Command $Command -Subcommand $Subcommand -Name $Name
       $results += @('End chocolatey', '')
-  
+
       return $results
     }
 
@@ -141,7 +202,7 @@ if ($env:IsWindows -ieq 'true') {
     return "Repos aliases configured."
   }
   catch {
-    Write-Host $Error    
+    Write-Host $Error
   }
   finally {
     Write-Verbose '[repos.ps1] Leaving...' -Verbose:$Verbose

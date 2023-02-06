@@ -21,6 +21,8 @@ if ($env:IsWindows -ieq 'true') {
         if (Test-Path($ChocolateyProfile)) {
             Import-Module "$ChocolateyProfile"
 
+            refreshenv
+
             return "Imported the Chocolatey module."
         } else {
             return "The Chocolatey module could not be imported."
