@@ -1,6 +1,8 @@
 # $env:VerboseStartup = 'true'
 $profileScript = Split-Path $PROFILE -Leaf
 
+refreshenv
+
 $exclusions = @()
 # EXCLUSIONS-START
 $exclusions += '*Linux*'

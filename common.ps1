@@ -12,13 +12,15 @@ function Initialize-Snippets {
     # Write-Verbose "[$script] [$env:SnippetsInitialized] -not `$env:SnippetsInitialized: $(-not $env:SnippetsInitialized)" -Verbose:$Verbose
     $script = $MyInvocation.MyCommand
 
+    Write-Verbose $MyInvocation
+
     $alias = set-alias -Verbose:$Verbose -Scope Global -Description "Snippets: [snippets] Go to Snippets folder [$env:Snippets]" -Name snipps -Value Set-SnippetsLocation
 
     Push-Location
     try {
-        if($env:SnippetsInitialized) { 
+        if($env:SnippetsInitialized) {
             Write-Verbose "[$script] Snippets already initialized." -Verbose:$Verbose
-            return $env:SnippetsInitialized 
+            return $env:SnippetsInitialized
         }
         else {
             $fileInfo = New-Object System.IO.FileInfo (Get-Item $PSScriptRoot).FullName
@@ -35,7 +37,7 @@ function Initialize-Snippets {
 
             if(-not (Test-Path $versionFilePath)){
                 if(Test-Path $PWD/set-version.ps1 -Verbose:$Verbose) {
-                    . $PWD/set-version.ps1 -Verbose:$Verbose 
+                    . $PWD/set-version.ps1 -Verbose:$Verbose
                     $versionFile = Get-Item $PWD/.version -ErrorAction Stop
                 }
             }
