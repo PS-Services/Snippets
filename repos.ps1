@@ -14,7 +14,7 @@ if (-not $env:SnippetsInitialized) {
   Initialize-Snippets -Verbose:$Verbose
 }
 
-if ($env:IsWindows -ieq 'true') {
+if ($env:IsWindows -eq 'true') {
   try {
     function Call-Winget {
       [CmdletBinding(PositionalBinding = $false)]
@@ -32,8 +32,8 @@ if ($env:IsWindows -ieq 'true') {
 
       $params = @()
 
-      switch($Command){
-        ((-ieq "search") -or (-ieq "find")) {
+      switch($Command.ToLower()){
+        ((-eq "search") -or (-eq "find")) {
           $params += "search";
           $params += "-q";
           $params += $Name;
@@ -41,7 +41,7 @@ if ($env:IsWindows -ieq 'true') {
           $params += "winget";
         }
 
-        (-ieq "install") {
+        (-eq "install") {
           $params += "install";
           $params += "-q";
           $params += $Name;
@@ -49,7 +49,7 @@ if ($env:IsWindows -ieq 'true') {
           $params += "winget";
         }
 
-        (-ieq "upgrade") {
+        (-eq "upgrade") {
           $params += "upgrade";
           $params += "-q";
           $params += $Name;
@@ -57,7 +57,7 @@ if ($env:IsWindows -ieq 'true') {
           $params += "winget";
         }
 
-        ((-ieq "uninstall") -or (-ieq "remove")) {
+        ((-eq "uninstall") -or (-eq "remove")) {
           $params += "uninstall";
           $params += "-q";
           $params += $Name;
@@ -65,7 +65,7 @@ if ($env:IsWindows -ieq 'true') {
           $params += "winget";
         }
 
-        ((-ieq "show") -or (-ieq "details") -or (-ieq "info")) {
+        ((-eq "show") -or (-eq "details") -or (-eq "info")) {
           $params += "show";
           $params += "-q";
           $params += $Name;
@@ -73,7 +73,7 @@ if ($env:IsWindows -ieq 'true') {
           $params += "winget";
         }
 
-        ((-ieq "update") -or (-ieq "refresh")) {
+        ((-eq "update") -or (-eq "refresh")) {
           $params += "update";
           $params += "-s";
           $params += "winget";
