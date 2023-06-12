@@ -91,8 +91,8 @@
           "style": "plain",
           "template": " \ue718 {{ if .PackageManagerIcon }}{{ .PackageManagerIcon }} {{ end }}{{ .Full }} ",
           "type": "node"
-        },
-        {
+        }
+        , {
           "foreground": "#00ffff",
           "properties": {
             "display_mode": "files"
@@ -100,8 +100,9 @@
           "style": "plain",
           "template": " <white><b>#</b></> {{ if .Unsupported }}\uf071{{ else }}{{ .Full }}{{ end }} ",
           "type": "dotnet"
-        },
-        {
+        }
+
+        , {
           "foreground": "#ffffff",
           "properties": {
             "style": "austin",
@@ -110,8 +111,9 @@
           "style": "plain",
           "template": " <#fefefe>\u231a</> {{ .FormattedMs }} ",
           "type": "executiontime"
-        },
-        {
+        }
+
+        , {
           "background_templates": [
             "{{ if gt .Code 0 }}#9c1442{{ end }}"
           ],
@@ -122,17 +124,19 @@
           "style": "plain",
           "template": " \u203c {{.Code}}<yellow>:</> {{ .Meaning }} \u203c ",
           "type": "exit"
-        },
-        {
-          "foreground": "#8f43f3",
-          "properties": {
-            "precision": 1
-          },
-          "style": "plain",
-          "template": " 💻 <#fefefe>{{ round (subf 100.0 .PhysicalPercentUsed) .Precision}}</><yellow>% 🆓</> <#fefefe>{{(index .CPU 0).Cores}}</><yellow><b>\u2a09 ±</b></><#fefefe>{{round (divf (index .CPU 0).Mhz 1000.0) .Precision }}</> Ghz ",
-          "type": "sysinfo"
-        },
-        {
+        }
+
+        // , {
+        //   "foreground": "#8f43f3",
+        //   "properties": {
+        //     "precision": 1
+        //   },
+        //   "style": "plain",
+        //   "template": " 💻 <#fefefe>{{ round (subf 100.0 .PhysicalPercentUsed) .Precision}}</><yellow>% 🆓</> <#fefefe>{{(index .CPU 0).Cores}}</><yellow><b>\u2a09 ±</b></><#fefefe>{{round (divf (index .CPU 0).Mhz 1000.0) .Precision }}</> Ghz ",
+        //   "type": "sysinfo"
+        // }
+
+        , {
           "foreground": "#ff2100",
           "properties": {
             "text": "$"

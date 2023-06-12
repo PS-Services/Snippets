@@ -14,8 +14,10 @@ if (-not $env:SnippetsInitialized) {
 
 if ($env:IsWindows -ieq 'true') {
     try {
-        $env:ChocolateyInstall = "$env:USERPROFILE\.choco"
-
+        if(-not($env:ChocolateyInstall)){
+            $env:ChocolateyInstall = "$env:USERPROFILE\.choco"
+        }
+        
         $ChocolateyProfile = "$env:ChocolateyInstall\helpers\chocolateyProfile.psm1"
         
         if (Test-Path($ChocolateyProfile)) {

@@ -30,60 +30,60 @@ if ($env:IsWindows -ieq 'true') {
         $Command = 'install'
       }
 
-      @params = @()
+      $params = @()
 
       switch($Command){
         ((-ieq "search") -or (-ieq "find")) {
-          @params += "search";
-          @params += "-q";
-          @params += $Name;
-          @params += "-s";
-          @params += "winget";
+          $params += "search";
+          $params += "-q";
+          $params += $Name;
+          $params += "-s";
+          $params += "winget";
         }
 
         (-ieq "install") {
-          @params += "install";
-          @params += "-q";
-          @params += $Name;
-          @params += "-s";
-          @params += "winget";
+          $params += "install";
+          $params += "-q";
+          $params += $Name;
+          $params += "-s";
+          $params += "winget";
         }
 
         (-ieq "upgrade") {
-          @params += "upgrade";
-          @params += "-q";
-          @params += $Name;
-          @params += "-s";
-          @params += "winget";
+          $params += "upgrade";
+          $params += "-q";
+          $params += $Name;
+          $params += "-s";
+          $params += "winget";
         }
 
         ((-ieq "uninstall") -or (-ieq "remove")) {
-          @params += "uninstall";
-          @params += "-q";
-          @params += $Name;
-          @params += "-s";
-          @params += "winget";
+          $params += "uninstall";
+          $params += "-q";
+          $params += $Name;
+          $params += "-s";
+          $params += "winget";
         }
 
         ((-ieq "show") -or (-ieq "details") -or (-ieq "info")) {
-          @params += "show";
-          @params += "-q";
-          @params += $Name;
-          @params += "-s";
-          @params += "winget";
+          $params += "show";
+          $params += "-q";
+          $params += $Name;
+          $params += "-s";
+          $params += "winget";
         }
 
         ((-ieq "update") -or (-ieq "refresh")) {
-          @params += "update";
-          @params += "-s";
-          @params += "winget";
+          $params += "update";
+          $params += "-s";
+          $params += "winget";
         }
 
         default {
-          @params += $Command;
-          @params += $Name;
-          @params += "-s";
-          @params += "winget";
+          $params += $Command;
+          $params += $Name;
+          $params += "-s";
+          $params += "winget";
         }
       }
 
