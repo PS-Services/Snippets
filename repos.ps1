@@ -59,11 +59,11 @@ if ($env:IsWindows -eq 'true') {
           $Name = $Command;
           $Command = 'search';
         }
-        
-        if($Command -ieq "upgrade"){
+
+        if ($Command -ieq "upgrade") {
           $Name = "--all"
         }
-    }
+      }
 
       if ($Install) {
         $Command = 'search'
@@ -114,8 +114,15 @@ if ($env:IsWindows -eq 'true') {
 
       Write-Verbose "[$script] Parameters: [$params]" -Verbose:$Verbose
 
-      $winGet = Get-Command winget.exe
+      $exe = Get-Command winget
 
+      if ($Command -ieq "upgrade") {
+        $params = @($exe.Source) + $params;
+        $exe = Get-Command gsudo
+      }
+
+      $winGet = $exe;
+      
       if ($winGet) {
         if ($Interactive) {
           $params += "-i"
@@ -289,7 +296,8 @@ if ($env:IsWindows -eq 'true') {
           }
           else {
             $scoopList
-          }        }
+          }        
+        }
         else {
           $results
         }      
