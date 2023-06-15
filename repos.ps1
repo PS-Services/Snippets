@@ -474,7 +474,7 @@ if ($env:IsWindows -eq 'true') {
       $results += $chocoResults
 
       if ($Command -imatch 'search|list' -and -not $Raw) {
-        $results | Sort-Object -Property ID | Format-Table -Property Repo, Command -GroupBy Repo -AutoSize
+        $results | Sort-Object -Property Repo,ID | Format-Table -Property Repo, Command -GroupBy Repo -AutoSize
       }
       else {
         $results

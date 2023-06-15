@@ -124,6 +124,12 @@ try {
 
     Set-Alias -Name 'audio' -Value 'Invoke-Audio' -PassThru
     Set-Alias -Name pwg -Value "$env:Snippets\3rdParty\parse-winget\ConvertFrom-WingetStdout.ps1" -PassThru
+
+	function Set-LocationDownloads {
+		Set-Location (Join-Path $env:USERPROFILE -Child downloads)
+	}
+
+    set-alias -Name down -Value Set-LocationDownloads -Description 'Set Location to Downloads folder.'
 }
 catch {
     Write-Error "[$profileScript] $_"
