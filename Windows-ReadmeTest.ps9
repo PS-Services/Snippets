@@ -60,8 +60,8 @@ try {
 
         $thirdPartyPath = $env:Snippets + '/3rdParty'
 
-        if (Test-Path $thirdPartPath) {
-            $thirdParty = Get-ChildItem *.ps1 -Path $thirdPartPath -Recurse -Verbose:$MasterVerbose -Exclude $exclusions
+        if (Test-Path $thirdPartyPath) {
+            $thirdParty = Get-ChildItem *.ps1 -Path $thirdPartyPath -Recurse -Verbose:$MasterVerbose -Exclude $exclusions
         
             $snippets += $thirdParty
         }

@@ -1,6 +1,8 @@
+using namespace System.Collections
 using namespace System.Collections.Generic
 using namespace System.IO
 using namespace System.Linq
+using namespace System.Reflection
 using namespace System.Text.RegularExpressions
 
 param([switch]$VerboseSwitch = $false)
@@ -32,6 +34,17 @@ class ResultItem {
     $this.Name = $n;
     $this.Command = $ins;
   }
+}
+
+function GetFirstItem([TypeInfo]$OfType, [IEnumerable]$Enum) {
+  foreach ($currentItem in $Enum) {
+    if ($currentItem -is $OfType) {
+      $item = $currentItem;
+      break;
+    }
+  }
+
+  return $item;
 }
 
 if (-not $env:SnippetsInitialized) {
@@ -139,6 +152,11 @@ if ($env:IsWindows -eq 'true') {
         [List[ResultItem]]$wingetList = [List[ResultItem]]::new();
   
         $regex = [Regex]::new('^.+\s+([A-Za-z0-9_-]+\.[A-Za-z0-9_-]+)\s+([\d\.]+)\s?');
+
+        switch ($Interactive) {
+          ($true) { $InteractiveParameter = '-i'; }
+          default { $InteractiveParameter = ''; }
+        }
   
         foreach ($line in $wingetResults) {
           if ($regex.IsMatch($line)) {
@@ -147,7 +165,7 @@ if ($env:IsWindows -eq 'true') {
             $index = $line.IndexOf($id);
             $nme = $line.Substring(0, $index).Trim();
             switch -regex ($Command) {
-              'search' { $inst = "install $id --version $ver --source $Store $($Interactive ? '-i' : '')".Trim() }
+              'search' { $inst = "install $id --version $ver --source $Store $InteractiveParameter" }
               'list' { $inst = "uninstall $id" }
             }
             
@@ -161,7 +179,8 @@ if ($env:IsWindows -eq 'true') {
         $results += @('End winget', '')
 
         if ($Command -imatch 'search|list' ) {
-          $firstItem = @([Enumerable]::OfType[ResultItem]($wingetList))[0];
+          $type = [ResultItem];
+          $firstItem = GetFirstItem -OfType $type -Enum $wingetList
 
           if ($Install -and $firstItem) {
             $arguments = $firstItem.Command.Split(' ')
@@ -263,11 +282,16 @@ if ($env:IsWindows -eq 'true') {
           $nme = $line.name;
           switch -regex ($Command) {
             'search' { 
+              switch ($line.bucket.Length -gt 0){
+                ($True){ $bucket = "--bucket $($line.bucket)"; }
+                default { $bucket = ''; }
+              }
+
               if ($ver) {
-                $inst = "install $($nme)@$($ver) $($line.Bucket ? "--bucket $($line.bucket)" : '')" 
+                $inst = "install $($nme)@$($ver) $bucket".Trim();
               }
               else {
-                $inst = "install $nme $($line.Bucket ? "--bucket $($line.bucket)" : '')" 
+                $inst = "install $nme $bucket".Trim();
               }
             }
             'list' { $inst = "uninstall $nme" }
@@ -281,7 +305,8 @@ if ($env:IsWindows -eq 'true') {
         $results += @('End scoop', '')
 
         if ($Command -imatch 'search|list' ) {
-          $firstItem = @([Enumerable]::OfType[ResultItem]($scoopList))[0];
+          $type = [ResultItem];
+          $firstItem = GetFirstItem -OfType $type -Enum $scoopList
 
           if ($Install -and $firstItem) {
             $arguments = $firstItem.Command.Split(' ')
@@ -397,7 +422,8 @@ if ($env:IsWindows -eq 'true') {
         $results += @('End chocolatey', '')
 
         if ($Command -imatch 'search|list' ) {
-          $firstItem = @([Enumerable]::OfType[ResultItem]($chocoList))[0];
+          $type = [ResultItem];
+          $firstItem = GetFirstItem -OfType $type -Enum $chocoList
 
           if ($Install -and $firstItem) {
             $arguments = $firstItem.Command.Split(' ')
@@ -452,7 +478,8 @@ if ($env:IsWindows -eq 'true') {
         $results
       }
 
-      $firstItem = @([Enumerable]::OfType[ResultItem]($results))[0];
+      $type = [ResultItem];
+      $firstItem = GetFirstItem -OfType $type -Enum $results
 
       if ($Install -and $firstItem) {
         $arguments = $firstItem.Command.Split(' ')
