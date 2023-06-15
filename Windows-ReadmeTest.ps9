@@ -26,7 +26,9 @@ else {
 try {
     Push-Location -Verbose:$MasterVerbose
 
-    $GitRoot = $env:GitRoot ?? "https://github.com/PS-Services"
+    if(-not($env:GitRoot)){
+        $env:GitRoot = "https://github.com/PS-Services"
+    }
 
     Write-Verbose "[$profileScript] `$GitRoot: $GitRoot" -Verbose:$MasterVerbose
 
