@@ -64,7 +64,8 @@ if ($env:IsWindows -eq 'true') {
         [string]$Store = 'winget',
         [switch]$Install = $false,
         [switch]$Interactive = $false,
-        [switch]$AllRepos = $false
+        [switch]$AllRepos = $false,
+        [switch]$Raw=$false
       )
 
       if ($Name -eq '' -and $Command) {
@@ -187,11 +188,11 @@ if ($env:IsWindows -eq 'true') {
             & $firstItem.Repo $arguments
           }
 
-          if ($AllRepos.IsPresent -and -not $AllRepos) {
-            $wingetList | Format-Table -AutoSize  
+          if ($AllRepos.IsPresent -and -not $AllRepos -and -not $Raw) {
+            $wingetList | Sort-Object -Property ID | Format-Table -AutoSize  
           }
-          elseif (-not $AllRepos.IsPresent) {
-            $wingetList | Format-Table -AutoSize  
+          elseif (-not $AllRepos.IsPresent -and -not $Raw) {
+            $wingetList | Sort-Object -Property ID | Format-Table -AutoSize  
           }
           else {
             $wingetList
@@ -454,7 +455,8 @@ if ($env:IsWindows -eq 'true') {
         [string]$SubCommand = $null,
         [string]$Store = 'winget',
         [switch]$Install = $false,
-        [switch]$Interactive = $false
+        [switch]$Interactive = $false,
+        [switch]$Raw=$false
       )
 
       if ($Name -eq '' -and -not($Command -imatch 'list|upgrade')) {
@@ -471,8 +473,8 @@ if ($env:IsWindows -eq 'true') {
       $results += $scoopResults
       $results += $chocoResults
 
-      if ($Command -imatch 'search|list' ) {
-        $results | Format-Table -Property Repo, Command -GroupBy Repo -AutoSize
+      if ($Command -imatch 'search|list' -and -not $Raw) {
+        $results | Sort-Object -Property ID | Format-Table -Property Repo, Command -GroupBy Repo -AutoSize
       }
       else {
         $results
