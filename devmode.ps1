@@ -14,7 +14,7 @@ if (-not $env:SnippetsInitialized) {
 
 if ($env:IsWindows -ieq 'true') {
     try {
-        $vswhere = Get-Command vswhere
+        $vswhere = Get-Command vswhere -ErrorAction SilentlyContinue
 
         if (-not($vswhere)) {
             $install_vswhere = 'winget install Microsoft.VisualStudio.Locator';
