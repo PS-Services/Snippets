@@ -56,6 +56,8 @@ try {
 
         $snippets = Get-ChildItem *.ps1 -Verbose:$MasterVerbose -Exclude $exclusions
 
+        $thirdPartyPath = $env:Snippets + '/3rdParty'
+
         if (Test-Path $thirdPartPath) {
             $thirdParty = Get-ChildItem *.ps1 -Path $thirdPartPath -Recurse -Verbose:$MasterVerbose -Exclude $exclusions
         
