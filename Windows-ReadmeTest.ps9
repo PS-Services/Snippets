@@ -1,8 +1,6 @@
 # $env:VerboseStartup = 'true'
 $profileScript = Split-Path $PROFILE -Leaf
 
-refreshenv
-
 $exclusions = @()
 # EXCLUSIONS-START
 $exclusions += '*Linux*'
@@ -10,9 +8,10 @@ $exclusions += '*ConvertFrom-WingetStdout.ps1'
 # EXCLUSIONS-END
 
 if ((-not $env:Snippets) -or (-not (Test-Path $env:Snippets))) {
-    if(Test-Path "$env:ONEDRIVE/Documents/Powershell"){
+    if (Test-Path "$env:ONEDRIVE/Documents/Powershell") {
         $env:Snippets = "$env:ONEDRIVE/Documents/Powershell"
-    } else {
+    }
+    else {
         $env:Snippets = "$env:UserProfile/Documents/Powershell"
     }
 }
@@ -27,16 +26,21 @@ else {
 try {
     Push-Location -Verbose:$MasterVerbose
 
+    $GitRoot = $env:GitRoot ?? "https://github.com/PS-Services"
+
+    Write-Verbose "[$profileScript] `$GitRoot: $GitRoot" -Verbose:$MasterVerbose
+
     Import-Module Microsoft.PowerShell.Utility #-Verbose:$MasterVerbose
 
     if ((Split-Path $env:Snippets -Leaf) -ieq 'powershell') {
+        Set-Location $env:Snippets
         $env:Snippets = Join-Path $env:Snippets -Child Snippets -Verbose:$MasterVerbose
     }
 
     if (-not (Test-Path $env:Snippets -Verbose:$MasterVerbose)) {
-        git clone 'https://github.com/sharpninja/Snippets.git'
+        git clone "$GitRoot/Snippets.git"
         if ($LASTEXITCODE -ne 0) {
-            throw "git clone `"https://github.com/sharpninja/Snippets.git`" failed with: $LASTEXITCODE"
+            throw "git clone `"$GitRoot/Snippets.git`" failed with: $LASTEXITCODE"
         }
     }
     else {
@@ -51,9 +55,12 @@ try {
         Write-Verbose -Verbose:$MasterVerbose -Message "[$profileScript] Exclusions: $exclusions"
 
         $snippets = Get-ChildItem *.ps1 -Verbose:$MasterVerbose -Exclude $exclusions
-        $thirdParty = Get-ChildItem *.ps1 -Path $thirdPartPath -Recurse -Verbose:$MasterVerbose -Exclude $exclusions
 
-        $snippets += $thirdParty
+        if (Test-Path $thirdPartPath) {
+            $thirdParty = Get-ChildItem *.ps1 -Path $thirdPartPath -Recurse -Verbose:$MasterVerbose -Exclude $exclusions
+        
+            $snippets += $thirdParty
+        }
 
         Pop-Location -Verbose:$MasterVerbose
 
