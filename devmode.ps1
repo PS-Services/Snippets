@@ -17,10 +17,15 @@ if ($env:IsWindows -ieq 'true') {
         $vswhere = Get-Command vswhere -ErrorAction SilentlyContinue
 
         if (-not($vswhere)) {
-            $install_vswhere = 'winget install Microsoft.VisualStudio.Locator';
-            & $install_vswhere
+            $winget = get-command winget -ErrorAction SilentlyContinue
 
-            $vswhere = Get-Command vswhere
+            if (-not($winget)) {
+                throw "winget is not installed";
+            }        
+
+            & $winget install Microsoft.VisualStudio.Locator
+
+            $vswhere = Get-Command vswhere -ErrorAction SilentlyContinue
 
             if (-not($vswhere)) {
                 throw "Could not install vswhere";
@@ -40,7 +45,7 @@ if ($env:IsWindows -ieq 'true') {
             }
         }
 
-        $alias = set-alias -Verbose:$Verbose -Scope Global -Description 'Snippets: [dev] Start VS2022 Developer Mode' -Name devmode -Value Start-DevMode
+        set-alias -Verbose:$Verbose -Scope Global -Description 'Snippets: [dev] Start VS2022 Developer Mode' -Name devmode -Value Start-DevMode
 
         return "Type ``devmode`` to enter VS2022 Developer Mode."
     }
@@ -48,7 +53,7 @@ if ($env:IsWindows -ieq 'true') {
         Write-Host $Error
     }
     finally {
-        Write-Verbose '[devmode.ps1] Leaving...' -Verbose:$Verbose
+        Write-Verbose "[$script] Leaving..." -Verbose:$Verbose
         $Verbose = $VerboseSwitch
     }
 }
