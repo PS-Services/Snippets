@@ -116,7 +116,7 @@ function Setup-Snippets {
 
     cd $destination;
 
-    git clone https://github.com/sharpninja/Snippets.git &> /dev/tty
+    git clone https://github.com/PS-Services/Snippets.git &> /dev/tty
 
     if [ "$?" != "0" ] ; then
         __result="$?"
