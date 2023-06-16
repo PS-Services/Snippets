@@ -19,7 +19,7 @@ ___OR___
 Execute this script...
 
 ```bash
-curl 'https://raw.githubusercontent.com/sharpninja/Snippets/master/linux-setup.sh' -v | /bin/bash
+curl 'https://raw.githubusercontent.com/PS-Services/Snippets/master/linux-setup.sh' -v | /bin/bash
 ```
 
 | Win | *nix | Script           | Description                                                                                                                  |
