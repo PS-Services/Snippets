@@ -24,6 +24,7 @@ class ResultItem
   [string]$Name;
   [string]$Description;
   [PackageManager]$PackageManager;
+  [string]$Line;
 
   ResultItem(
     [string]$r,
@@ -32,7 +33,8 @@ class ResultItem
     [string]$n,
     [string]$ins,
     [string]$d = '',
-    [PackageManager]$pm
+    [PackageManager]$pm,
+    [string]$l
   )
   {
     $this.Repo = $r;
@@ -42,6 +44,7 @@ class ResultItem
     $this.Command = $ins;
     $this.Description = $d;
     $this.PackageManager = $pm;
+    $this.Line = $l;
   }
 }
 
@@ -97,7 +100,7 @@ class PackageManager
     [string]$Line, 
     [string]$Command)
   {
-    return [ResultItem]::new($this.Name, $line, '', $line, $Command, $this);
+    return [ResultItem]::new($this.Name, $line, '', $line, $Command, $this, $Line);
   }
 
   [ResultItem]ConvertItem([Object]$item, $Command)
@@ -148,6 +151,7 @@ class PackageManager
               $false, 
               $AllRepos, 
               $Raw, 
+              $false,
               $false, 
               $false);
 
@@ -396,7 +400,7 @@ class PackageManager
       }
       else
       {
-        return ($results | Where-Object ID -EQ $itemName | Format-Table -GroupBy Repo -Property Repo, Command);
+        return ($results | Where-Object ID -EQ $itemName | Format-Table -GroupBy Repo -Property Repo, Command, Line );
       }
     }
     else
@@ -474,7 +478,7 @@ if ($env:IsWindows -eq 'false')
         }
       
         return [ResultItem]::new(
-          "sudo $($this.Executable)", $id, $ver, $nme, $inst, $desc, $this
+          "sudo $($this.Executable)", $id, $ver, $nme, $inst, $desc, $this, $Line
         );
       }
 
@@ -532,7 +536,7 @@ if ($env:IsWindows -eq 'false')
         }
       
         return [ResultItem]::new(
-          $this.Executable, $id, $ver, $id, $inst, $desc, $this
+          $this.Executable, $id, $ver, $id, $inst, $desc, $this, $Line
         );
       }
 
@@ -591,7 +595,7 @@ if ($env:IsWindows -eq 'false')
         }
       
         return [ResultItem]::new(
-          "sudo $($this.Executable)", $id, $ver, $id, $inst, $desc, $this
+          "sudo $($this.Executable)", $id, $ver, $id, $inst, $desc, $this, $Line
         );
       }
 
@@ -741,7 +745,7 @@ if ($env:IsWindows -eq 'false')
 
       if ($Command -imatch 'search|list' -and -not $Raw)
       {
-        $results | Sort-Object -Property Repo, ID | Format-Table -Property Repo, Command -GroupBy Repo -AutoSize
+        $results | Sort-Object -Property Repo, ID | Format-Table -Property Repo, Command, Line -GroupBy Repo -AutoSize
       }
       else
       {
@@ -845,7 +849,7 @@ else
         }
         
         return [ResultItem]::new(
-          $this.Executable, $id, $ver, $nme, $inst, $null, $this
+          $this.Executable, $id, $ver, $nme, $inst, $null, $this, $Line
         );
       }
   
@@ -909,7 +913,7 @@ else
         }
       }
       return [ResultItem]::new(
-        $this.Executable, $nme, $ver, $nme, $inst, $null, $this
+        $this.Executable, $nme, $ver, $nme, $inst, $null, $this, $Line
       );
     }
   }
@@ -945,7 +949,7 @@ else
           }
         }
         return [ResultItem]::new(
-          "sudo $($this.Executable)", $nme, $ver, $nme, $inst, $null, $this
+          "sudo $($this.Executable)", $nme, $ver, $nme, $inst, $null, $this, $Line
         );
       }
     
@@ -1045,6 +1049,7 @@ else
         [switch]$Install = $false,
         [switch]$Interactive = $false,
         [switch]$Raw = $false,
+        [switch]$Describe = $false,
         [Switch]$Exact = $false
       )
 
@@ -1059,13 +1064,37 @@ else
       $scoopResults = Invoke-Scoop $Command $Name -Subcommand $Subcommand -AllRepos -Raw:$Raw -Describe:$Describe -Exact:$Exact -Install:$Install
       $chocoResults += Invoke-Choco $Command $Name -Subcommand $Subcommand -AllRepos -Raw:$Raw -Describe:$Describe -Exact:$Exact -Install:$Install
 
-      $results = $wingetResults
-      $results += $scoopResults
-      $results += $chocoResults
+      $results = [List[Object]]::new();
+      if ($wingetResults -is [ResultItem[]] -or $wingetResults -is [Object[]])
+      {
+        $results.AddRange($wingetResults)
+      }
+      else
+      {
+        $results.Add($wingetResults)
+      }
+      
+      if ($scoopResults -is [ResultItem[]] -or $scoopResults -is [Object[]])
+      {
+        $results.AddRange($scoopResults)
+      }
+      else
+      {
+        $results.Add($scoopResults)
+      }
+
+      if ($chocoResults -is [ResultItem[]] -or $chocoResults -is [Object[]])
+      {
+        $results.AddRange($chocoResults)
+      }
+      else
+      {
+        $results.Add($chocoResults)
+      }
 
       if ($Command -imatch 'search|list' -and -not $Raw)
       {
-        $results | Sort-Object -Property Repo, ID | Format-Table -Property Repo, Command -GroupBy Repo -AutoSize
+        $results | Sort-Object -Property Repo, ID | Format-Table -Property Repo, Command, Line -GroupBy Repo -AutoSize
       }
       else
       {
