@@ -923,7 +923,7 @@ else
   
     ChocoManager() : base(
       'choco', 'choco', 'search', 'install',
-      'upgrade', 'update', 'list', 'uninstall', 'show', $true
+      'upgrade', 'update', 'list', 'uninstall', 'info', $true
     )
     {
     }
