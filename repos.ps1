@@ -14,7 +14,8 @@ $script = $MyInvocation.MyCommand
 
 Write-Verbose $MyInvocation
 
-class ResultItem {
+class ResultItem
+{
   [string]$Repo;
   [string]$Command;
   [string]$ID;
@@ -27,7 +28,8 @@ class ResultItem {
     [string]$v,
     [string]$n,
     [string]$ins
-  ) {
+  )
+  {
     $this.Repo = $r;
     $this.ID = $i;
     $this.Version = $v;
@@ -36,7 +38,8 @@ class ResultItem {
   }
 }
 
-class PackageManager {
+class PackageManager
+{
   [string]$Name;
   [string]$Executable;
   [Object]$Command;
@@ -60,7 +63,8 @@ class PackageManager {
     [string]$L,
     [string]$Un = 'uninstall',
     [string]$D
-  ) {
+  )
+  {
     $this.Name = $N;
     $this.Executable = $Exe;
     $this.Search = $S;
@@ -72,17 +76,20 @@ class PackageManager {
     $this.Display = $D;
 
     $this.Command = Get-Command $this.Executable -ErrorAction SilentlyContinue;
-    if ($this.Command) {
+    if ($this.Command)
+    {
       $this.IsPresent = $true;
       $this.IsScript = $this.Command.Source.EndsWith('.ps1');
     }
   }
 
-  [ResultItem]ParseResultItem([string]$Line, [string]$Command) {
+  [ResultItem]ParseResultItem([string]$Line, [string]$Command)
+  {
     return [ResultItem]::new($this.Name, $line, '', $line, $Command);
   }
 
-  [ResultItem]ConvertItem([Object]$item, $Command) {
+  [ResultItem]ConvertItem([Object]$item, $Command)
+  {
     $json = ConvertTo-Json $item;
 
     return $this.ParseResultItem($json.ToString(), $Command);
@@ -93,45 +100,56 @@ class PackageManager {
     [string]$Command,
     [switch]$Install = $false,
     [switch]$AllRepos = $false,
-    [switch]$Raw = $false) {
+    [switch]$Raw = $false)
+  {
     
     $resultItems = [List[ResultItem]]::new();
 
-    foreach ($line in $executeResults) {
+    foreach ($line in $executeResults)
+    {
       [ResultItem]$item = $null;
 
-      if ($line -is [string]) {
+      if ($line -is [string])
+      {
         $item = $this.ParseResultItem($line, $Command);
       }
-      else {
+      else
+      {
         $item = $this.ConvertItem($line, $Command);
       }
 
-      if ($item) {
+      if ($item)
+      {
         $resultItems.Add($item);
       }
     }
 
-    if ($Command -imatch 'search|list' ) {
+    if ($Command -imatch 'search|list' )
+    {
       $type = [ResultItem];
       $firstItem = GetFirstItem -OfType $type -Enum $resultItems
 
-      if ($Install -and $firstItem) {
+      if ($Install -and $firstItem)
+      {
         $arguments = $firstItem.Command.Split(' ')
         & $firstItem.Repo $arguments
       }
 
-      if ($AllRepos.IsPresent -and -not $AllRepos -and -not $Raw) {
+      if ($AllRepos.IsPresent -and -not $AllRepos -and -not $Raw)
+      {
         return $resultItems | Sort-Object -Property ID | Format-Table -AutoSize  
       }
-      elseif (-not $AllRepos.IsPresent -and -not $Raw) {
+      elseif (-not $AllRepos.IsPresent -and -not $Raw)
+      {
         return $resultItems | Sort-Object -Property ID | Format-Table -AutoSize  
       }
-      else {
+      else
+      {
         return $resultItems
       }
     }
-    else {
+    else
+    {
       return $resultItems;
     }
   }
@@ -142,16 +160,19 @@ class PackageManager {
     [switch]$Install = $false,
     [switch]$AllRepos = $false,
     [switch]$Raw = $false,
-    [switch]$Verbose) {
+    [switch]$Verbose)
+  {
     
     $toExecute = $this.Command.Source;
 
     $executeResults = '';
-    if ($this.IsScript) {
+    if ($this.IsScript)
+    {
       Write-Verbose "[$($this.Name)] Invoke-Expression `"& `"$toExecute`" $params`"" -Verbose:$Verbose
       $executeResults = Invoke-Expression "& `"$toExecute`" $params"
     }
-    else {
+    else
+    {
       Write-Verbose "[$($this.Name)] & $toExecute $params" -Verbose:$Verbose
       $executeResults = & $toExecute $params
     }
@@ -169,63 +190,98 @@ class PackageManager {
     [switch]$Install = $false,
     [switch]$AllRepos = $false,
     [switch]$Raw = $false,
-    [switch]$Verbose) {
+    [switch]$Verbose)
+  {
 
     $itemName = $Name;
     $itemCommand = $Command;
       
-    if ($Name -eq '' -and -not($Command -imatch 'list|upgrade')) {
+    if ($Name -eq '' -and -not($Command -imatch 'list|upgrade'))
+    {
       $itemName = $Command;
       $itemCommand = 'search';
     }
 
-    if ($Install) {
+    if ($Install)
+    {
       $itemCommand = 'search'
     }
 
     $params = @()
 
-    Switch -regex ($itemCommand) {
-        ('search|find') {
+    Switch -regex ($itemCommand)
+    {
+        ('search|find')
+      {
         $params += $this.Search;
-        if ($SubCommand) { $params += $SubCommand.Trim() }
+        if ($SubCommand)
+        {
+          $params += $SubCommand.Trim() 
+        }
         $params += $itemName;
       }
 
-        ('install') {
+        ('install')
+      {
         $params += $this.Install;
-        if ($SubCommand) { $params += $SubCommand.Trim() }
+        if ($SubCommand)
+        {
+          $params += $SubCommand.Trim() 
+        }
         $params += $itemName;
       }
 
-        ('upgrade') {
+        ('upgrade')
+      {
         $params += this.Upgrade;
-        if ($SubCommand) { $params += $SubCommand.Trim() }
+        if ($SubCommand)
+        {
+          $params += $SubCommand.Trim() 
+        }
         $params += $itemName;
       }
 
-        ('update') {
+        ('update')
+      {
         $params += this.Update;
-        if ($SubCommand) { $params += $SubCommand.Trim() }
+        if ($SubCommand)
+        {
+          $params += $SubCommand.Trim() 
+        }
         $params += $itemName;
       }
 
-        ('uninstall|remove') {
+        ('uninstall|remove')
+      {
         $params += this.Uninstall;
-        if ($SubCommand) { $params += $SubCommand.Trim() }
+        if ($SubCommand)
+        {
+          $params += $SubCommand.Trim() 
+        }
         $params += $itemName;
       }
 
-        ('show|details|info') {
+        ('show|details|info')
+      {
         $params += $this.Display;
-        if ($SubCommand) { $params += $SubCommand.Trim() }
+        if ($SubCommand)
+        {
+          $params += $SubCommand.Trim() 
+        }
         $params += $itemName;
       }
 
-      default {
+      default
+      {
         $params += $itemCommand;
-        if ($SubCommand) { $params += $SubCommand.Trim(); }
-        if ($Name) { $params += $itemName; }
+        if ($SubCommand)
+        {
+          $params += $SubCommand.Trim(); 
+        }
+        if ($Name)
+        {
+          $params += $itemName; 
+        }
       }
     }
 
@@ -233,121 +289,12 @@ class PackageManager {
   }
 }
 
-class WinGetManager : PackageManager {
-  [string]$Store = 'winget';
-  [switch]$InteractiveParameter = $false;
-
-  WinGetManager([string]$S, [switch]$I) : base(
-    'winget', 'winget', 'search', 'install',
-    'upgrade', 'update', 'list', 'uninstall', 'show'
-  ) {
-    $this.Store = $s;
-    $this.InteractiveParameter = $i;
-  }
-
-  [ResultItem]ParseResultItem([string]$Line, [string]$Command) {
-    $regex = [Regex]::new('^.+\s+([A-Za-z0-9_-]+\.[A-Za-z0-9_-]+)\s+([\d\.]+)\s?');
-
-    if ($regex.IsMatch($line)) {
-      $id = $regex.Match($line).Groups[1].Value.Trim();
-      $ver = $regex.Match($line).Groups[2].Value.Trim();
-      $index = $line.IndexOf($id);
-      $nme = $line.Substring(0, $index).Trim();
-      $inst = '';
-      $interactive = '';
-      if ($this.InteractiveParameter.IsPresent -and 
-          $this.InteractiveParameter.ToBool()) {
-        $interactive = '-i';
-      }
-      switch -regex ($Command) {
-        'search' { $inst = "install $id --version $ver --source $($this.Store) $interactive" }
-        'list' { $inst = "uninstall $id" }
-      }
-      
-      return [ResultItem]::new(
-        $this.Executable, $id, $ver, $nme, $inst
-      );
-    }
-
-    return $null;
-  }
-}
-
-class ScoopManager : PackageManager {
-  [string]$Store = 'main';
-
-  ScoopManager([string]$S) : base(
-    'scoop', 'scoop', 'search', 'install',
-    'upgrade', 'update', 'list', 'uninstall', 'show'
-  ) {
-    $this.Store = $s;
-  }
-
-  [ResultItem]ParseResultItem([string]$Line, [string]$Command) {
-    $json = ConvertFrom-Json $Line;
-    $ver = $json.version;
-    $nme = $json.name;
-    $inst = $Command;
-    switch -regex ($Command) {
-      'search' { 
-
-        [string]$bucket = '';
-
-        if ($this.Store) {
-          $bucket = "--bucket $($this.Store)";
-        }
-
-        switch ($line.Source.Length -gt 0) {
-            ($True) { $bucket = "--bucket $($json.Source)"; }
-          default { }
-        }
-
-        if ($ver) {
-          $inst = "$($this.Install) $($nme)@$($ver) $bucket".Trim();
-        }
-        else {
-          $inst = "$($this.Install) $nme $bucket".Trim();
-        }
-      }
-      'list' { $inst = "$($this.Uninstall) $nme" }
-    }
-    return [ResultItem]::new(
-      $this.Executable, $nme, $ver, $nme, $inst
-    );
-  }
-}
-
-class ChocoManager : PackageManager {
-
-  ChocoManager() : base(
-    'choco', 'choco', 'search', 'install',
-    'upgrade', 'update', 'list', 'uninstall', 'show'
-  ) {
-  }
-
-  [ResultItem]ParseResultItem([string]$Line, [string]$Command) {
-    if ($line.IndexOf('[Approved]') -gt -1) {
-      $line = $line.Substring(0, $line.IndexOf('[Approved]')).Trim();
-      $lastIndex = $line.LastIndexOf(' ');
-      $nme = $line.Substring(0, $lastIndex).Trim();
-      $ver = $line.Substring($lastIndex).Trim();
-      $inst = $Command;
-      switch -regex ($Command) {
-        'search' { $inst = "install $nme --version $ver -y" }
-        'list' { $inst = "uninstall $nme" }
-      }
-      return [ResultItem]::new(
-        $this.Executable, $nme, $ver, $nme, $inst
-      );
-    }
-  
-    return $null;
-  }
-}
-
-function GetFirstItem([TypeInfo]$OfType, [IEnumerable]$Enum) {
-  foreach ($currentItem in $Enum) {
-    if ($currentItem -is $OfType) {
+function GetFirstItem([TypeInfo]$OfType, [IEnumerable]$Enum)
+{
+  foreach ($currentItem in $Enum)
+  {
+    if ($currentItem -is $OfType)
+    {
       $item = $currentItem;
       break;
     }
@@ -356,16 +303,313 @@ function GetFirstItem([TypeInfo]$OfType, [IEnumerable]$Enum) {
   return $item;
 }
 
-if (-not $env:SnippetsInitialized) {
+if (-not $env:SnippetsInitialized)
+{
   $fileInfo = New-Object FileInfo (Get-Item $PSScriptRoot).FullName
   $path = $fileInfo.Directory.FullName;
   . $path/Snippets/common.ps1;
   Initialize-Snippets -Verbose:$Verbose
 }
 
-if ($env:IsWindows -eq 'true') {
-  try {
-    function Invoke-Winget {
+if ($env:IsWindows -eq 'false')
+{  
+  class AptManager : PackageManager
+  {
+    AptManager() : base(
+      'apt', 'apt', 'search', 'install',
+      'upgrade', 'update', 'list', 'remove', 'info'
+    )
+    {
+    }
+
+    [ResultItem]ParseResultItem([string]$Line, [string]$Command)
+    {
+      $regex = [Regex]::new('^.+\s+([A-Za-z0-9_-]+\.[A-Za-z0-9_-]+)\s+([\d\.]+)\s?');
+
+      if ($regex.IsMatch($line))
+      {
+        $id = $regex.Match($line).Groups[1].Value.Trim();
+        $ver = $regex.Match($line).Groups[2].Value.Trim();
+        $index = $line.IndexOf($id);
+        $nme = $line.Substring(0, $index).Trim();
+        $inst = '';
+        $interactive = '';
+        if ($this.InteractiveParameter.IsPresent -and 
+          $this.InteractiveParameter.ToBool())
+        {
+          $interactive = '-i';
+        }
+        switch -regex ($Command)
+        {
+          'search'
+          {
+            $inst = "install $id --version $ver --source $($this.Store) $interactive" 
+          }
+          'list'
+          {
+            $inst = "uninstall $id" 
+          }
+        }
+      
+        return [ResultItem]::new(
+          $this.Executable, $id, $ver, $nme, $inst
+        );
+      }
+
+      return $null;
+    }
+  }
+
+  class HomebrewManager : PackageManager
+  {
+    [string]$Store = 'main';
+
+    HomebrewManager() : base(
+      'brew', 'brew', 'search', 'install',
+      'upgrade', 'update', 'list', 'uninstall', 'show'
+    )
+    {
+    }
+
+    [ResultItem]ParseResultItem([string]$Line, [string]$Command)
+    {
+      $json = ConvertFrom-Json $Line;
+      $ver = $json.version;
+      $nme = $json.name;
+      $inst = $Command;
+      switch -regex ($Command)
+      {
+        'search'
+        { 
+
+          [string]$bucket = '';
+
+          if ($this.Store)
+          {
+            $bucket = "--bucket $($this.Store)";
+          }
+
+          switch ($line.Source.Length -gt 0)
+          {
+            ($True)
+            {
+              $bucket = "--bucket $($json.Source)"; 
+            }
+            default
+            { 
+            }
+          }
+
+          if ($ver)
+          {
+            $inst = "$($this.Install) $($nme)@$($ver) $bucket".Trim();
+          }
+          else
+          {
+            $inst = "$($this.Install) $nme $bucket".Trim();
+          }
+        }
+        'list'
+        {
+          $inst = "$($this.Uninstall) $nme" 
+        }
+      }
+      return [ResultItem]::new(
+        $this.Executable, $nme, $ver, $nme, $inst
+      );
+    }
+  }
+
+  class SnapManager : PackageManager
+  {
+
+    SnapManager() : base(
+      'snap', 'snap', 'search', 'install',
+      'upgrade', 'update', 'list', 'uninstall', 'show'
+    )
+    {
+    }
+
+    [ResultItem]ParseResultItem([string]$Line, [string]$Command)
+    {
+      if ($line.IndexOf('[Approved]') -gt -1)
+      {
+        $line = $line.Substring(0, $line.IndexOf('[Approved]')).Trim();
+        $lastIndex = $line.LastIndexOf(' ');
+        $nme = $line.Substring(0, $lastIndex).Trim();
+        $ver = $line.Substring($lastIndex).Trim();
+        $inst = $Command;
+        switch -regex ($Command)
+        {
+          'search'
+          {
+            $inst = "install $nme --version $ver -y" 
+          }
+          'list'
+          {
+            $inst = "uninstall $nme" 
+          }
+        }
+        return [ResultItem]::new(
+          $this.Executable, $nme, $ver, $nme, $inst
+        );
+      }
+  
+      return $null;
+    }
+  }
+
+  try
+  {
+    function Invoke-Apt
+    {
+      [CmdletBinding(PositionalBinding = $True)]
+      param(
+        [Parameter(Position = 0)][string]$Command = 'search',
+        [Parameter(Position = 1)][string]$Name = $null,
+        [string]$Store = 'winget',
+        [switch]$Install = $false,
+        [switch]$Interactive = $false,
+        [switch]$AllRepos = $false,
+        [switch]$Raw = $false
+      )
+
+      $aptManager = [AptManager]::new();
+      if ($aptManager.IsPresent)
+      {
+        $aptManager.Invoke($Command, $Name, '', $Store, $Install, $AllRepos, $Raw, $VerboseSwitch);
+      }
+      else
+      {
+        Write-Information "$($this.Name) is not a command.";
+      }
+    }
+
+    function Invoke-Homebrew
+    {
+      [CmdletBinding(PositionalBinding = $True)]
+      param(        
+        [Parameter(Position = 0)][string]$Command = 'search',        
+        [Parameter(Position = 1)][string]$Name = $null,
+        [string]$SubCommand = $null,
+        [string]$Store = 'main',
+        [switch]$Install = $false,
+        [switch]$AllRepos = $false
+      )
+
+      $brewManager = [HomebrewManager]::new($Store);
+
+      if ($brewManager.IsPresent)
+      {
+        $brewManager.Invoke($Command, $Name, $SubCommand, $Store, $Install, $AllRepos, $Raw, $VerboseSwitch);
+      }
+      else
+      {
+        Write-Information "$($this.Name) is not a command.";
+      }
+    }
+
+    function Invoke-Snap
+    {
+      [CmdletBinding(PositionalBinding = $True)]
+      param(
+        [Parameter(Position = 0)][string]$Command = 'list',
+        [Parameter(Position = 1)][string]$Name = $null,
+        [string]$SubCommand = $null,
+        [switch]$Install = $false,
+        [switch]$AllRepos = $false,
+        [switch]$Raw = $false
+      )
+
+      $snapManager = [SnapManager]::new();
+
+      if ($snapManager.IsPresent)
+      {
+        $snapManager.Invoke($Command, $Name, $SubCommand, $null, $Install, $AllRepos, $Raw, $VerboseSwitch);
+      }
+      else
+      {
+        Write-Information "$($this.Name) is not a command.";
+      }
+    }
+
+    function Invoke-All
+    {
+      [CmdletBinding(PositionalBinding = $true)]
+      param(
+        [Parameter(Position = 0)][string]$Command = 'search',
+        [Parameter(Position = 1)][string]$Name = $null,
+        [string]$SubCommand = $null,
+        [string]$Store = 'winget',
+        [switch]$Install = $false,
+        [switch]$Interactive = $false,
+        [switch]$Raw = $false
+      )
+
+      if ($Name -eq '' -and -not($Command -imatch 'list|upgrade'))
+      {
+        $Name = $Command;
+        $Command = 'search';
+      }
+
+      $results = @()
+      $aptResults = Invoke-Apt $Command $Name -AllRepos
+      $brewResults = Invoke-Homebrew $Command $Name -Subcommand $Subcommand -AllRepos
+      $snapResults += Invoke-Snap $Command $Name -Subcommand $Subcommand -AllRepos
+
+      $results = $aptResults
+      $results += $brewResults
+      $results += $snapResults
+
+      if ($Command -imatch 'search|list' -and -not $Raw)
+      {
+        $results | Sort-Object -Property Repo, ID | Format-Table -Property Repo, Command -GroupBy Repo -AutoSize
+      }
+      else
+      {
+        $results
+      }
+
+      if ($results -is [ResultItem])
+      {
+        [List[ResultItem]]$list = [List[ResultItem]]::new();
+        $list.Add($results);
+        $results = $list
+      }
+
+      $type = [ResultItem];
+      $firstItem = GetFirstItem -OfType $type -Enum $results
+
+      if ($Install -and $firstItem)
+      {
+        $arguments = $firstItem.Command.Split(' ')
+        & $firstItem.Repo $arguments
+      }
+    }
+
+    Set-Alias -Verbose:$Verbose -Scope Global -Description 'Snippets: [repos] apt' -Name ap -Value Invoke-Apt -PassThru
+    Set-Alias -Verbose:$Verbose -Scope Global -Description 'Snippets: [repos] homebreq' -Name br -Value Invoke-Homebrew -PassThru
+    Set-Alias -Verbose:$Verbose -Scope Global -Description 'Snippets: [repos] snap' -Name sn -Value Invoke-Snap -PassThru
+    Set-Alias -Verbose:$Verbose -Scope Global -Description 'Snippets: [repos] All Repos' -Name repos -Value Invoke-All -PassThru
+
+    return 'Repos aliases configured.'
+  }
+  catch
+  {
+    Write-Host $Error
+  }
+  finally
+  {
+    Write-Verbose '[repos.ps1] Leaving...' -Verbose:$Verbose
+    $Verbose = $VerboseSwitch
+  }
+}
+else
+{
+  try
+  {
+    function Invoke-Winget
+    {
       [CmdletBinding(PositionalBinding = $True)]
       param(
         [Parameter(Position = 0)][string]$Command = 'search',
@@ -378,15 +622,18 @@ if ($env:IsWindows -eq 'true') {
       )
 
       $wingetManager = [WinGetManager]::new($Store, $Interactive);
-      if ($wingetManager.IsPresent) {
+      if ($wingetManager.IsPresent)
+      {
         $wingetManager.Invoke($Command, $Name, '', $Store, $Install, $AllRepos, $Raw, $VerboseSwitch);
       }
-      else {
+      else
+      {
         Write-Information "$($this.Name) is not a command.";
       }
     }
 
-    function Invoke-Scoop {
+    function Invoke-Scoop
+    {
       [CmdletBinding(PositionalBinding = $True)]
       param(        
         [Parameter(Position = 0)][string]$Command = 'search',        
@@ -399,15 +646,18 @@ if ($env:IsWindows -eq 'true') {
 
       $scoopManager = [ScoopManager]::new($Store);
 
-      if ($scoopManager.IsPresent) {
+      if ($scoopManager.IsPresent)
+      {
         $scoopManager.Invoke($Command, $Name, $SubCommand, $Store, $Install, $AllRepos, $Raw, $VerboseSwitch);
       }
-      else {
+      else
+      {
         Write-Information "$($this.Name) is not a command.";
       }
     }
 
-    function Invoke-Choco {
+    function Invoke-Choco
+    {
       [CmdletBinding(PositionalBinding = $True)]
       param(
         [Parameter(Position = 0)][string]$Command = 'list',
@@ -420,15 +670,18 @@ if ($env:IsWindows -eq 'true') {
 
       $chocoManager = [ChocoManager]::new();
 
-      if ($chocoManager.IsPresent) {
+      if ($chocoManager.IsPresent)
+      {
         $chocoManager.Invoke($Command, $Name, $SubCommand, $null, $Install, $AllRepos, $Raw, $VerboseSwitch);
       }
-      else {
+      else
+      {
         Write-Information "$($this.Name) is not a command.";
       }
     }
 
-    function Invoke-All {
+    function Invoke-All
+    {
       [CmdletBinding(PositionalBinding = $true)]
       param(
         [Parameter(Position = 0)][string]$Command = 'search',
@@ -440,7 +693,8 @@ if ($env:IsWindows -eq 'true') {
         [switch]$Raw = $false
       )
 
-      if ($Name -eq '' -and -not($Command -imatch 'list|upgrade')) {
+      if ($Name -eq '' -and -not($Command -imatch 'list|upgrade'))
+      {
         $Name = $Command;
         $Command = 'search';
       }
@@ -454,14 +708,17 @@ if ($env:IsWindows -eq 'true') {
       $results += $scoopResults
       $results += $chocoResults
 
-      if ($Command -imatch 'search|list' -and -not $Raw) {
+      if ($Command -imatch 'search|list' -and -not $Raw)
+      {
         $results | Sort-Object -Property Repo, ID | Format-Table -Property Repo, Command -GroupBy Repo -AutoSize
       }
-      else {
+      else
+      {
         $results
       }
 
-      if ($results -is [ResultItem]) {
+      if ($results -is [ResultItem])
+      {
         [List[ResultItem]]$list = [List[ResultItem]]::new();
         $list.Add($results);
         $results = $list
@@ -470,28 +727,27 @@ if ($env:IsWindows -eq 'true') {
       $type = [ResultItem];
       $firstItem = GetFirstItem -OfType $type -Enum $results
 
-      if ($Install -and $firstItem) {
+      if ($Install -and $firstItem)
+      {
         $arguments = $firstItem.Command.Split(' ')
         & $firstItem.Repo $arguments
       }
     }
 
-    set-alias -Verbose:$Verbose -Scope Global -Description "Snippets: [repos] WinGet" -Name wg -Value Invoke-Winget -PassThru
-    set-alias -Verbose:$Verbose -Scope Global -Description "Snippets: [repos] Scoop" -Name scp -Value Invoke-Scoop -PassThru
-    set-alias -Verbose:$Verbose -Scope Global -Description "Snippets: [repos] Chocolatey" -Name ch -Value Invoke-Choco -PassThru
-    set-alias -Verbose:$Verbose -Scope Global -Description "Snippets: [repos] All Repos" -Name repos -Value Invoke-All -PassThru
+    Set-Alias -Verbose:$Verbose -Scope Global -Description 'Snippets: [repos] WinGet' -Name wg -Value Invoke-Winget -PassThru
+    Set-Alias -Verbose:$Verbose -Scope Global -Description 'Snippets: [repos] Scoop' -Name scp -Value Invoke-Scoop -PassThru
+    Set-Alias -Verbose:$Verbose -Scope Global -Description 'Snippets: [repos] Chocolatey' -Name ch -Value Invoke-Choco -PassThru
+    Set-Alias -Verbose:$Verbose -Scope Global -Description 'Snippets: [repos] All Repos' -Name repos -Value Invoke-All -PassThru
 
-    return "Repos aliases configured."
+    return 'Repos aliases configured.'
   }
-  catch {
+  catch
+  {
     Write-Host $Error
   }
-  finally {
+  finally
+  {
     Write-Verbose '[repos.ps1] Leaving...' -Verbose:$Verbose
     $Verbose = $VerboseSwitch
   }
-}
-else {
-  $Verbose = $VerboseSwitch
-  return "Wrong Operating System."
 }
