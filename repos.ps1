@@ -160,10 +160,15 @@ class PackageManager
     [switch]$Install = $false,
     [switch]$AllRepos = $false,
     [switch]$Raw = $false,
-    [switch]$Verbose)
+    [switch]$Verbose = $false,
+    [switch]$Sudo = $false)
   {
-    
     $toExecute = $this.Command.Source;
+
+    if($Sudo.IsPresent -and $Sudo.ToBool()){
+      $params = @($toExecute) + $params;
+      $toExecute = "sudo";
+    }
 
     $executeResults = '';
     if ($this.IsScript)
@@ -190,7 +195,8 @@ class PackageManager
     [switch]$Install = $false,
     [switch]$AllRepos = $false,
     [switch]$Raw = $false,
-    [switch]$Verbose)
+    [switch]$Verbose = $false,
+    [switch]$Sudo = $false)
   {
 
     $itemName = $Name;
@@ -285,7 +291,7 @@ class PackageManager
       }
     }
 
-    return $this.Execute($itemCommand, $params, $Install, $AllRepos, $Raw, $Verbose)
+    return $this.Execute($itemCommand, $params, $Install, $AllRepos, $Raw, $Verbose, $Sudo)
   }
 }
 
@@ -477,7 +483,7 @@ if ($env:IsWindows -eq 'false')
       $aptManager = [AptManager]::new();
       if ($aptManager.IsPresent)
       {
-        $aptManager.Invoke($Command, $Name, '', $Store, $Install, $AllRepos, $Raw, $VerboseSwitch);
+        $aptManager.Invoke($Command, $Name, '', $Store, $Install, $AllRepos, $Raw, $VerboseSwitch, $true);
       }
       else
       {
@@ -501,7 +507,7 @@ if ($env:IsWindows -eq 'false')
 
       if ($brewManager.IsPresent)
       {
-        $brewManager.Invoke($Command, $Name, $SubCommand, $Store, $Install, $AllRepos, $Raw, $VerboseSwitch);
+        $brewManager.Invoke($Command, $Name, $SubCommand, $Store, $Install, $AllRepos, $Raw, $VerboseSwitch, $true);
       }
       else
       {
@@ -525,7 +531,7 @@ if ($env:IsWindows -eq 'false')
 
       if ($snapManager.IsPresent)
       {
-        $snapManager.Invoke($Command, $Name, $SubCommand, $null, $Install, $AllRepos, $Raw, $VerboseSwitch);
+        $snapManager.Invoke($Command, $Name, $SubCommand, $null, $Install, $AllRepos, $Raw, $VerboseSwitch, $true);
       }
       else
       {
@@ -624,7 +630,7 @@ else
       $wingetManager = [WinGetManager]::new($Store, $Interactive);
       if ($wingetManager.IsPresent)
       {
-        $wingetManager.Invoke($Command, $Name, '', $Store, $Install, $AllRepos, $Raw, $VerboseSwitch);
+        $wingetManager.Invoke($Command, $Name, '', $Store, $Install, $AllRepos, $Raw, $VerboseSwitch, $false);
       }
       else
       {
@@ -648,7 +654,7 @@ else
 
       if ($scoopManager.IsPresent)
       {
-        $scoopManager.Invoke($Command, $Name, $SubCommand, $Store, $Install, $AllRepos, $Raw, $VerboseSwitch);
+        $scoopManager.Invoke($Command, $Name, $SubCommand, $Store, $Install, $AllRepos, $Raw, $VerboseSwitch, $false);
       }
       else
       {
@@ -672,7 +678,7 @@ else
 
       if ($chocoManager.IsPresent)
       {
-        $chocoManager.Invoke($Command, $Name, $SubCommand, $null, $Install, $AllRepos, $Raw, $VerboseSwitch);
+        $chocoManager.Invoke($Command, $Name, $SubCommand, $null, $Install, $AllRepos, $Raw, $VerboseSwitch, $true);
       }
       else
       {
