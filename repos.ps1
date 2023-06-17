@@ -445,7 +445,7 @@ if ($env:IsWindows -eq 'false')
 
     [Object[]]AddParameters([Object[]]$params)
     {
-      if($params[0] -ieq 'list'){
+      if($params[0] -imatch 'list|info'){
         return $params;
       }
       
