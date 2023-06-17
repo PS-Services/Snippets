@@ -1,5 +1,10 @@
 {
   "build": {
+    "src": [
+      {
+        "src": "../"
+      }
+    ],
     "content": [
       {
         "files": [
@@ -17,7 +22,7 @@
         ]
       }
     ],
-    "dest": "../../_site",
+    "dest": "../_site",
     "globalMetadataFiles": [],
     "fileMetadataFiles": [],
     "template": [
