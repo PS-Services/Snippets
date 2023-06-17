@@ -41,7 +41,7 @@ jobs:
       - name: docfx-action
         uses: nikeee/docfx-action@v1.0.0
         with:
-          args: docs/docfx_project/docfx.json
+          args: docs/docfx.json
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v1
 
