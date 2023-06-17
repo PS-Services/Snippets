@@ -2,6 +2,8 @@
 
 A collection of PowerShell tools you can add to your profile.
 
+[docs](https://ps-services.github.io/Snippets/) 🏗️
+
 ## Windows
 
 1. Clone this repository to `$env:OneDrive/Documents/Snippets`
