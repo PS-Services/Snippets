@@ -16,7 +16,8 @@ $script = $MyInvocation.MyCommand
 # C:\Users\kingd\OneDrive\Documents\PowerShell\Snippets\PackageManagers.ps1
 $packageManagers = Get-ChildItem PackageManagers.ps1 -Path $env:Snippets
 
-if(-not $packageManagers){
+if (-not $packageManagers)
+{
   throw [ErrorRecord]::new("Cannot locate ``PackageManagers`` in ``$env:Snippets``");
 }
 
@@ -48,25 +49,187 @@ if (-not $env:SnippetsInitialized)
   Initialize-Snippets -Verbose:$Verbose
 }
 
-function Invoke-NPM
+# function Invoke-NPM
+# {
+#   [CmdletBinding(PositionalBinding = $True)]
+#   param(
+#     [Parameter(Position = 0)][string]$Command = 'search',
+#     [Parameter(Position = 1)][string]$Name = $null,
+#     [string]$SubCommand = $null,
+#     [switch]$Install = $false,
+#     [switch]$AllRepos = $false,
+#     [switch]$Raw = $false,
+#     [switch]$Describe = $false,
+#     [Switch]$Exact = $false,
+#     [Switch]$VerboseSwitch
+#   )
+
+#   $npmManager = [NpmManager]::new();
+
+#   if ($npmManager.IsPresent)
+#   {
+#     $npmManager.Invoke($Command, $Name, $SubCommand, $null, $Install, $AllRepos, $Raw, $Describe, $VerboseSwitch, $Exact);
+#   }
+#   else
+#   {
+#     Write-Information "$($this.Name) is not a command.";
+#   }
+# }
+
+
+# function Invoke-Nuget
+# {
+#   [CmdletBinding(PositionalBinding = $True)]
+#   param(
+#     [Parameter(Position = 0)][string]$Command = 'search',
+#     [Parameter(Position = 1)][string]$Name = $null,
+#     [string]$SubCommand = $null,
+#     [switch]$Install = $false,
+#     [switch]$AllRepos = $false,
+#     [switch]$Raw = $false,
+#     [switch]$Describe = $false,
+#     [Switch]$Exact = $false,
+#     [Switch]$VerboseSwitch = $false,
+#     [Switch]$Tool = $false
+#   )
+
+#   $nugetManager = [NugetManager]::new();
+
+#   if ($nugetManager.IsPresent)
+#   {
+#     if ($Tool)
+#     {
+#       $nugetManager.Invoke(
+#         $Command 
+#         , $Name 
+#         , $SubCommand 
+#         , $null 
+#         , $Install 
+#         , $AllRepos 
+#         , $Raw 
+#         , $Describe 
+#         , $VerboseSwitch 
+#         , $Exact 
+#         , @('-Tool')
+#       );
+#     }
+#     else
+#     {
+#       $nugetManager.Invoke(
+#         $Command 
+#         , $Name 
+#         , $SubCommand 
+#         , $null 
+#         , $Install 
+#         , $AllRepos 
+#         , $Raw 
+#         , $Describe 
+#         , $VerboseSwitch 
+#         , $Exact 
+#       );  
+#     }
+#   }
+#   else
+#   {
+#     Write-Information "$($this.Name) is not a command.";
+#   }
+# }
+
+
+function Invoke-Any
 {
   [CmdletBinding(PositionalBinding = $True)]
   param(
     [Parameter(Position = 0)][string]$Command = 'search',
     [Parameter(Position = 1)][string]$Name = $null,
     [string]$SubCommand = $null,
+    [string]$Store = $null,
     [switch]$Install = $false,
+    [switch]$Interactive = $false,
     [switch]$AllRepos = $false,
     [switch]$Raw = $false,
     [switch]$Describe = $false,
-    [Switch]$Exact = $false
+    [Switch]$Exact = $false,
+    [Switch]$VerboseSwitch = $false,
+    [Switch]$Global = $false,
+    [Object[]]$OtherParameters = $null,
+    [string]$managerCode = $null
   )
 
-  $npmManager = [NpmManager]::new();
+  if($managerCode){
+    $alias = $managerCode;
+  } else {
+    $alias = $MyInvocation.Line.Split(' ')[0];
+  }
 
-  if ($npmManager.IsPresent)
+  [PackageManager]$manager = $null;
+
+  Switch -regex ($alias)
   {
-    $npmManager.Invoke($Command, $Name, $SubCommand, $null, $Install, $AllRepos, $Raw, $Describe, $VerboseSwitch, $Exact);
+    ('ap')
+    {
+      $manager = [AptManager]::new(); 
+    }
+    ('br')
+    {
+      $manager = [BrewManager]::new(); 
+    }
+    ('sn')
+    {
+      $manager = [SnapManager]::new(); 
+    }
+    ('wg')
+    {
+      $manager = [WinGetManager]::new($Store, $Interactive); 
+    }
+    ('scp')
+    {
+      $manager = [ScoopManager]::new($Store); 
+    }
+    ('ch')
+    {
+      $manager = [ChocoManager]::new(); 
+    }
+    ('np')
+    {
+      $manager = [NpmManager]::new(); 
+    }
+    ('ng')
+    {
+      $manager = [NugetManager]::new(); 
+    }
+    ('dn')
+    {
+      $manager = [DotnetManager]::new(); 
+    }
+    ('dt')
+    {
+      $manager = [DotnetToolManager]::new(); 
+    }
+    default
+    {
+      throw "``$alias`` is not a known package manager."; 
+    }
+  }
+
+  if ($manager.IsPresent)
+  {
+    $results = $manager.Invoke(
+      $Command 
+      , $Name 
+      , $SubCommand 
+      , $Store 
+      , $Install 
+      , $AllRepos 
+      , $Raw 
+      , $Describe 
+      , $Global
+      , $VerboseSwitch 
+      , $Exact 
+      , $OtherParameters
+    );
+    
+    $results;
   }
   else
   {
@@ -74,7 +237,10 @@ function Invoke-NPM
   }
 }
 
-Set-Alias -Verbose -Scope Global -Description 'Snippets: [repos] NPM' -Name np -Value Invoke-NPM -PassThru
+Set-Alias -Scope Global -Description 'Snippets: [repos] NPM' -Name np -Value Invoke-Any -PassThru
+Set-Alias -Scope Global -Description 'Snippets: [repos] NuGet' -Name ng -Value Invoke-Any -PassThru
+Set-Alias -Scope Global -Description 'Snippets: [repos] Dotnet' -Name dn -Value Invoke-Any -PassThru
+Set-Alias -Scope Global -Description 'Snippets: [repos] Dotnet Tool' -Name dt -Value Invoke-Any -PassThru
 
 if ($env:IsWindows -eq 'false')
 {
@@ -91,18 +257,22 @@ if ($env:IsWindows -eq 'false')
         [switch]$AllRepos = $false,
         [switch]$Raw = $false,
         [switch]$Describe = $false,
-        [Switch]$Exact = $false
+        [Switch]$Exact = $false,
+        [Switch]$Global = $false
       )
 
-      $aptManager = [AptManager]::new();
-      if ($aptManager.IsPresent)
-      {
-        $aptManager.Invoke($Command, $Name, '', $Store, $Install, $AllRepos, $Raw, $Describe, $VerboseSwitch, $Exact);
-      }
-      else
-      {
-        Write-Information "$($this.Name) is not a command.";
-      }
+      $args[0] = 'ap';
+      Invoke-Any `
+        -Command $Command `
+        -Name $Name `
+        -Install $Install `
+        -Interactive $Interactive `
+        -AllRepos $AllRepos `
+        -Raw $Raw `
+        -Describe $Describe `
+        -Exact $Exact `
+        -Global $Global `
+        -managerCode 'ap'
     }
 
     function Invoke-Homebrew
@@ -118,19 +288,21 @@ if ($env:IsWindows -eq 'false')
         [switch]$VerboseSwitch = $false,
         [switch]$Raw = $false,
         [switch]$Describe = $false,
-        [Switch]$Exact = $false
+        [Switch]$Exact = $false,
+        [Switch]$Global = $false
       )
 
-      $brewManager = [HomebrewManager]::new();
-
-      if ($brewManager.IsPresent)
-      {
-        $brewManager.Invoke($Command, $Name, $SubCommand, $Store, $Install, $AllRepos, $Raw, $Describe, $VerboseSwitch, $Exact);
-      }
-      else
-      {
-        Write-Information "$($this.Name) is not a command.";
-      }
+      Invoke-Any `
+        -Command $Command `
+        -Name $Name `
+        -Install $Install `
+        -Interactive $Interactive `
+        -AllRepos $AllRepos `
+        -Raw $Raw `
+        -Describe $Describe `
+        -Exact $Exact `
+        -Global $Global `
+        -managerCode 'br'
     }
 
     function Invoke-Snap
@@ -144,19 +316,21 @@ if ($env:IsWindows -eq 'false')
         [switch]$AllRepos = $false,
         [switch]$Raw = $false,
         [switch]$Describe = $false,
-        [Switch]$Exact = $false
+        [Switch]$Exact = $false,
+        [Switch]$Global = $false
       )
 
-      $snapManager = [SnapManager]::new();
-
-      if ($snapManager.IsPresent)
-      {
-        $snapManager.Invoke($Command, $Name, $SubCommand, $null, $Install, $AllRepos, $Raw, $Describe, $VerboseSwitch, $Exact);
-      }
-      else
-      {
-        Write-Information "$($this.Name) is not a command.";
-      }
+      Invoke-Any `
+        -Command $Command `
+        -Name $Name `
+        -Install $Install `
+        -Interactive $Interactive `
+        -AllRepos $AllRepos `
+        -Raw $Raw `
+        -Describe $Describe `
+        -Exact $Exact `
+        -Global $Global `
+        -managerCode 'sn'
     }
 
     function Invoke-AllLinux
@@ -171,7 +345,8 @@ if ($env:IsWindows -eq 'false')
         [switch]$Interactive = $false,
         [switch]$Raw = $false,
         [switch]$Describe = $false,
-        [Switch]$Exact = $false
+        [Switch]$Exact = $false,
+        [Switch]$Global = $false
       )
 
       if ($Name -eq '' -and -not($Command -imatch 'list|upgrade'))
@@ -186,9 +361,9 @@ if ($env:IsWindows -eq 'false')
       }
 
       $results = @()
-      $aptResults = Invoke-Apt $Command $Name -AllRepos -Raw:$Raw -Describe:$Describe -Exact:$Exact -Install:$Install
-      $brewResults = Invoke-Homebrew $Command $Name -Subcommand $Subcommand -AllRepos -Raw:$Raw -Describe:$Describe -Exact:$Exact -Install:$Install
-      $snapResults = Invoke-Snap $Command $Name -Subcommand $Subcommand -AllRepos -Raw:$Raw -Describe:$Describe -Exact:$Exact -Install:$Install
+      $aptResults = Invoke-Apt $Command $Name -AllRepos -Raw:$Raw -Describe:$Describe -Exact:$Exact -Install:$Install -Global:$Global
+      $brewResults = Invoke-Homebrew $Command $Name -Subcommand $Subcommand -AllRepos -Raw:$Raw -Describe:$Describe -Exact:$Exact -Install:$Install -Global:$Global
+      $snapResults = Invoke-Snap $Command $Name -Subcommand $Subcommand -AllRepos -Raw:$Raw -Describe:$Describe -Exact:$Exact -Install:$Install -Global:$Global
 
       $results = [List[Object]]::new();
       if ($aptResults -is [ResultItem[]] -or $aptResults -is [Object[]])
@@ -295,18 +470,21 @@ else
         [switch]$AllRepos = $false,
         [switch]$Raw = $false,
         [switch]$Describe = $false,
-        [Switch]$Exact = $false
+        [Switch]$Exact = $false,
+        [Switch]$Global = $false
       )
 
-      $wingetManager = [WinGetManager]::new($Store, $Interactive);
-      if ($wingetManager.IsPresent)
-      {
-        $wingetManager.Invoke($Command, $Name, '', $Store, $Install, $AllRepos, $Raw, $Describe, $VerboseSwitch, $Exact);
-      }
-      else
-      {
-        Write-Information "$($this.Name) is not a command.";
-      }
+      Invoke-Any `
+        -Command $Command `
+        -Name $Name `
+        -Install $Install `
+        -Interactive $Interactive `
+        -AllRepos $AllRepos `
+        -Raw $Raw `
+        -Describe $Describe `
+        -Exact $Exact `
+        -Global $Global `
+        -managerCode 'wg'
     }
 
     function Invoke-Scoop
@@ -321,19 +499,21 @@ else
         [switch]$AllRepos = $false,
         [switch]$Raw = $false,
         [switch]$Describe = $false,
-        [Switch]$Exact = $false
+        [Switch]$Exact = $false,
+        [Switch]$Global = $false
       )
 
-      $scoopManager = [ScoopManager]::new($Store);
-
-      if ($scoopManager.IsPresent)
-      {
-        $scoopManager.Invoke($Command, $Name, $SubCommand, $Store, $Install, $AllRepos, $Raw, $Describe, $VerboseSwitch, $Exact);
-      }
-      else
-      {
-        Write-Information "$($this.Name) is not a command.";
-      }
+      Invoke-Any `
+        -Command $Command `
+        -Name $Name `
+        -Install $Install `
+        -Interactive $Interactive `
+        -AllRepos $AllRepos `
+        -Raw $Raw `
+        -Describe $Describe `
+        -Exact $Exact `
+        -Global $Global `
+        -managerCode 'scp'
     }
 
     function Invoke-Choco
@@ -347,19 +527,21 @@ else
         [switch]$AllRepos = $false,
         [switch]$Raw = $false,
         [switch]$Describe = $false,
-        [Switch]$Exact = $false
+        [Switch]$Exact = $false,
+        [Switch]$Global = $false
       )
 
-      $chocoManager = [ChocoManager]::new();
-
-      if ($chocoManager.IsPresent)
-      {
-        $chocoManager.Invoke($Command, $Name, $SubCommand, $null, $Install, $AllRepos, $Raw, $Describe, $VerboseSwitch, $Exact);
-      }
-      else
-      {
-        Write-Information "$($this.Name) is not a command.";
-      }
+      Invoke-Any `
+        -Command $Command `
+        -Name $Name `
+        -Install $Install `
+        -Interactive $Interactive `
+        -AllRepos $AllRepos `
+        -Raw $Raw `
+        -Describe $Describe `
+        -Exact $Exact `
+        -Global $Global `
+        -managerCode 'ch'
     }
 
     function Invoke-All
@@ -374,7 +556,8 @@ else
         [switch]$Interactive = $false,
         [switch]$Raw = $false,
         [switch]$Describe = $false,
-        [Switch]$Exact = $false
+        [Switch]$Exact = $false,
+        [Switch]$Global = $false
       )
 
       if ($Name -eq '' -and -not($Command -imatch 'list|upgrade'))
@@ -384,9 +567,9 @@ else
       }
 
       $results = @()
-      $wingetResults = Invoke-Winget $Command $Name -Store $Store -Interactive:$Interactive -AllRepos -Raw:$Raw -Describe:$Describe -Exact:$Exact -Install:$Install
-      $scoopResults = Invoke-Scoop $Command $Name -Subcommand $Subcommand -AllRepos -Raw:$Raw -Describe:$Describe -Exact:$Exact -Install:$Install
-      $chocoResults += Invoke-Choco $Command $Name -Subcommand $Subcommand -AllRepos -Raw:$Raw -Describe:$Describe -Exact:$Exact -Install:$Install
+      $wingetResults = Invoke-Any $Command $Name -Store $Store -Interactive:$Interactive -AllRepos -Raw:$Raw -Describe:$Describe -Exact:$Exact -Install:$Install -Global:$Global -managerCode 'wg'
+      $scoopResults = Invoke-Any $Command $Name -Subcommand $Subcommand -AllRepos -Raw:$Raw -Describe:$Describe -Exact:$Exact -Install:$Install -Global:$Global -managerCode 'scp'
+      $chocoResults += Invoke-Any $Command $Name -Subcommand $Subcommand -AllRepos -Raw:$Raw -Describe:$Describe -Exact:$Exact -Install:$Install -Global:$Global -managerCode 'ch'
 
       $results = [List[Object]]::new();
       if ($wingetResults -is [ResultItem[]] -or $wingetResults -is [Object[]])
@@ -418,9 +601,12 @@ else
 
       if ($Command -imatch 'search|list' -and -not $Raw)
       {
-        if($VerboseSwitch){
+        if ($VerboseSwitch)
+        {
           $results | Sort-Object -Property Repo, ID | Format-Table -Property Repo, Command, Line -GroupBy Repo -AutoSize
-        } else {
+        }
+        else
+        {
           $results | Sort-Object -Property ID | Format-Table -Property Repo, Command -AutoSize
         }
       }
@@ -446,9 +632,9 @@ else
       }
     }
 
-    Set-Alias -Verbose:$Verbose -Scope Global -Description 'Snippets: [repos] WinGet' -Name wg -Value Invoke-Winget -PassThru
-    Set-Alias -Verbose:$Verbose -Scope Global -Description 'Snippets: [repos] Scoop' -Name scp -Value Invoke-Scoop -PassThru
-    Set-Alias -Verbose:$Verbose -Scope Global -Description 'Snippets: [repos] Chocolatey' -Name ch -Value Invoke-Choco -PassThru
+    Set-Alias -Verbose:$Verbose -Scope Global -Description 'Snippets: [repos] WinGet' -Name wg -Value Invoke-Any -PassThru
+    Set-Alias -Verbose:$Verbose -Scope Global -Description 'Snippets: [repos] Scoop' -Name scp -Value Invoke-Any -PassThru
+    Set-Alias -Verbose:$Verbose -Scope Global -Description 'Snippets: [repos] Chocolatey' -Name ch -Value Invoke-Any -PassThru
     Set-Alias -Verbose:$Verbose -Scope Global -Description 'Snippets: [repos] All Repos' -Name repos -Value Invoke-All -PassThru
 
     return 'Repos aliases configured.'
