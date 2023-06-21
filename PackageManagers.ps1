@@ -941,7 +941,7 @@ class NugetManager : PackageManager
 
     NugetManager() : base(
         'nuget', 'nuget', 'search', 'install',
-        'update', 'update', 'list', 'uninstall', 'list', $false
+        'update', 'update', 'list', 'uninstall', $null, $false
     )
     {
     }
