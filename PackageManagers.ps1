@@ -102,9 +102,26 @@ class PackageManager
 
     [ResultItem]ConvertItem([Object]$item, [Switch]$Global, $Command)
     {
-        $json = ConvertTo-Json $item -Depth 3 -EnumsAsStrings -Compress;
+        [string]$json = ConvertTo-Json $item -Depth 3 -EnumsAsStrings -Compress;
+        if($item -is [Microsoft.PowerShell.Commands.MemberDefinition]){
+            $def=($item.Definition.Replace("System.Management.Automation.PSCustomObject $($item.Name)=@",'').Trim('{}'.ToCharArray()).Split(';'));
 
-        return $this.ParseResultItem($json.ToString(), $Command, $Global);
+            foreach($line in $def){
+                if($line.StartsWith('version')){
+                    $parts=$line.Split('=');
+
+                    [ResultItem]$resultItem = [ResultItem]::new($this.Name, $item.Name, $parts[1], $item.Name, '', '', $null, '');
+
+                    $json = ConvertTo-Json $resultItem -Depth 3 -EnumsAsStrings -Compress;
+                }
+            }
+        }
+
+        if($json){
+            return $this.ParseResultItem($json.ToString(), $Command, $Global);
+        }
+
+        return $item.toString();
     }
 
     [Object]ParseResults(
@@ -237,6 +254,25 @@ class PackageManager
         {
             Write-Verbose "[$($this.Name)] & $toExecute $params" -Verbose:$Verbose
             $executeResults = & $toExecute $params 2>&1
+
+            try{
+                $fromJson = $executeResults | ConvertFrom-Json -ErrorAction SilentlyContinue
+                if($fromJson){
+                    if($fromJson.dependencies){
+                        $executeResults = @();
+                        foreach($dep in $fromJson.dependencies){
+                            $members = $dep | Get-Member -MemberType NoteProperty -ErrorAction SilentlyContinue;
+                            if($members){
+                                foreach($member in $members){
+                                    $executeResults += $member;
+                                }
+                            }
+                        }
+                    } else {
+                        $executeResults = $fromJson;
+                    }
+                }
+            } catch {}
 
             $this.ExitCode = $LASTEXITCODE;
         }
@@ -440,7 +476,7 @@ class PackageManager
             $params += $OtherParameters;
         }
 
-        $params = $this.AddParameters($Command, $Global, $params);
+        $params = $this.AddParameters($itemCommand, $Global, $params);
 
         if ($Exact)
         {
@@ -828,7 +864,7 @@ class NpmManager : PackageManager
 
     [Object[]]AddParameters([string]$Command,  [Switch]$Global, [Object[]]$params)
     {
-        if ($Command -imatch 'search|find')
+        if ($Command -imatch 'search|find|list')
         {
             $params += '--json';
         }

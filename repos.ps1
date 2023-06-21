@@ -172,7 +172,7 @@ function Invoke-Any
     }
     ('br')
     {
-      $manager = [BrewManager]::new(); 
+      $manager = [HomebrewManager]::new(); 
     }
     ('sn')
     {
@@ -246,93 +246,6 @@ if ($env:IsWindows -eq 'false')
 {
   try
   {
-    function Invoke-Apt
-    {
-      [CmdletBinding(PositionalBinding = $True)]
-      param(
-        [Parameter(Position = 0)][string]$Command = 'search',
-        [Parameter(Position = 1)][string]$Name = $null,
-        [switch]$Install = $false,
-        [switch]$Interactive = $false,
-        [switch]$AllRepos = $false,
-        [switch]$Raw = $false,
-        [switch]$Describe = $false,
-        [Switch]$Exact = $false,
-        [Switch]$Global = $false
-      )
-
-      $args[0] = 'ap';
-      Invoke-Any `
-        -Command $Command `
-        -Name $Name `
-        -Install $Install `
-        -Interactive $Interactive `
-        -AllRepos $AllRepos `
-        -Raw $Raw `
-        -Describe $Describe `
-        -Exact $Exact `
-        -Global $Global `
-        -managerCode 'ap'
-    }
-
-    function Invoke-Homebrew
-    {
-      [CmdletBinding(PositionalBinding = $True)]
-      param(        
-        [Parameter(Position = 0)][string]$Command = 'search',        
-        [Parameter(Position = 1)][string]$Name = $null,
-        [string]$SubCommand = $null,
-        [string]$Store = 'main',
-        [switch]$Install = $false,
-        [switch]$AllRepos = $false,
-        [switch]$VerboseSwitch = $false,
-        [switch]$Raw = $false,
-        [switch]$Describe = $false,
-        [Switch]$Exact = $false,
-        [Switch]$Global = $false
-      )
-
-      Invoke-Any `
-        -Command $Command `
-        -Name $Name `
-        -Install $Install `
-        -Interactive $Interactive `
-        -AllRepos $AllRepos `
-        -Raw $Raw `
-        -Describe $Describe `
-        -Exact $Exact `
-        -Global $Global `
-        -managerCode 'br'
-    }
-
-    function Invoke-Snap
-    {
-      [CmdletBinding(PositionalBinding = $True)]
-      param(
-        [Parameter(Position = 0)][string]$Command = 'list',
-        [Parameter(Position = 1)][string]$Name = $null,
-        [string]$SubCommand = $null,
-        [switch]$Install = $false,
-        [switch]$AllRepos = $false,
-        [switch]$Raw = $false,
-        [switch]$Describe = $false,
-        [Switch]$Exact = $false,
-        [Switch]$Global = $false
-      )
-
-      Invoke-Any `
-        -Command $Command `
-        -Name $Name `
-        -Install $Install `
-        -Interactive $Interactive `
-        -AllRepos $AllRepos `
-        -Raw $Raw `
-        -Describe $Describe `
-        -Exact $Exact `
-        -Global $Global `
-        -managerCode 'sn'
-    }
-
     function Invoke-AllLinux
     {
       [CmdletBinding(PositionalBinding = $true)]
@@ -361,9 +274,9 @@ if ($env:IsWindows -eq 'false')
       }
 
       $results = @()
-      $aptResults = Invoke-Apt $Command $Name -AllRepos -Raw:$Raw -Describe:$Describe -Exact:$Exact -Install:$Install -Global:$Global
-      $brewResults = Invoke-Homebrew $Command $Name -Subcommand $Subcommand -AllRepos -Raw:$Raw -Describe:$Describe -Exact:$Exact -Install:$Install -Global:$Global
-      $snapResults = Invoke-Snap $Command $Name -Subcommand $Subcommand -AllRepos -Raw:$Raw -Describe:$Describe -Exact:$Exact -Install:$Install -Global:$Global
+      $aptResults = Invoke-Any $Command $Name -AllRepos -Raw:$Raw -Describe:$Describe -Exact:$Exact -Install:$Install -Global:$Global -managerCode 'ap'
+      $brewResults = Invoke-Any $Command $Name -Subcommand $Subcommand -AllRepos -Raw:$Raw -Describe:$Describe -Exact:$Exact -Install:$Install -Global:$Global -managerCode 'br'
+      $snapResults = Invoke-Any $Command $Name -Subcommand $Subcommand -AllRepos -Raw:$Raw -Describe:$Describe -Exact:$Exact -Install:$Install -Global:$Global -managerCode 'sn'
 
       $results = [List[Object]]::new();
       if ($aptResults -is [ResultItem[]] -or $aptResults -is [Object[]])
@@ -395,50 +308,40 @@ if ($env:IsWindows -eq 'false')
 
       if ($Command -imatch 'search|list' -and -not $Raw)
       {
-        $results | Sort-Object -Property Repo, ID | Format-Table -Property Repo, Command, Line -GroupBy Repo -AutoSize
-      }
-      else
-      {
-        if ($results -is [ResultItem])
+        if ($VerboseSwitch)
         {
-          [List[ResultItem]]$list = [List[ResultItem]]::new();
-          $list.Add($results);
-          $results = $list
-        }
-
-        $type = [ResultItem];
-        $firstItem = GetFirstItem -OfType $type -Enum $results
-
-        if ($Install -and $firstItem)
-        {
-          $arguments = $firstItem.Command.Split(' ')
-
-          if ($firstItem.PackageManager)
-          {
-            if ($firstItem.PackageManager.UseSudo)
-            {
-              & sudo $firstItem.PackageManager.Command.Source $arguments;
-            }
-            else
-            {
-              & $firstItem.PackageManager.Command.Source $arguments;
-            }
-          }
-          else
-          {
-            & $firstItem.Repo $arguments
-          }
+          $results | Sort-Object -Property Repo, ID | Format-Table -Property Repo, Command, Line -GroupBy Repo -AutoSize
         }
         else
         {
-          $results
+          $results | Sort-Object -Property ID | Format-Table -Property Repo, Command -AutoSize
         }
+      }
+      else
+      {
+        $results
+      }
+
+      if ($results -is [ResultItem])
+      {
+        [List[ResultItem]]$list = [List[ResultItem]]::new();
+        $list.Add($results);
+        $results = $list
+      }
+
+      $type = [ResultItem];
+      $firstItem = GetFirstItem -OfType $type -Enum $results
+
+      if ($Install -and $firstItem)
+      {
+        $arguments = $firstItem.Command.Split(' ')
+        & $firstItem.Repo $arguments
       }
     }
 
-    Set-Alias -Verbose:$Verbose -Scope Global -Description 'Snippets: [repos] apt' -Name ap -Value Invoke-Apt -PassThru
-    Set-Alias -Verbose:$Verbose -Scope Global -Description 'Snippets: [repos] homebreq' -Name br -Value Invoke-Homebrew -PassThru
-    Set-Alias -Verbose:$Verbose -Scope Global -Description 'Snippets: [repos] snap' -Name sn -Value Invoke-Snap -PassThru
+    Set-Alias -Verbose:$Verbose -Scope Global -Description 'Snippets: [repos] apt' -Name ap -Value Invoke-All -PassThru
+    Set-Alias -Verbose:$Verbose -Scope Global -Description 'Snippets: [repos] homebreq' -Name br -Value Invoke-All -PassThru
+    Set-Alias -Verbose:$Verbose -Scope Global -Description 'Snippets: [repos] snap' -Name sn -Value Invoke-All -PassThru
     Set-Alias -Verbose:$Verbose -Scope Global -Description 'Snippets: [repos] All Repos' -Name repos -Value Invoke-AllLinux -PassThru
 
     return 'Repos aliases configured.'
@@ -458,92 +361,6 @@ else
  
   try
   {
-    function Invoke-Winget
-    {
-      [CmdletBinding(PositionalBinding = $True)]
-      param(
-        [Parameter(Position = 0)][string]$Command = 'search',
-        [Parameter(Position = 1)][string]$Name = $null,
-        [string]$Store = 'winget',
-        [switch]$Install = $false,
-        [switch]$Interactive = $false,
-        [switch]$AllRepos = $false,
-        [switch]$Raw = $false,
-        [switch]$Describe = $false,
-        [Switch]$Exact = $false,
-        [Switch]$Global = $false
-      )
-
-      Invoke-Any `
-        -Command $Command `
-        -Name $Name `
-        -Install $Install `
-        -Interactive $Interactive `
-        -AllRepos $AllRepos `
-        -Raw $Raw `
-        -Describe $Describe `
-        -Exact $Exact `
-        -Global $Global `
-        -managerCode 'wg'
-    }
-
-    function Invoke-Scoop
-    {
-      [CmdletBinding(PositionalBinding = $True)]
-      param(        
-        [Parameter(Position = 0)][string]$Command = 'search',        
-        [Parameter(Position = 1)][string]$Name = $null,
-        [string]$SubCommand = $null,
-        [string]$Store = 'main',
-        [switch]$Install = $false,
-        [switch]$AllRepos = $false,
-        [switch]$Raw = $false,
-        [switch]$Describe = $false,
-        [Switch]$Exact = $false,
-        [Switch]$Global = $false
-      )
-
-      Invoke-Any `
-        -Command $Command `
-        -Name $Name `
-        -Install $Install `
-        -Interactive $Interactive `
-        -AllRepos $AllRepos `
-        -Raw $Raw `
-        -Describe $Describe `
-        -Exact $Exact `
-        -Global $Global `
-        -managerCode 'scp'
-    }
-
-    function Invoke-Choco
-    {
-      [CmdletBinding(PositionalBinding = $True)]
-      param(
-        [Parameter(Position = 0)][string]$Command = 'list',
-        [Parameter(Position = 1)][string]$Name = $null,
-        [string]$SubCommand = $null,
-        [switch]$Install = $false,
-        [switch]$AllRepos = $false,
-        [switch]$Raw = $false,
-        [switch]$Describe = $false,
-        [Switch]$Exact = $false,
-        [Switch]$Global = $false
-      )
-
-      Invoke-Any `
-        -Command $Command `
-        -Name $Name `
-        -Install $Install `
-        -Interactive $Interactive `
-        -AllRepos $AllRepos `
-        -Raw $Raw `
-        -Describe $Describe `
-        -Exact $Exact `
-        -Global $Global `
-        -managerCode 'ch'
-    }
-
     function Invoke-All
     {
       [CmdletBinding(PositionalBinding = $true)]
