@@ -823,11 +823,30 @@ class ChocoManager : PackageManager
     {
     }
 
+    [Object[]]AddParameters([string]$Command,  [Switch]$Global, [Object[]]$params)
+    {
+        if ($Command -imatch 'list')
+        {
+            $params += '-l';
+        }
+    
+        return $params;
+    }
+
     [ResultItem]ParseResultItem([string]$Line, [string]$Command, [Switch]$Global)
     {
-        if ($line.IndexOf('[Approved]') -gt -1)
+        if($Line.Trim().IndexOf('packages installed.') -gt -1){
+            return $null;
+        }
+
+        $index =  $line.IndexOf('[Approved]');
+        if (($Command -imatch 'search' -and $index -gt -1) -or
+            -not($Command -imatch 'search'))
         {
-            $line = $line.Substring(0, $line.IndexOf('[Approved]')).Trim();
+            if($index -gt -1){
+                $line = $line.Substring(0, $line.IndexOf('[Approved]')).Trim();
+            }
+            
             $lastIndex = $line.LastIndexOf(' ');
             $nme = $line.Substring(0, $lastIndex).Trim();
             $ver = $line.Substring($lastIndex).Trim();
