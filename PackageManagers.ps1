@@ -568,11 +568,11 @@ class AptManager : PackageManager
             {
                 'search'
                 {
-                    $inst = "install $id=$ver" 
+                    $inst = "$($this.Install) $id=$ver" 
                 }
                 'list'
                 {
-                    $inst = "uninstall $id" 
+                    $inst = "$($this.Uninstall) $id" 
                 }
             }
     
