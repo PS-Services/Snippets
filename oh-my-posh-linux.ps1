@@ -5,11 +5,11 @@ $Verbose=$VerboseSwitch
 # Write-Verbose "[$script] [$env:SnippetsInitialized] -not `$env:SnippetsInitialized: $(-not $env:SnippetsInitialized)" -Verbose:$Verbose
 $script = $MyInvocation.MyCommand
 
-if (-not $env:SnippetsInitialized) { 
+if (-not $env:SnippetsInitialized) {
     $fileInfo = New-Object System.IO.FileInfo (Get-Item $PSScriptRoot).FullName
     $path = $fileInfo.Directory.FullName;
-    . $path/Snippets/common.ps1; 
-    Initialize-Snippets -Verbose:$Verbose 
+    . $path/Snippets/_common.ps1;
+    Initialize-Snippets -Verbose:$Verbose
 }
 
 Write-Verbose "[$script] `$env:IsUnix: [${env:IsUnix}]" -Verbose:$Verbose
@@ -32,7 +32,7 @@ function Setup-OMP {
                 if($ohMyPosh) {
                     Write-Verbose "[$script] Installed OH-MY-POSH to [$ohMyPosh]." -Verbose:$Verbose
                 }
-            } 
+            }
 
             if (-not $ohMyPosh) {
                 Write-Verbose "[$script] Cannot find Oh-My-Posh and cannot install manually." -Verbose:$Verbose
@@ -48,13 +48,13 @@ function Setup-OMP {
                 }
                 else {
                     return "Could not locate or install OH-MY-POSH"
-                }            
+                }
             }
 
             return "OH-MY-POSH was not started. (Should never get here!)"
         }
         catch {
-            Write-Host $Error    
+            Write-Host $Error
         }
         finally {
             Write-Verbose "[$script] Leaving..." -Verbose:$Verbose

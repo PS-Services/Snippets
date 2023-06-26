@@ -5,11 +5,11 @@ $Verbose=$VerboseSwitch
 # Write-Verbose "[$script] [$env:SnippetsInitialized] -not `$env:SnippetsInitialized: $(-not $env:SnippetsInitialized)" -Verbose:$Verbose
 $script = $MyInvocation.MyCommand
 
-if(-not $env:SnippetsInitialized) { 
+if(-not $env:SnippetsInitialized) {
   $fileInfo = New-Object System.IO.FileInfo (Get-Item $PSScriptRoot).FullName
   $path = $fileInfo.Directory.FullName;
-  . $path/Snippets/common.ps1; 
-  Initialize-Snippets -Verbose:$Verbose 
+  . $path/Snippets/_common.ps1;
+  Initialize-Snippets -Verbose:$Verbose
 }
 
 try {
@@ -26,13 +26,13 @@ try {
     if($env:Dotnet) {
       $env:dnscriptPath = $env:dnscriptPath.Replace("$env:USERPROFILE\.dotnet", $env:Dotnet).Replace("$env:USERPROFILE/.dotnet", $env:Dotnet)
     }
-    
+
     $env:BingLocation = $env:Snippets
     if (-not $env:BingLocation.EndsWith("Snippets")) { $env:BingLocation = Join-Path $env:BingLocation -Child "Snippets" }
     Write-Verbose "[$script] `$env:BingLocation: $env:BingLocation" -Verbose:$Verbose
     $ApiKey = '3c7e251544ba414cbeacad9db55bdf6e'
 
-    $env:BingApiKey = $ApiKey  
+    $env:BingApiKey = $ApiKey
     function Search-Bing {
       $query = [System.String]::Join(' ', $args);
       $csxPath = Join-Path $env:BingLocation -Child 'bing.csx' ;
@@ -46,7 +46,7 @@ try {
   }
 }
 catch {
-  Write-Host $Error    
+  Write-Host $Error
 }
 finally {
   Write-Verbose '[bing.ps1] Leaving...' -Verbose:$Verbose

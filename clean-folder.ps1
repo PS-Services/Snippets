@@ -5,11 +5,11 @@ $Verbose=$VerboseSwitch
 # Write-Verbose "[$script] [$env:SnippetsInitialized] -not `$env:SnippetsInitialized: $(-not $env:SnippetsInitialized)" -Verbose:$Verbose
 $script = $MyInvocation.MyCommand
 
-if (-not $env:SnippetsInitialized) { 
+if (-not $env:SnippetsInitialized) {
   $fileInfo = New-Object System.IO.FileInfo (Get-Item $PSScriptRoot).FullName
   $path = $fileInfo.Directory.FullName;
-  . $path/Snippets/common.ps1; 
-  Initialize-Snippets -Verbose:$Verbose 
+  . $path/Snippets/_common.ps1;
+  Initialize-Snippets -Verbose:$Verbose
 }
 
 function Clean-Folder {
@@ -43,7 +43,7 @@ try {
   return "Execute ``Clean-Folder -r -f`` to remove ``bin`` and ``obj`` folders recursively."
 }
 catch {
-  Write-Host $Error    
+  Write-Host $Error
 }
 finally {
   Write-Verbose "[$script] Leaving..." -Verbose:$Verbose

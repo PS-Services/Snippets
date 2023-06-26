@@ -53,7 +53,7 @@ try {
         Push-Location -Verbose:$MasterVerbose
         Set-Location $env:Snippets -Verbose:$MasterVerbose
 
-        $exclusions += 'common.ps1'
+        $exclusions += '_common.ps1'
         Write-Verbose -Verbose:$MasterVerbose -Message "[$profileScript] Exclusions: $exclusions"
 
         $snippets = Get-ChildItem *.ps1 -Verbose:$MasterVerbose -Exclude $exclusions | Sort-Object Name

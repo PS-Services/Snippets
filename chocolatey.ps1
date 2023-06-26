@@ -5,11 +5,11 @@ $Verbose=$VerboseSwitch
 # Write-Verbose "[$script] [$env:SnippetsInitialized] -not `$env:SnippetsInitialized: $(-not $env:SnippetsInitialized)" -Verbose:$Verbose
 $script = $MyInvocation.MyCommand
 
-if (-not $env:SnippetsInitialized) { 
+if (-not $env:SnippetsInitialized) {
     $fileInfo = New-Object System.IO.FileInfo (Get-Item $PSScriptRoot).FullName
     $path = $fileInfo.Directory.FullName;
-    . $path/Snippets/common.ps1; 
-    Initialize-Snippets -Verbose:$Verbose 
+    . $path/Snippets/_common.ps1;
+    Initialize-Snippets -Verbose:$Verbose
 }
 
 if ($env:IsWindows -ieq 'true') {
@@ -17,9 +17,9 @@ if ($env:IsWindows -ieq 'true') {
         if(-not($env:ChocolateyInstall)){
             $env:ChocolateyInstall = "$env:USERPROFILE\.choco"
         }
-        
+
         $ChocolateyProfile = "$env:ChocolateyInstall\helpers\chocolateyProfile.psm1"
-        
+
         if (Test-Path($ChocolateyProfile)) {
             Import-Module "$ChocolateyProfile"
 
@@ -31,7 +31,7 @@ if ($env:IsWindows -ieq 'true') {
         }
     }
     catch {
-        Write-Host $Error    
+        Write-Host $Error
     }
     finally {
         Write-Verbose "[$script] Leaving..." -Verbose:$Verbose

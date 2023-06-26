@@ -8,7 +8,7 @@ $script = $MyInvocation.MyCommand
 if (-not $env:SnippetsInitialized) {
     $fileInfo = New-Object System.IO.FileInfo (Get-Item $PSScriptRoot).FullName
     $path = $fileInfo.Directory.FullName;
-    . $path/Snippets/common.ps1;
+    . $path/Snippets/_common.ps1;
     Initialize-Snippets -Verbose:$Verbose
 }
 

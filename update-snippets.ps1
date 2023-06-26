@@ -7,11 +7,11 @@ $Verbose=$VerboseSwitch
 # Write-Verbose "[$script] [$env:SnippetsInitialized] -not `$env:SnippetsInitialized: $(-not $env:SnippetsInitialized)" -Verbose:$Verbose
 $script = $MyInvocation.MyCommand
 
-if (-not $env:SnippetsInitialized) { 
+if (-not $env:SnippetsInitialized) {
     $fileInfo = New-Object System.IO.FileInfo (Get-Item $PSScriptRoot).FullName
     $path = $fileInfo.Directory.FullName;
-    . $path/Snippets/common.ps1; 
-    Initialize-Snippets -Verbose:$Verbose 
+    . $path/Snippets/_common.ps1;
+    Initialize-Snippets -Verbose:$Verbose
 }
 
 if ($env:IsWindows -ieq 'true') {
@@ -95,7 +95,7 @@ function Update-Snippets {
             Set-Location $env:Snippets
             & git pull
             if ($LASTEXITCODE -ne 0) {
-                throw "git pull failed with: $LASTEXITCODE" 
+                throw "git pull failed with: $LASTEXITCODE"
             }
 
             $exitCode = $LASTEXITCODE

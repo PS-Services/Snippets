@@ -7,13 +7,13 @@ A collection of PowerShell tools you can add to your profile.
 ## Windows
 
 1. Clone this repository to `$env:OneDrive/Documents/Snippets`
-2. In an Administrator elevated editor, edit `$PROFILE.AllUsersAllHosts`.  
+2. In an Administrator elevated editor, edit `$PROFILE.AllUsersAllHosts`.
 3. Add `$env:Snippets="$env:OneDrive/Documents/PowerShell/Snippets"` to the end and save it.
 
 ## Linux, WSL, MacOS
 
 1. Clone this repository to `/opt/microsoft/powershell/7/Snippets`
-2. In an Administrator elevated editor, edit `$PROFILE.AllUsersAllHosts`.  
+2. In an Administrator elevated editor, edit `$PROFILE.AllUsersAllHosts`.
 3. Add `$env:Snippets="/opt/microsoft/powershell/7/Snippets"` to the end and save it.
 
 ___OR___
@@ -114,7 +114,7 @@ try {
     if (Test-Path $env:Snippets -Verbose:$MasterVerbose) {
         Push-Location -Verbose:$MasterVerbose
         Set-Location $env:Snippets -Verbose:$MasterVerbose
-        $snippets = Get-ChildItem *.ps1 -Verbose:$MasterVerbose -Exclude common.ps1
+        $snippets = Get-ChildItem *.ps1 -Verbose:$MasterVerbose -Exclude _common.ps1
         Pop-Location -Verbose:$MasterVerbose
 
         $resultList = @()
