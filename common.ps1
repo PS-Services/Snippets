@@ -1,3 +1,11 @@
+$utilities = Get-Module Microsoft.PowerShell.Utility -ErrorAction SilentlyContinue
+
+if(-not $utilities){
+    Install-Module Microsoft.PowerShell.Utility -AllowClobber -Scope CurrentUser -AcceptLicense -Force
+}
+
+Import-Module Microsoft.PowerShell.Utility
+
 param([switch]$VerboseSwitch = $false)
 
 function Set-SnippetsLocation {

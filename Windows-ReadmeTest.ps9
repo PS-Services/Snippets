@@ -56,13 +56,13 @@ try {
         $exclusions += 'common.ps1'
         Write-Verbose -Verbose:$MasterVerbose -Message "[$profileScript] Exclusions: $exclusions"
 
-        $snippets = Get-ChildItem *.ps1 -Verbose:$MasterVerbose -Exclude $exclusions
+        $snippets = Get-ChildItem *.ps1 -Verbose:$MasterVerbose -Exclude $exclusions | Sort-Object Name
 
         $thirdPartyPath = $env:Snippets + '/3rdParty'
 
         if (Test-Path $thirdPartyPath) {
             $thirdParty = Get-ChildItem *.ps1 -Path $thirdPartyPath -Recurse -Verbose:$MasterVerbose -Exclude $exclusions
-        
+
             $snippets += $thirdParty
         }
 

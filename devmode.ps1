@@ -5,11 +5,11 @@ $Verbose = $VerboseSwitch
 # Write-Verbose "[$script] [$env:SnippetsInitialized] -not `$env:SnippetsInitialized: $(-not $env:SnippetsInitialized)" -Verbose:$Verbose
 $script = $MyInvocation.MyCommand
 
-if (-not $env:SnippetsInitialized) { 
+if (-not $env:SnippetsInitialized) {
     $fileInfo = New-Object System.IO.FileInfo (Get-Item $PSScriptRoot).FullName
     $path = $fileInfo.Directory.FullName;
-    . $path/Snippets/common.ps1; 
-    Initialize-Snippets -Verbose:$Verbose 
+    . $path/Snippets/common.ps1;
+    Initialize-Snippets -Verbose:$Verbose
 }
 
 if ($env:IsWindows -ieq 'true') {
@@ -17,19 +17,15 @@ if ($env:IsWindows -ieq 'true') {
         $vswhere = Get-Command vswhere -ErrorAction SilentlyContinue
 
         if (-not($vswhere)) {
-            $winget = get-command winget -ErrorAction SilentlyContinue
+            Invoke-Any install Microsoft.VisualStudio.Locator -Exact -managerCode 'wg' -VerboseSwitch
 
-            if (-not($winget)) {
-                throw "winget is not installed";
-            }        
-
-            & $winget install Microsoft.VisualStudio.Locator
+            refreshenv
 
             $vswhere = Get-Command vswhere -ErrorAction SilentlyContinue
 
             if (-not($vswhere)) {
                 throw "Could not install vswhere";
-            }        
+            }
         }
 
         function Start-DevMode {
