@@ -1,3 +1,5 @@
+param([switch]$VerboseSwitch = $false)
+
 $utilities = Get-Module Microsoft.PowerShell.Utility -ErrorAction SilentlyContinue
 
 if(-not $utilities){
@@ -6,7 +8,6 @@ if(-not $utilities){
 
 Import-Module Microsoft.PowerShell.Utility
 
-param([switch]$VerboseSwitch = $false)
 
 function Set-SnippetsLocation {
     Set-Location "$env:Snippets"
