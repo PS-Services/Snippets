@@ -1,5 +1,19 @@
 param([switch]$VerboseSwitch = $false)
 
+switch ($env:IsDesktop)
+{
+                ('true')
+    {
+        $env:IsWindows = 'True'; $env:IsUnix = 'False'
+    }
+    default
+    {
+        $env:IsWindows = "$IsWindows"; $env:IsUnix = "$IsLinux"
+    }
+}
+
+Write-Verbose "`$env:IsWindows: $($env:IsWindows)"
+
 $utilities = Get-Module Microsoft.PowerShell.Utility -ErrorAction SilentlyContinue
 
 if(-not $utilities){
@@ -59,11 +73,6 @@ function Initialize-Snippets {
 
             $env:IsDesktop = "$($PSVersionTable.PSEdition -ieq 'desktop')"
             Write-Verbose "[$script] `$env:IsDesktop: [$($env:IsDesktop)]" -Verbose:$Verbose
-
-            switch ($env:IsDesktop) {
-                ("true") { $env:IsWindows="True"; $env:IsUnix="False"; }
-                default { $env:IsWindows="$IsWindows"; $env:IsUnix="$IsLinux";}
-            }
 
             Write-Verbose "[$script] Snippets Version: $env:SnippetsVersion" -Verbose:$Verbose
             Write-Verbose "[$script] `$env:IsDesktop: $env:IsDesktop" -Verbose:$Verbose
