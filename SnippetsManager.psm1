@@ -1324,6 +1324,7 @@ Set-Alias -Verbose:$Verbose -Scope Global -Description 'Snippets: [repos] Dotnet
 
 if ($env:IsWindows -eq 'false')
 {
+    Write-Verbose "Using Linux Repos" -Verbose
     try
     {
         function Invoke-AllLinux
@@ -1440,6 +1441,7 @@ if ($env:IsWindows -eq 'false')
 }
 else
 {
+    Write-Verbose 'Using Windows Repos' -Verbose
 
     try
     {
