@@ -13,6 +13,6 @@ if (-not $packageManagers)
   throw [ErrorRecord]::new("Cannot locate ``SnippetsManager.psm1`` in ``$env:Snippets``");
 }
 
-Import-Module $packageManagers -Verbose
+Import-Module $packageManagers.FullName -Verbose
 
 Write-Verbose "Executing [$script]" -Verbose:$Verbose
