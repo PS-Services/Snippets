@@ -577,7 +577,7 @@ class ZypperManager : PackageManager {
     }
 
     [Object[]]AddParameters([string]$Command, [Switch]$Global, [Object[]]$params) {
-        if ($Command -imatch 'list|info') {
+        if ($Command -imatch 'search|list|info') {
             return $params
         }
 
@@ -586,10 +586,10 @@ class ZypperManager : PackageManager {
 
     [ResultItem]ParseResultItem([string]$Line, [string]$Command, [Switch]$Global) {
         # golang-github-sahilm-fuzzy-dev/stable,oldstable,testing 0.1.0-1.1 all
-        $regex = [Regex]::new('^   \|\s([^\s]+)\s+\|([^|]+)\|')
+        $regex = [Regex]::new('^\s+\|\s([^\s]+)\s+\|([^|]+)\|')
         switch -regex ($Command){
-            'list' {        
-                $regex = [Regex]::new('^i.\s\|\s([^\s]+)\s+\|([^|]+)\|')
+            'list' {
+                $regex = [Regex]::new('^i.\s+\|\s([^\s]+)\s+\|([^|]+)\|')
             }
         }
         $ver=$null
