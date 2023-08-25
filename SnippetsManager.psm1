@@ -569,6 +569,53 @@ class AptManager : PackageManager {
         return $null
     }
 }
+class ZypperManager : PackageManager {
+    ZypperManager() : base(
+        'zypper', 'zypper', 'search', 'install',
+        'upgrade', 'update', 'search', 'remove', 'info', $true
+    ) {
+    }
+
+    [Object[]]AddParameters([string]$Command, [Switch]$Global, [Object[]]$params) {
+        if ($Command -imatch 'list|info') {
+            return $params
+        }
+
+        return $params + '-y'
+    }
+
+    [ResultItem]ParseResultItem([string]$Line, [string]$Command, [Switch]$Global) {
+        # golang-github-sahilm-fuzzy-dev/stable,oldstable,testing 0.1.0-1.1 all
+        $regex = [Regex]::new('^   \|\s([^\s]+)\s+\|([^|]+)\|')
+        switch -regex ($Command){
+            'list' {        
+                $regex = [Regex]::new('^i.\s\|\s([^\s]+)\s+\|([^|]+)\|')
+            }
+        }
+        $ver=$null
+        if ($regex.IsMatch($line)) {
+            $id = $regex.Match($line).Groups[1].Value.Trim()
+            #$ver = $regex.Match($line).Groups[2].Value.Trim()
+            $desc = $regex.Match($line).Groups[2].Value.Trim()
+            $nme = $id
+            $inst = ''
+            switch -regex ($Command) {
+                'search' {
+                    $inst = "$($this.Install) $id # $desc"
+                }
+                'list' {
+                    $inst = "$($this.Uninstall) $id # $desc"
+                }
+            }
+
+            return [ResultItem]::new(
+                "sudo $($this.Executable)", $id, $ver, $nme, $inst, $desc, $this, $Line
+            )
+        }
+
+        return $null
+    }
+}
 
 class HomebrewManager : PackageManager {
     [string]$Store = 'main'
@@ -1250,8 +1297,11 @@ function Invoke-Any {
     [PackageManager]$manager = $null
 
     Switch -regex ($alias) {
-    ('ap') {
+        ('ap') {
             $manager = [AptManager]::new()
+        }
+        ('zy') {
+            $manager = [ZypperManager]::new()
         }
     ('br') {
             $manager = [HomebrewManager]::new()
@@ -1355,6 +1405,7 @@ if ($env:IsWindows -eq 'false') {
 
             $results = @()
             $aptResults = Invoke-Any $Command $Name -AllRepos -Raw:$Raw -Describe:$Describe -Exact:$Exact -Install:$Install -Global:$Global -managerCode 'ap'
+            $zypperResults = Invoke-Any $Command $Name -AllRepos -Raw:$Raw -Describe:$Describe -Exact:$Exact -Install:$Install -Global:$Global -managerCode 'zy'
             $brewResults = Invoke-Any $Command $Name -Subcommand $Subcommand -AllRepos -Raw:$Raw -Describe:$Describe -Exact:$Exact -Install:$Install -Global:$Global -managerCode 'br'
             $snapResults = Invoke-Any $Command $Name -Subcommand $Subcommand -AllRepos -Raw:$Raw -Describe:$Describe -Exact:$Exact -Install:$Install -Global:$Global -managerCode 'sn'
 
@@ -1364,6 +1415,13 @@ if ($env:IsWindows -eq 'false') {
             }
             else {
                 $results.Add($aptResults)
+            }
+
+            if ($zypperResults -is [ResultItem[]] -or $zypperResults -is [Object[]]) {
+                $results.AddRange($zypperResults)
+            }
+            else {
+                $results.Add($zypperResults)
             }
 
             if ($brewResults -is [ResultItem[]] -or $brewResults -is [Object[]]) {
@@ -1410,7 +1468,8 @@ if ($env:IsWindows -eq 'false') {
         Export-ModuleMember -Function Invoke-AllLinux
 
         Set-Alias -Verbose:$Verbose -Scope Global -Description 'Snippets: [repos] apt' -Name ap -Value Invoke-Any -PassThru
-        Set-Alias -Verbose:$Verbose -Scope Global -Description 'Snippets: [repos] homebreq' -Name br -Value Invoke-Any -PassThru
+        Set-Alias -Verbose:$Verbose -Scope Global -Description 'Snippets: [repos] zypper' -Name zy -Value Invoke-Any -PassThru
+        Set-Alias -Verbose:$Verbose -Scope Global -Description 'Snippets: [repos] homebrew' -Name br -Value Invoke-Any -PassThru
         Set-Alias -Verbose:$Verbose -Scope Global -Description 'Snippets: [repos] snap' -Name sn -Value Invoke-Any -PassThru
         Set-Alias -Verbose:$Verbose -Scope Global -Description 'Snippets: [repos] All Repos' -Name repos -Value Invoke-AllLinux -PassThru
 
