@@ -396,13 +396,15 @@ class PackageManager {
 
         Switch -regex ($itemCommand) {
         ('^search|find') {
+            if($this.Search) {
                 $params += $this.Search
-                if ($SubCommand.Trim().Length -gt 0) {
-                    $params += $SubCommand.Trim()
-                }
-                $params += $itemName
-                $Sudo = $Sudo -and $False
             }
+            if ($SubCommand.Trim().Length -gt 0) {
+                $params += $SubCommand.Trim()
+            }
+            $params += $itemName
+            $Sudo = $Sudo -and $False
+        }
 
         ('^install') {
                 $params += $this.Install
@@ -679,8 +681,8 @@ class WinGetManager : PackageManager {
         $regex = [Regex]::new($exp)
         $id = $nme = $ver = $null
         switch -regex ($Command) {
-            'list' { 
-                $exp = '^([^\{]+)(\{[a-zA-Z0-9\-]+\})\s+([\w\.\-]+|Unknown)'; 
+            'list' {
+                $exp = '^([^\{]+)(\{[a-zA-Z0-9\-]+\})\s+([\w\.\-]+|Unknown)';
                 $regex = [Regex]::new($exp)
 
                 if ($regex.IsMatch($line)) {
@@ -689,14 +691,14 @@ class WinGetManager : PackageManager {
                     $ver = $regex.Match($line).Groups[3].Value.Trim()
                 }
                 else {
-                    $exp = '^((?:[^\s]+\s)+)\s+([^\s]+)\s+([\w\.\-]+|Unknown)'; 
+                    $exp = '^((?:[^\s]+\s)+)\s+([^\s]+)\s+([\w\.\-]+|Unknown)';
                     $regex = [Regex]::new($exp)
-    
+
                     if ($regex.IsMatch($line)) {
                         $nme = $regex.Match($line).Groups[1].Value.Trim()
                         $id = $regex.Match($line).Groups[2].Value.Trim()
                         $ver = $regex.Match($line).Groups[3].Value.Trim()
-                    }    
+                    }
                 }
 
                 if($nme -ieq 'Name'){
@@ -710,7 +712,7 @@ class WinGetManager : PackageManager {
                     $ver = $regex.Match($line).Groups[2].Value.Trim()
                     $index = $line.IndexOf($id)
                     $nme = $line.Substring(0, $index).Trim()
-                }        
+                }
             }
         }
 
@@ -904,6 +906,175 @@ class NpmManager : PackageManager {
             )
         }
 
+        return $null
+    }
+}
+
+class PipManager : PackageManager{
+
+    PipManager() : base(
+        'pip', 'pip', $null, 'install',
+        $null, $null, 'list', 'uninstall', 'show', $false
+    )
+    {
+    }
+
+    [Object[]]AddParameters([string]$Command, [Switch]$Global, [Object[]]$params)
+    {
+        # if ($Command -imatch 'search|find|list')
+        # {
+        #     $params += '--json'
+        # }
+
+        # if ($Global)
+        # {
+        #     $params += '-g'
+        # }
+
+        return $params
+    }
+
+    [ResultItem]ParseResultItem([string]$Line, [string]$Command, [Switch]$Global)
+    {
+        $exp = '^(?:│ 📂 )([^\s]+)\s+│\s+([\w\.\-]+)\s+'
+        $regex = [Regex]::new($exp)
+        $id = $nme = $ver = $null
+        switch -regex ($Command)
+        {
+            'list'
+            {
+                $exp = '^(?!Package|-----)([^\s]+)\s+([\w\.\-]+)'
+                $regex = [Regex]::new($exp)
+
+                if ($regex.IsMatch($line))
+                {
+                    $nme = $regex.Match($line).Groups[1].Value.Trim()
+                    $id = $regex.Match($line).Groups[1].Value.Trim()
+                    $ver = $regex.Match($line).Groups[2].Value.Trim()
+                }
+
+                if ($nme -ieq 'Package')
+                {
+                    $id = $nme = $ver = $null
+                }
+            }
+
+            default
+            {
+                if ($regex.IsMatch($line))
+                {
+                    $id = $regex.Match($line).Groups[1].Value.Trim()
+                    $ver = $regex.Match($line).Groups[2].Value.Trim()
+                    $nme = $id
+                }
+            }
+        }
+
+        if ($id)
+        {
+            $inst = ''
+
+            switch -regex ($Command)
+            {
+                'search'
+                {
+                    $inst = "install $id@$ver"
+                }
+                'list'
+                {
+                    $inst = "uninstall $id"
+                }
+            }
+
+            return [ResultItem]::new(
+                $this.Executable, $id, $ver, $nme, $inst, $null, $this, $Line
+            )
+        }
+        return $null
+    }
+}
+
+class PipSearchManager : PackageManager
+{
+
+    PipSearchManager() : base(
+        'pip_search', 'pip_search', $null, $null,
+        $null, $null, $null, $null, $null, $false
+    )
+    {
+    }
+
+    [Object[]]AddParameters([string]$Command, [Switch]$Global, [Object[]]$params)
+    {
+        # if ($Command -imatch 'search|find|list')
+        # {
+        #     $params += '--json'
+        # }
+
+        # if ($Global)
+        # {
+        #     $params += '-g'
+        # }
+
+        return $params
+    }
+
+    [ResultItem]ParseResultItem([string]$Line, [string]$Command, [Switch]$Global)
+    {
+        $exp = '^(?:│ 📂 )([^\s]+)\s+│\s+([\w\.\-]+)\s+'
+        $regex = [Regex]::new($exp)
+        $id = $nme = $ver = $null
+        switch -regex ($Command)
+        {
+            'list'
+            {
+                $exp = '^(?!Package|-----)([^\s]+)\s+([\w\.\-]+)'
+                $regex = [Regex]::new($exp)
+
+                if ($regex.IsMatch($line))
+                {
+                    $nme = $regex.Match($line).Groups[1].Value.Trim()
+                    $id = $regex.Match($line).Groups[1].Value.Trim()
+                    $ver = $regex.Match($line).Groups[2].Value.Trim()
+                }
+
+                if ($nme -ieq 'Package')
+                {
+                    $id = $nme = $ver = $null
+                }
+            }
+
+            default
+            {
+                if ($regex.IsMatch($line))
+                {
+                    $id = $regex.Match($line).Groups[1].Value.Trim()
+                    $ver = $regex.Match($line).Groups[2].Value.Trim()
+                    $nme = $id
+                }
+            }
+        }
+
+        if ($id)
+        {
+            $inst = ''
+
+            switch -regex ($Command)
+            {
+                'search'
+                {
+                    $inst = "install $id@$ver"
+                }
+                'list'
+                {
+                    $inst = "uninstall $id"
+                }
+            }
+
+            return [ResultItem]::new(
+                $this.Executable, $id, $ver, $nme, $inst, $null, $this, $Line
+            )
+        }
         return $null
     }
 }
@@ -1106,8 +1277,17 @@ function Invoke-Any {
     ('dn') {
             $manager = [DotnetManager]::new()
         }
-    ('dt') {
+    ('dt')
+        {
             $manager = [DotnetToolManager]::new()
+        }
+    ('pp')
+        {
+            $manager = [PipManager]::new()
+        }
+    ('pps')
+        {
+            $manager = [PipSearchManager]::new()
         }
         default {
             throw "``$alias`` is not a known package manager."
@@ -1139,6 +1319,8 @@ function Invoke-Any {
 
 Export-ModuleMember -Function Invoke-Any
 
+Set-Alias -Verbose:$Verbose -Scope Global -Description 'Snippets: [repos] PIP' -Name pp -Value Invoke-Any -PassThru
+Set-Alias -Verbose:$Verbose -Scope Global -Description 'Snippets: [repos] PIP-Search' -Name pps -Value Invoke-Any -PassThru
 Set-Alias -Verbose:$Verbose -Scope Global -Description 'Snippets: [repos] NPM' -Name np -Value Invoke-Any -PassThru
 Set-Alias -Verbose:$Verbose -Scope Global -Description 'Snippets: [repos] NuGet' -Name ng -Value Invoke-Any -PassThru
 Set-Alias -Verbose:$Verbose -Scope Global -Description 'Snippets: [repos] Dotnet' -Name dn -Value Invoke-Any -PassThru
