@@ -167,6 +167,7 @@ Write-Verbose 'PowerShell Ready.' -Verbose:$MasterVerbose
 
 - `dn` dotnet
 - `dt` dotnet tool
+- `ng` nuget
 - `np` NPM
 - `pp` pip
 - `pps` pip-search
@@ -177,6 +178,19 @@ Write-Verbose 'PowerShell Ready.' -Verbose:$MasterVerbose
 - `wq` winget
 - `scp` scoop
 - `ch` chocolatey
+
+__EXAMPLE__
+
+```ps
+repos oh-my-pos
+
+Repo       Command
+----       -------
+scoop      install oh-my-posh@18.5.0
+sudo choco install oh-my-posh --version 18.5.0 -y
+winget     install XP8K0HKJFRXGCK -s msstore # oh-my-posh
+
+```
 
 ### Linux
 
