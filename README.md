@@ -30,9 +30,9 @@ curl 'https://raw.githubusercontent.com/PS-Services/Snippets/master/linux-setup.
 | :white_check_mark: | :white_check_mark:  | clean&#x2011;folder.ps1 | Remove all `bin` and `obj` folders in current path.                                                                          |
 | :white_check_mark: | :white_check_mark:  | github.ps1       | **_Set `$env:GITHUB` first to the root of your github repositories._**  Use `hub` or `hub <repository>` to go to those folders. |
 | :white_check_mark: | :white_check_mark:  | oh&#x2011;my&#x2011;posh.ps1   | Initializes Oh-My-Posh for the current PowerShell
+| :white_check_mark: | :white_check_mark:  | _repos.ps1       | A unified repository query system. |
 | :white_check_mark: |  | chocolatey.ps1   | Setup Chocolatey profile in PowerShell.                                                                                      |
 | :white_check_mark: |  | devmode.ps1      | Startup VS 2022 Dev Mode Tools.                                                                                              |
-| :white_check_mark: |  | repos.ps1        | Commands for **winget**, **scoop**, and **choco**                                                                            |
 
 Place calls to these files in your `$PROFILE`
 
@@ -160,3 +160,29 @@ Get-Alias -Verbose:$MasterVerbose `
 
 Write-Verbose 'PowerShell Ready.' -Verbose:$MasterVerbose
 ```
+
+## Repositories
+
+### Common
+
+- `dn` dotnet
+- `dt` dotnet tool
+- `np` NPM
+- `pp` pip
+- `pps` pip-search
+
+### Windows
+
+- `repos` Search all OS repos
+- `wq` winget
+- `scp` scoop
+- `ch` chocolatey
+
+### Linux
+
+- `repos` Search all OS repos
+- `ap` apt
+- `zy` zypper
+- `sn` snap
+- `br` homebrew
+
