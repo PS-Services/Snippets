@@ -273,6 +273,9 @@ class PackageManager {
                                 foreach ($member in $members) {
                                     $executeResults += $member
                                 }
+                            } else {
+                                $executeResults = $fromJson
+                                break
                             }
                         }
                     }
