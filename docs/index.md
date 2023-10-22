@@ -42,12 +42,12 @@
 | Windows, Linux | github.ps1 | `hub` | Set-Location to the first directory found name `github` |
 | Windows | oh-my-posh-windows.ps1 | `posh` | Installs (if necessary), Initializes and Executes OH-MY-POSH with the themplate named `ninja.omp.json` |
 | Linux | oh-my-posh-linus.ps1 | `posh` | Installs (if necessary), Initializes and Executes OH-MY-POSH with the themplate named `ninja.omp.json` |
-| Windows, Linux | repos.ps1 | `repos` | Applies command specified to all package managers. |
-| Linux | repos.ps1 | `ap` | Applies command via `apt` |
-| Linux | repos.ps1 | `br` | Applies command via `brew` |
-| Linux | repos.ps1 | `sn` | Applies command via `snap` |
-| Windows | repos.ps1 | `wg` | Applies command via `winget` |
-| Windows | repos.ps1 | `scp` | Applies command via `scoop` |
-| Windows | repos.ps1 | `ch` | Applies command via `choco` |
+| Windows, Linux | _repos.ps1 | `repos` | Applies command specified to all package managers. |
+| Linux | _repos.ps1 | `ap` | Applies command via `apt` |
+| Linux | _repos.ps1 | `br` | Applies command via `brew` |
+| Linux | _repos.ps1 | `sn` | Applies command via `snap` |
+| Windows | _repos.ps1 | `wg` | Applies command via `winget` |
+| Windows | _repos.ps1 | `scp` | Applies command via `scoop` |
+| Windows | _repos.ps1 | `ch` | Applies command via `choco` |
 | Windows, Linux | update-snippet.ps1 | `snipps` | Set-Location to the folder where PowerShell Snippets is installed. |
 | Windows, Linux | update-snippet.ps1 | `snipup` | Pulls the latest version of PowerShell Snippets from GitHub and updates `$PROFILE` with latest code. |

@@ -1,3 +1,5 @@
+- name: README
+  href: index.md
 - name: Tutorials
   href: articles/index.md
 
