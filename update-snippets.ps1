@@ -15,7 +15,11 @@ if (-not $env:SnippetsInitialized) {
 }
 
 if ($env:IsWindows -ieq 'true') {
-    $env:Snippets = "$env:OneDrive\Documents\PowerShell\Snippets"
+    if($env:OneDrive){
+        $env:Snippets = "$env:OneDrive\Documents\PowerShell\Snippets"
+    } else {
+        $env:Snippets = "$env:UserProfile\Documents\PowerShell\Snippets"
+    }
 }
 else {
     $env:Snippets = "$env:HOME/.config/powershell/Snippets"
