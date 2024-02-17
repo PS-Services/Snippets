@@ -70,7 +70,7 @@ function Execute-OMP {
     $scriptBlock = { & (Get-Item $env:ohMyPosh) $args }
     $result = Invoke-Command -Verbose:$Verbose -ScriptBlock $scriptBlock -ArgumentList $args
 
-    Write-Verbose -Verbose -Message "[Execute-OMP] `$result: [$result]"
+    Write-Verbose -Verbose:$VerboseSwitch -Message "[Execute-OMP] `$result: [$result]"
 
     return $result
 }

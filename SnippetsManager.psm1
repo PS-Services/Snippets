@@ -273,7 +273,8 @@ class PackageManager {
                                 foreach ($member in $members) {
                                     $executeResults += $member
                                 }
-                            } else {
+                            }
+                            else {
                                 $executeResults = $fromJson
                                 break
                             }
@@ -399,15 +400,15 @@ class PackageManager {
 
         Switch -regex ($itemCommand) {
         ('^search|find') {
-            if($this.Search) {
-                $params += $this.Search
+                if ($this.Search) {
+                    $params += $this.Search
+                }
+                if ($SubCommand.Trim().Length -gt 0) {
+                    $params += $SubCommand.Trim()
+                }
+                $params += $itemName
+                $Sudo = $Sudo -and $False
             }
-            if ($SubCommand.Trim().Length -gt 0) {
-                $params += $SubCommand.Trim()
-            }
-            $params += $itemName
-            $Sudo = $Sudo -and $False
-        }
 
         ('^install') {
                 $params += $this.Install
@@ -590,12 +591,12 @@ class ZypperManager : PackageManager {
     [ResultItem]ParseResultItem([string]$Line, [string]$Command, [Switch]$Global) {
         # golang-github-sahilm-fuzzy-dev/stable,oldstable,testing 0.1.0-1.1 all
         $regex = [Regex]::new('^\s+\|\s([^\s]+)\s+\|([^|]+)\|')
-        switch -regex ($Command){
+        switch -regex ($Command) {
             'list' {
                 $regex = [Regex]::new('^i.\s+\|\s([^\s]+)\s+\|([^|]+)\|')
             }
         }
-        $ver=$null
+        $ver = $null
         if ($regex.IsMatch($line)) {
             $id = $regex.Match($line).Groups[1].Value.Trim()
             #$ver = $regex.Match($line).Groups[2].Value.Trim()
@@ -751,7 +752,7 @@ class WinGetManager : PackageManager {
                     }
                 }
 
-                if($nme -ieq 'Name'){
+                if ($nme -ieq 'Name') {
                     $id = $nme = $ver = $null
                 }
             }
@@ -960,17 +961,15 @@ class NpmManager : PackageManager {
     }
 }
 
-class PipManager : PackageManager{
+class PipManager : PackageManager {
 
     PipManager() : base(
         'pip', 'pip', $null, 'install',
         $null, $null, 'list', 'uninstall', 'show', $false
-    )
-    {
+    ) {
     }
 
-    [Object[]]AddParameters([string]$Command, [Switch]$Global, [Object[]]$params)
-    {
+    [Object[]]AddParameters([string]$Command, [Switch]$Global, [Object[]]$params) {
         # if ($Command -imatch 'search|find|list')
         # {
         #     $params += '--json'
@@ -984,35 +983,28 @@ class PipManager : PackageManager{
         return $params
     }
 
-    [ResultItem]ParseResultItem([string]$Line, [string]$Command, [Switch]$Global)
-    {
+    [ResultItem]ParseResultItem([string]$Line, [string]$Command, [Switch]$Global) {
         $exp = '^(?:│ 📂 )([^\s]+)\s+│\s+([\w\.\-]+)\s+'
         $regex = [Regex]::new($exp)
         $id = $nme = $ver = $null
-        switch -regex ($Command)
-        {
-            'list'
-            {
+        switch -regex ($Command) {
+            'list' {
                 $exp = '^(?!Package|-----)([^\s]+)\s+([\w\.\-]+)'
                 $regex = [Regex]::new($exp)
 
-                if ($regex.IsMatch($line))
-                {
+                if ($regex.IsMatch($line)) {
                     $nme = $regex.Match($line).Groups[1].Value.Trim()
                     $id = $regex.Match($line).Groups[1].Value.Trim()
                     $ver = $regex.Match($line).Groups[2].Value.Trim()
                 }
 
-                if ($nme -ieq 'Package')
-                {
+                if ($nme -ieq 'Package') {
                     $id = $nme = $ver = $null
                 }
             }
 
-            default
-            {
-                if ($regex.IsMatch($line))
-                {
+            default {
+                if ($regex.IsMatch($line)) {
                     $id = $regex.Match($line).Groups[1].Value.Trim()
                     $ver = $regex.Match($line).Groups[2].Value.Trim()
                     $nme = $id
@@ -1020,18 +1012,14 @@ class PipManager : PackageManager{
             }
         }
 
-        if ($id)
-        {
+        if ($id) {
             $inst = ''
 
-            switch -regex ($Command)
-            {
-                'search'
-                {
+            switch -regex ($Command) {
+                'search' {
                     $inst = "install $id@$ver"
                 }
-                'list'
-                {
+                'list' {
                     $inst = "uninstall $id"
                 }
             }
@@ -1044,18 +1032,15 @@ class PipManager : PackageManager{
     }
 }
 
-class PipSearchManager : PackageManager
-{
+class PipSearchManager : PackageManager {
 
     PipSearchManager() : base(
         'pip_search', 'pip_search', $null, $null,
         $null, $null, $null, $null, $null, $false
-    )
-    {
+    ) {
     }
 
-    [Object[]]AddParameters([string]$Command, [Switch]$Global, [Object[]]$params)
-    {
+    [Object[]]AddParameters([string]$Command, [Switch]$Global, [Object[]]$params) {
         # if ($Command -imatch 'search|find|list')
         # {
         #     $params += '--json'
@@ -1069,35 +1054,28 @@ class PipSearchManager : PackageManager
         return $params
     }
 
-    [ResultItem]ParseResultItem([string]$Line, [string]$Command, [Switch]$Global)
-    {
+    [ResultItem]ParseResultItem([string]$Line, [string]$Command, [Switch]$Global) {
         $exp = '^(?:│ 📂 )([^\s]+)\s+│\s+([\w\.\-]+)\s+'
         $regex = [Regex]::new($exp)
         $id = $nme = $ver = $null
-        switch -regex ($Command)
-        {
-            'list'
-            {
+        switch -regex ($Command) {
+            'list' {
                 $exp = '^(?!Package|-----)([^\s]+)\s+([\w\.\-]+)'
                 $regex = [Regex]::new($exp)
 
-                if ($regex.IsMatch($line))
-                {
+                if ($regex.IsMatch($line)) {
                     $nme = $regex.Match($line).Groups[1].Value.Trim()
                     $id = $regex.Match($line).Groups[1].Value.Trim()
                     $ver = $regex.Match($line).Groups[2].Value.Trim()
                 }
 
-                if ($nme -ieq 'Package')
-                {
+                if ($nme -ieq 'Package') {
                     $id = $nme = $ver = $null
                 }
             }
 
-            default
-            {
-                if ($regex.IsMatch($line))
-                {
+            default {
+                if ($regex.IsMatch($line)) {
                     $id = $regex.Match($line).Groups[1].Value.Trim()
                     $ver = $regex.Match($line).Groups[2].Value.Trim()
                     $nme = $id
@@ -1105,18 +1083,14 @@ class PipSearchManager : PackageManager
             }
         }
 
-        if ($id)
-        {
+        if ($id) {
             $inst = ''
 
-            switch -regex ($Command)
-            {
-                'search'
-                {
+            switch -regex ($Command) {
+                'search' {
                     $inst = "install $id@$ver"
                 }
-                'list'
-                {
+                'list' {
                     $inst = "uninstall $id"
                 }
             }
@@ -1330,16 +1304,13 @@ function Invoke-Any {
     ('dn') {
             $manager = [DotnetManager]::new()
         }
-    ('dt')
-        {
+    ('dt') {
             $manager = [DotnetToolManager]::new()
         }
-    ('pp')
-        {
+    ('pp') {
             $manager = [PipManager]::new()
         }
-    ('pps')
-        {
+    ('pps') {
             $manager = [PipSearchManager]::new()
         }
         default {
@@ -1380,7 +1351,12 @@ Set-Alias -Verbose:$Verbose -Scope Global -Description 'Snippets: [repos] Dotnet
 Set-Alias -Verbose:$Verbose -Scope Global -Description 'Snippets: [repos] Dotnet Tool' -Name dt -Value Invoke-Any -PassThru
 
 if ($env:IsWindows -eq 'false') {
-    Write-Verbose "Using Linux Repos" -Verbose
+    if ($IsLinux) {
+        Write-Verbose "Using Linux Repos" -Verbose:$Verbose
+    }
+    if ($IsMacOs) {
+        Write-Verbose "Using MacOS Repos" -Verbose:$Verbose
+    }
     try {
         function Invoke-AllLinux {
             [CmdletBinding(PositionalBinding = $true)]
@@ -1407,24 +1383,35 @@ if ($env:IsWindows -eq 'false') {
             }
 
             $results = @()
-            $aptResults = Invoke-Any $Command $Name -AllRepos -Raw:$Raw -Describe:$Describe -Exact:$Exact -Install:$Install -Global:$Global -managerCode 'ap'
-            $zypperResults = Invoke-Any $Command $Name -AllRepos -Raw:$Raw -Describe:$Describe -Exact:$Exact -Install:$Install -Global:$Global -managerCode 'zy'
+            if ($IsLinux) {
+                $aptResults = Invoke-Any $Command $Name -AllRepos -Raw:$Raw -Describe:$Describe -Exact:$Exact -Install:$Install -Global:$Global -managerCode 'ap'
+                $zypperResults = Invoke-Any $Command $Name -AllRepos -Raw:$Raw -Describe:$Describe -Exact:$Exact -Install:$Install -Global:$Global -managerCode 'zy'
+                $snapResults = Invoke-Any $Command $Name -Subcommand $Subcommand -AllRepos -Raw:$Raw -Describe:$Describe -Exact:$Exact -Install:$Install -Global:$Global -managerCode 'sn'
+            }
             $brewResults = Invoke-Any $Command $Name -Subcommand $Subcommand -AllRepos -Raw:$Raw -Describe:$Describe -Exact:$Exact -Install:$Install -Global:$Global -managerCode 'br'
-            $snapResults = Invoke-Any $Command $Name -Subcommand $Subcommand -AllRepos -Raw:$Raw -Describe:$Describe -Exact:$Exact -Install:$Install -Global:$Global -managerCode 'sn'
 
             $results = [List[Object]]::new()
-            if ($aptResults -is [ResultItem[]] -or $aptResults -is [Object[]]) {
-                $results.AddRange($aptResults)
-            }
-            else {
-                $results.Add($aptResults)
-            }
+            if ($IsLinux) {
+                if ($aptResults -is [ResultItem[]] -or $aptResults -is [Object[]]) {
+                    $results.AddRange($aptResults)
+                }
+                else {
+                    $results.Add($aptResults)
+                }
 
-            if ($zypperResults -is [ResultItem[]] -or $zypperResults -is [Object[]]) {
-                $results.AddRange($zypperResults)
-            }
-            else {
-                $results.Add($zypperResults)
+                if ($zypperResults -is [ResultItem[]] -or $zypperResults -is [Object[]]) {
+                    $results.AddRange($zypperResults)
+                }
+                else {
+                    $results.Add($zypperResults)
+                }
+
+                if ($snapResults -is [ResultItem[]] -or $snapResults -is [Object[]]) {
+                    $results.AddRange($snapResults)
+                }
+                else {
+                    $results.Add($snapResults)
+                }
             }
 
             if ($brewResults -is [ResultItem[]] -or $brewResults -is [Object[]]) {
@@ -1432,13 +1419,6 @@ if ($env:IsWindows -eq 'false') {
             }
             else {
                 $results.Add($brewResults)
-            }
-
-            if ($snapResults -is [ResultItem[]] -or $snapResults -is [Object[]]) {
-                $results.AddRange($snapResults)
-            }
-            else {
-                $results.Add($snapResults)
             }
 
             if ($Command -imatch 'search|list' -and -not $Raw) {
@@ -1470,10 +1450,12 @@ if ($env:IsWindows -eq 'false') {
 
         Export-ModuleMember -Function Invoke-AllLinux
 
-        Set-Alias -Verbose:$Verbose -Scope Global -Description 'Snippets: [repos] apt' -Name ap -Value Invoke-Any -PassThru
-        Set-Alias -Verbose:$Verbose -Scope Global -Description 'Snippets: [repos] zypper' -Name zy -Value Invoke-Any -PassThru
+        if ($IsLinux) {
+            Set-Alias -Verbose:$Verbose -Scope Global -Description 'Snippets: [repos] apt' -Name ap -Value Invoke-Any -PassThru
+            Set-Alias -Verbose:$Verbose -Scope Global -Description 'Snippets: [repos] zypper' -Name zy -Value Invoke-Any -PassThru
+            Set-Alias -Verbose:$Verbose -Scope Global -Description 'Snippets: [repos] snap' -Name sn -Value Invoke-Any -PassThru
+        }
         Set-Alias -Verbose:$Verbose -Scope Global -Description 'Snippets: [repos] homebrew' -Name br -Value Invoke-Any -PassThru
-        Set-Alias -Verbose:$Verbose -Scope Global -Description 'Snippets: [repos] snap' -Name sn -Value Invoke-Any -PassThru
         Set-Alias -Verbose:$Verbose -Scope Global -Description 'Snippets: [repos] All Repos' -Name repos -Value Invoke-AllLinux -PassThru
 
         return 'Repos aliases configured.'
@@ -1487,7 +1469,7 @@ if ($env:IsWindows -eq 'false') {
     }
 }
 else {
-    Write-Verbose 'Using Windows Repos' -Verbose
+    Write-Verbose 'Using Windows Repos' -Verbose$Verbose
 
     try {
         function Invoke-All {
