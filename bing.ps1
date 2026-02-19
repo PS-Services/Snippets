@@ -30,9 +30,10 @@ try {
     $env:BingLocation = $env:Snippets
     if (-not $env:BingLocation.EndsWith("Snippets")) { $env:BingLocation = Join-Path $env:BingLocation -Child "Snippets" }
     Write-Verbose "[$script] `$env:BingLocation: $env:BingLocation" -Verbose:$Verbose
-    $ApiKey = '3c7e251544ba414cbeacad9db55bdf6e'
-
-    $env:BingApiKey = $ApiKey
+    if (-not $env:BingApiKey) {
+      Write-Verbose "[$script] `$env:BingApiKey not set. Bing search will not work." -Verbose:$Verbose
+      return "Set `$env:BingApiKey to use Bing search."
+    }
     function Search-Bing {
       $query = [System.String]::Join(' ', $args);
       $csxPath = Join-Path $env:BingLocation -Child 'bing.csx' ;

@@ -1306,7 +1306,7 @@ class PSGalleryManager : PackageManager {
             '^uninstall|remove' {
                 if ($moduleName) {
                     if ($usePSResourceGet) {
-                        Uninstall-PSResource -Name $moduleName -Scope CurrentUser -ErrorAction Stop
+                        Uninstall-PSResource -Name $moduleName -ErrorAction Stop
                     }
                     else {
                         Uninstall-Module -Name $moduleName -Force -ErrorAction Stop

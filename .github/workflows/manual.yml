@@ -16,7 +16,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: "Checkout source code"
-        uses: "actions/checkout@v1"
+        uses: "actions/checkout@v4"
       - name: Setup latest .NET SDKs
         uses: Elskom/setup-latest-dotnet@v1
         with:
@@ -35,12 +35,12 @@ jobs:
             echo "Error!" 1>&2
             exit 64
           fi
-          echo "::set-output name=version::$version"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
           git config --global user.email "ninja@thesharp.ninja"
           git config --global user.name "GitHub on behalf of Sharp Ninja"
           git stage ./.version
           git commit -m 'Updated `.version`' --allow-empty --status
-          git push --repo='https://sharpninja:${{ secrets.GITHUB_TOKEN }}@github.com/sharpninja/Snippets.git'
+          git push --repo='https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/PS-Services/Snippets.git'
 
       - uses: "marvinpinto/action-automatic-releases@latest"
         with:

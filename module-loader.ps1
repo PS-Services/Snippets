@@ -17,12 +17,19 @@ $script = $MyInvocation.MyCommand
 function Install-YamlModuleIfMissing {
     param([switch]$Verbose = $false)
 
-    $yamlMod = Get-Module -ListAvailable -Name 'powershell-yaml' -ErrorAction SilentlyContinue
-    if (-not $yamlMod) {
-        Write-Verbose "[$script] Installing powershell-yaml from PSGallery..." -Verbose:$Verbose
-        Install-Module -Name 'powershell-yaml' -Scope CurrentUser -Force -AllowClobber -AcceptLicense -ErrorAction Stop
+    try {
+        $yamlMod = Get-Module -ListAvailable -Name 'powershell-yaml' -ErrorAction SilentlyContinue
+        if (-not $yamlMod) {
+            Write-Verbose "[$script] Installing powershell-yaml from PSGallery..." -Verbose:$Verbose
+            Install-Module -Name 'powershell-yaml' -Scope CurrentUser -Force -AllowClobber -AcceptLicense -ErrorAction Stop
+        }
+        Import-Module 'powershell-yaml' -ErrorAction Stop -Verbose:$false
+        return $true
     }
-    Import-Module 'powershell-yaml' -ErrorAction Stop -Verbose:$false
+    catch {
+        Write-Warning "[$script] powershell-yaml unavailable: $_"
+        return $false
+    }
 }
 
 function Import-SnippetsModules {
@@ -42,7 +49,9 @@ function Import-SnippetsModules {
     Write-Verbose "[$script] Loading module definitions from [$yamlPath]" -Verbose:$Verbose
 
     # Ensure powershell-yaml is available
-    Install-YamlModuleIfMissing -Verbose:$Verbose
+    if (-not (Install-YamlModuleIfMissing -Verbose:$Verbose)) {
+        return "Module auto-loader disabled: powershell-yaml unavailable."
+    }
 
     # Parse YAML
     $yamlContent = Get-Content -Path $yamlPath -Raw -ErrorAction Stop
@@ -80,7 +89,8 @@ function Import-SnippetsModules {
             # Check if already imported
             $existing = Get-Module -Name $moduleName -ErrorAction SilentlyContinue
             if ($existing) {
-                if (-not $moduleVersion -or $existing.Version -ge [Version]$moduleVersion) {
+                $parsedVer = $null
+                if (-not $moduleVersion -or (-not [Version]::TryParse(($moduleVersion -replace '-.*$',''), [ref]$parsedVer)) -or $existing.Version -ge $parsedVer) {
                     Write-Verbose "[$script] Module [$moduleName] already imported." -Verbose:$Verbose
                     $loaded++
                     continue
@@ -95,9 +105,12 @@ function Import-SnippetsModules {
                 $needsInstall = $true
             }
             elseif ($moduleVersion) {
-                $bestVersion = ($installed | Sort-Object Version -Descending | Select-Object -First 1).Version
-                if ($bestVersion -lt [Version]$moduleVersion) {
-                    $needsInstall = $true
+                $parsedMinVer = $null
+                if ([Version]::TryParse(($moduleVersion -replace '-.*$',''), [ref]$parsedMinVer)) {
+                    $bestVersion = ($installed | Sort-Object Version -Descending | Select-Object -First 1).Version
+                    if ($bestVersion -lt $parsedMinVer) {
+                        $needsInstall = $true
+                    }
                 }
             }
 

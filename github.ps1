@@ -14,13 +14,27 @@ if (-not $env:SnippetsInitialized) {
 
 try {
 	if (-not $env:GITHUB) {
+		# Search common locations instead of the entire drive
+		$searchPaths = @()
 		if($env:IsWindows -ieq 'true') {
-			$hintPath = "C:\"
+			$searchPaths += $env:USERPROFILE
+			if ($env:OneDrive) { $searchPaths += $env:OneDrive }
 		} else {
-			$hintPath = "~"
+			$searchPaths += $env:HOME
 		}
-		Write-Verbose "[$script] searching for 'github' in [$hintPath]" -Verbose:$Verbose
-		$env:GITHUB = (Get-ChildItem -Filter github -Path $hintPath -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1).FullName
+
+		foreach ($hintPath in $searchPaths) {
+			Write-Verbose "[$script] searching for 'github' in [$hintPath]" -Verbose:$Verbose
+			$found = Get-ChildItem -Filter github -Path $hintPath -Depth 1 -Directory -ErrorAction SilentlyContinue | Select-Object -First 1
+			if ($found) {
+				$env:GITHUB = $found.FullName
+				break
+			}
+		}
+
+		if (-not $env:GITHUB) {
+			Write-Verbose "[$script] Could not find 'github' folder. Set `$env:GITHUB manually." -Verbose:$Verbose
+		}
 	}
 
 	$description="Snippets: [dev] Go to GitHub folder [$env:GITHUB]"

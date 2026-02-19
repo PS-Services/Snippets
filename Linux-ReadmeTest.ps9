@@ -1,6 +1,8 @@
 # $env:VerboseStartup = 'true'
 $profileScript = Split-Path $PROFILE -Leaf
 
+$env:SnippetsModulesYaml = "$env:HOME/modules.yml"
+
 $exclusions=@()
 # EXCLUSIONS-START
 $exclusions += '*Windows*','repos*','choco*'

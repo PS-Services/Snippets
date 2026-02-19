@@ -96,7 +96,7 @@ function Initialize-Snippets {
         }
     }
     finally {
-        Write-Verbose "[$script] [$env:Snippetscode Initialized] -not `$env:SnippetsInitialized: $(-not $env:SnippetsInitialized)" -Verbose:$VerboseSwitch
+        Write-Verbose "[$script] [$env:SnippetsInitialized] -not `$env:SnippetsInitialized: $(-not $env:SnippetsInitialized)" -Verbose:$VerboseSwitch
 
         Pop-Location -Verbose:$VerboseSwitch
         $Verbose = $VerboseSwitch

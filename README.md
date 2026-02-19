@@ -228,7 +228,7 @@ Write-Verbose 'PowerShell Ready.' -Verbose:$MasterVerbose
 ### Windows
 
 - `repos` Search all OS repos
-- `wq` winget
+- `wg` winget
 - `scp` scoop
 - `ch` chocolatey
 

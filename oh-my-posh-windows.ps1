@@ -21,7 +21,7 @@ function Setup-OMP {
                 $powershell = 'pwsh'
             }
             else {
-                $powershell = 'pwsh'
+                $powershell = 'powershell'
             }
 
             $ohMyPosh = Get-Command oh-my-posh
