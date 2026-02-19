@@ -1,4 +1,6 @@
 - name: Introduction
   href: intro.md
+- name: "Repo Like a Pro (Sep 2023)"
+  href: powershell-snippets-repo-like-a-pro.md
 - name: "What's New in 2026"
   href: powershell-snippets-whats-new-2026.md
