@@ -6,7 +6,7 @@
 
 ---
 
-Back in September 2023 I wrote about the unified repository system in PowerShell Snippets — how you can use short aliases like `wg`, `scp`, and `ch` to search, install, and manage packages across a dozen package managers with a single consistent interface. If you missed it, go read that one first. I'll wait.
+Back in September 2023 I wrote about the unified repository system in PowerShell Snippets — how you can use short aliases like `wg`, `scp`, and `ch` to search, install, and manage packages across a dozen package managers with a single consistent interface. If you missed it, go [read that one first](https://medium.com/the-unpopular-opinions-of-a-senior-developer/powershell-snippets-repo-like-a-pro-84eb266f64b8?sk=5b42fce533a7cd9010a12406ee6499d3). I'll wait.
 
 Since then, snipps has picked up three features that I now can't live without: **declarative module auto-loading from YAML**, a **PSGallery package manager**, and a **module reload alias**. Let me walk you through each one.
 
