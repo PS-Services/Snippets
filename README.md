@@ -1,32 +1,51 @@
-# Sharp Ninja's Powershell Snippets
+# Sharp Ninja's PowerShell Snippets
 
-A collection of PowerShell tools you can add to your profile.
+A collection of PowerShell profile tools providing a unified package manager abstraction, module auto-loading, Bing search, Oh-My-Posh setup, and developer utilities across Windows, Linux, WSL, and macOS.
 
 [docs](https://ps-services.github.io/Snippets/) 🏗️
 
-## Windows
+## Setup
 
-1. Clone this repository to `$env:OneDrive/Documents/Snippets`
+### Windows
+
+1. Clone this repository to `$env:OneDrive\Documents\PowerShell\Snippets`
 2. In an Administrator elevated editor, edit `$PROFILE.AllUsersAllHosts`.
-3. Add `$env:Snippets="$env:OneDrive/Documents/PowerShell/Snippets"` to the end and save it.
+3. Add `$env:Snippets="$env:OneDrive\Documents\PowerShell\Snippets"` to the end and save it.
 
-## Linux, WSL, MacOS
+### Linux, WSL, macOS
 
-1. Clone this repository to `/opt/microsoft/powershell/7/Snippets`
+1. Clone this repository to `~/.config/powershell/Snippets`
 2. In an Administrator elevated editor, edit `$PROFILE.AllUsersAllHosts`.
-3. Add `$env:Snippets="/opt/microsoft/powershell/7/Snippets"` to the end and save it.
+3. Add `$env:Snippets="$env:HOME/.config/powershell/Snippets"` to the end and save it.
 
 ___OR___
 
-Execute this script...
+Execute this script:
 
 ```bash
 curl 'https://raw.githubusercontent.com/PS-Services/Snippets/master/linux-setup.sh' -v | /bin/bash
 ```
 
+## Scripts
+
+| Win | \*nix | Script | Alias | Description |
+|-----|-------|--------|-------|-------------|
+| ✅ | ✅ | `bing.ps1` | `bing` | Search Bing from PowerShell. Requires `$env:BingApiKey`. |
+| ✅ | ✅ | `clean-folder.ps1` | `clean` | Remove all `bin` and `obj` folders in current path. |
+| ✅ | ✅ | `github.ps1` | `hub` | Navigate to GitHub repositories folder. Auto-detects `$env:GITHUB` or set it manually. |
+| ✅ | ✅ | `oh-my-posh-*.ps1` | `posh` | Initializes Oh-My-Posh for the current shell (Windows, Linux, or macOS). |
+| ✅ | ✅ | `module-loader.ps1` | `modrl` | Auto-loads PowerShell modules from `modules.yml`. Use `modrl` to reload all or `modrl <name>` for one. |
+| ✅ | ✅ | `update-snippets.ps1` | `snipup` / `profileup` | Update Snippets or Profile from GitHub. |
+| ✅ | ✅ | `_common.ps1` | `snipps` | Bootstrap script. Navigate to Snippets folder with `snipps`. |
+| ✅ | ✅ | `_repos.ps1` | _(see Repositories)_ | Unified package manager query system. |
+| ✅ | | `chocolatey.ps1` | | Setup Chocolatey profile in PowerShell. |
+| ✅ | | `devmode.ps1` | `devmode` | Start VS 2022 Developer Mode Tools. |
+
+All scripts work in both PowerShell Core and Windows PowerShell 5.1.
+
 ## Module Auto-Loader
 
-Modules can be declaratively defined in a `modules.yml` file and will be automatically installed (from PSGallery) and imported during profile initialization. The `powershell-yaml` module is used for YAML parsing and will be auto-installed if missing.
+Modules can be declaratively defined in a `modules.yml` file and will be automatically installed (from PSGallery) and imported during profile initialization. The `powershell-yaml` module is used for YAML parsing and will be auto-installed if missing. If `powershell-yaml` cannot be installed (e.g., no network), the auto-loader degrades gracefully and skips module loading.
 
 ### Configuration Path
 
@@ -42,7 +61,7 @@ $env:SnippetsModulesYaml = "$env:USERPROFILE\modules.yml"
 ```yaml
 modules:
   - name: ModuleName          # Required. Module name.
-    version: "1.0.0"          # Optional. Minimum required version.
+    version: "1.0.0"          # Optional. Minimum required version (SemVer pre-release suffixes stripped).
     source: PSGallery          # Optional. "PSGallery" (default) or a file path to a .psd1/.psm1.
     required: true             # Optional. Default true. If false, failure is non-fatal.
     parameters: []             # Optional. Arguments passed to Import-Module -ArgumentList.
@@ -55,6 +74,7 @@ modules:
 - **Required modules** (`required: true`): Raise an error if they fail to load.
 - **Optional modules** (`required: false`): Fail silently with a verbose message.
 - **`powershell-yaml`**: Always loaded first as the YAML parser; include it in your `modules.yml` to make the dependency explicit.
+- **Reload**: Use `modrl` to reload all modules from YAML, or `modrl <ModuleName>` to reload a single module.
 
 ### Example
 
@@ -72,25 +92,20 @@ modules:
     required: false
 ```
 
-| Win | *nix | Script           | Description                                                                                                                  |
-|-----|------|------------------|------------------------------------------------------------------------------------------------------------------------------|
-| :white_check_mark: | :white_check_mark:  | bing.ps1         | Search Bing from Powershell.                                                                                                 |
-| :white_check_mark: | :white_check_mark:  | clean&#x2011;folder.ps1 | Remove all `bin` and `obj` folders in current path.                                                                          |
-| :white_check_mark: | :white_check_mark:  | github.ps1       | **_Set `$env:GITHUB` first to the root of your github repositories._**  Use `hub` or `hub <repository>` to go to those folders. |
-| :white_check_mark: | :white_check_mark:  | oh&#x2011;my&#x2011;posh.ps1   | Initializes Oh-My-Posh for the current PowerShell
-| :white_check_mark: | :white_check_mark:  | module&#x2011;loader.ps1 | Auto-loads PowerShell modules defined in `modules.yml`.                                              |
-| :white_check_mark: | :white_check_mark:  | _repos.ps1       | A unified repository query system. |
-| :white_check_mark: |  | chocolatey.ps1   | Setup Chocolatey profile in PowerShell.                                                                                      |
-| :white_check_mark: |  | devmode.ps1      | Startup VS 2022 Dev Mode Tools.                                                                                              |
+## Environment Variables
 
-Place calls to these files in your `$PROFILE`
-
-All scripts work in both PowerShell Core and Windows PowerShell 5.1!
+| Variable | Description |
+|----------|-------------|
+| `$env:Snippets` | **Required.** Path to the Snippets repository. Set in `$PROFILE.AllUsersAllHosts`. |
+| `$env:SnippetsModulesYaml` | Optional. Path to user-specific `modules.yml`. Defaults to `$env:Snippets\modules.yml`. |
+| `$env:GITHUB` | Optional. Root of your GitHub repositories folder. Auto-detected if not set. |
+| `$env:BingApiKey` | Optional. Bing Search API subscription key for the `bing` alias. |
+| `$env:VerboseStartup` | Optional. Set to `'true'` for verbose profile startup output. |
 
 ## Example Windows `$PROFILE`
 
 ```powershell
-$env:Snippets="$env:OneDrive\Documents\PowerShell\Snippets"
+$env:Snippets = "$env:OneDrive\Documents\PowerShell\Snippets"
 $env:SnippetsModulesYaml = "$env:USERPROFILE\modules.yml"
 
 if ($env:VerboseStartup -eq 'true') {
@@ -113,12 +128,11 @@ try {
 
         $snippets.FullName | ForEach-Object -Process {
             $snippet = $_
-
             . $snippet -Verbose:$Verbose
         }
     }
     else {
-        Write-Verbose "No directory found at [$env:Snippets]" -Verbose:$Verbose~
+        Write-Verbose "No directory found at [$env:Snippets]" -Verbose:$Verbose
     }
 
     Write-Verbose 'PowerShell Ready.' -Verbose:$Verbose
@@ -131,13 +145,13 @@ finally {
 }
 ```
 
-## Example Linux, Wsl, MacOS `$PROFILE`
+## Example Linux, WSL, macOS `$PROFILE`
 
 ```powershell
 # $env:VerboseStartup = 'true'
 $profileScript = Split-Path $PROFILE -Leaf
 
-if((-not $env:Snippets) -or (-not (Test-Path $env:Snippets))) {
+if ((-not $env:Snippets) -or (-not (Test-Path $env:Snippets))) {
     $env:Snippets = "$env:HOME/.config/powershell"
 }
 
@@ -153,13 +167,14 @@ else {
 try {
     Push-Location -Verbose:$MasterVerbose
 
-    Import-Module Microsoft.PowerShell.Utility #-Verbose:$MasterVerbose
+    Import-Module Microsoft.PowerShell.Utility
 
-    $env:Snippets = Join-Path $env:Snippets -Child Snippets -Verbose:$MasterVerbose
+    $env:Snippets = Join-Path $env:Snippets -ChildPath Snippets -Verbose:$MasterVerbose
 
     if (-not (Test-Path $env:Snippets -Verbose:$MasterVerbose)) {
-        git clone "https://github.com/sharpninja/Snippets.git"
-    } else {
+        git clone "https://github.com/PS-Services/Snippets.git"
+    }
+    else {
         Write-Verbose "[$profileScript] Found $env:Snippets" -Verbose:$MasterVerbose
     }
 
@@ -191,7 +206,7 @@ try {
             "[$profileScript] Snippet Results`n---`n$([System.String]::Join("`n", $resultList))`n---`n"
         }
         else {
-            "[$profileScript] No snippets where executed."
+            "[$profileScript] No snippets were executed."
         }
     }
     else {
@@ -208,6 +223,7 @@ finally {
 
 Get-Alias -Verbose:$MasterVerbose `
     | Where-Object -Property Description -imatch 'snippet' -Verbose:$MasterVerbose `
+    | Sort-Object -Property Description, Name -Verbose:$MasterVerbose `
     | Format-Table Name, Description -AutoSize -Verbose:$MasterVerbose
 
 Write-Verbose 'PowerShell Ready.' -Verbose:$MasterVerbose
@@ -215,41 +231,60 @@ Write-Verbose 'PowerShell Ready.' -Verbose:$MasterVerbose
 
 ## Repositories
 
-### Common
+The unified repository system (`_repos.ps1`) provides a single interface to query and manage packages across multiple package managers.
 
-- `dn` dotnet
-- `dt` dotnet tool
-- `ng` nuget
-- `np` NPM
-- `pp` pip
-- `pps` pip-search
-- `psg` PSGallery
+### Common (All Platforms)
+
+| Alias | Manager |
+|-------|---------|
+| `dn` | dotnet |
+| `dt` | dotnet tool |
+| `ng` | NuGet |
+| `np` | NPM |
+| `pp` | pip |
+| `pps` | pip-search |
+| `psg` | PSGallery |
 
 ### Windows
 
-- `repos` Search all OS repos
-- `wg` winget
-- `scp` scoop
-- `ch` chocolatey
+| Alias | Manager |
+|-------|---------|
+| `repos` | Search all OS repos |
+| `wg` | winget |
+| `scp` | scoop |
+| `ch` | chocolatey |
 
-__EXAMPLE__
+### Linux / macOS
+
+| Alias | Manager |
+|-------|---------|
+| `repos` | Search all OS repos |
+| `ap` | apt |
+| `zy` | zypper |
+| `sn` | snap |
+| `br` | homebrew |
+
+### Usage
+
+Each alias accepts a command followed by arguments: `<alias> <command> <package>`
+
+Common commands: `search`, `install`, `uninstall`, `update`, `list`, `show`
 
 ```ps
-repos oh-my-pos
+repos search oh-my-posh
 
 Repo       Command
 ----       -------
 scoop      install oh-my-posh@18.5.0
 sudo choco install oh-my-posh --version 18.5.0 -y
 winget     install XP8K0HKJFRXGCK -s msstore # oh-my-posh
-
 ```
 
-### Linux
+```ps
+psg search posh-git
 
-- `repos` Search all OS repos
-- `ap` apt
-- `zy` zypper
-- `sn` snap
-- `br` homebrew
+Repo      Command
+----      -------
+PSGallery Install-Module posh-git -MinimumVersion 1.1.0 -Scope CurrentUser
+```
 
