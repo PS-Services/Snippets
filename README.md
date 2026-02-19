@@ -141,6 +141,8 @@ if((-not $env:Snippets) -or (-not (Test-Path $env:Snippets))) {
     $env:Snippets = "$env:HOME/.config/powershell"
 }
 
+$env:SnippetsModulesYaml = "$env:HOME/modules.yml"
+
 if ($env:VerboseStartup -eq 'true') {
     [switch]$MasterVerbose = $true
 }
