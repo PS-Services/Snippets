@@ -1,2 +1,4 @@
 - name: Introduction
   href: intro.md
+- name: "What's New in 2026"
+  href: powershell-snippets-whats-new-2026.md
