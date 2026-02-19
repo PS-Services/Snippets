@@ -85,6 +85,351 @@ A cross-platform collection of PowerShell profile tools that provides a unified 
 | `oh-my-posh-linux.ps1` | `posh` | Linux / WSL | Downloads Oh-My-Posh binary to `/usr/local/bin`, initializes with `ninja.omp.json` theme. |
 | `oh-my-posh-macos.ps1` | `posh` | macOS | Installs Oh-My-Posh via Homebrew if missing, initializes with `ninja.omp.json` theme. |
 
+### Oh-My-Posh Integration
+
+[Oh-My-Posh](https://ohmyposh.dev/) is a prompt theme engine that renders a richly formatted command-line prompt with information like the current directory, git status, language versions, execution time, and exit codes. Snippets automatically installs, configures, and initializes Oh-My-Posh on every platform.
+
+#### How It Works
+
+During profile startup, the appropriate `oh-my-posh-*.ps1` script runs for the detected OS:
+
+1. **Checks** if the `oh-my-posh` binary is available on the system.
+2. **Installs** it automatically if missing:
+   - **Windows**: Installs via `scoop` using the official manifest from GitHub releases.
+   - **Linux / WSL**: Downloads the `posh-linux-amd64` binary to `/usr/local/bin/` with `sudo`.
+   - **macOS**: Installs via `brew install oh-my-posh`.
+3. **Initializes** Oh-My-Posh for the current shell using the `ninja.omp.json` theme from the Snippets directory.
+4. **Registers** the `posh` alias, which can be used to run Oh-My-Posh commands directly:
+
+   ```powershell
+   posh get shell       # Show current shell info
+   posh config export   # Export current configuration
+   ```
+
+#### The `.omp.json` Theme File
+
+Oh-My-Posh themes are JSON files with the `.omp.json` extension. They define the layout, colors, and content segments of your prompt. This repo ships with `ninja.omp.json`, a multi-line prompt theme.
+
+##### Theme Schema
+
+Every `.omp.json` file follows the [Oh-My-Posh schema](https://raw.githubusercontent.com/JanDeDobbeleer/oh-my-posh/main/themes/schema.json) and has this top-level structure:
+
+```json
+{
+  "$schema": "https://raw.githubusercontent.com/JanDeDobbeleer/oh-my-posh/main/themes/schema.json",
+  "version": 3,
+  "final_space": true,
+  "blocks": [ ... ]
+}
+```
+
+| Field | Description |
+|-------|-------------|
+| `$schema` | Points to the official JSON schema for editor autocompletion and validation. |
+| `version` | Theme format version. Current version is `3`. |
+| `final_space` | When `true`, adds a trailing space after the prompt character. |
+| `blocks` | Array of prompt blocks. Each block contains segments that render prompt information. |
+
+##### Blocks
+
+A block defines a horizontal section of the prompt. Blocks render in order, top to bottom. Key block properties:
+
+```json
+{
+  "type": "prompt",
+  "alignment": "left",
+  "newline": true,
+  "segments": [ ... ]
+}
+```
+
+| Property | Values | Description |
+|----------|--------|-------------|
+| `type` | `prompt`, `rprompt` | `prompt` renders left-aligned; `rprompt` renders right-aligned. |
+| `alignment` | `left`, `right` | Text alignment within the block. |
+| `newline` | `true` / `false` | Start this block on a new line. |
+| `segments` | Array | The segments to render in this block. |
+
+##### Segments
+
+Segments are the building blocks of the prompt. Each segment renders a specific piece of information. Available segment types include `path`, `git`, `node`, `dotnet`, `python`, `time`, `exit`, `shell`, `os`, `root`, `text`, `executiontime`, and [many more](https://ohmyposh.dev/docs/segments).
+
+```json
+{
+  "type": "git",
+  "style": "plain",
+  "template": "<darkGray>on</> <white>git:</>{{ .HEAD }} ",
+  "foreground": "#ffffff"
+}
+```
+
+| Property | Description |
+|----------|-------------|
+| `type` | The segment type (e.g., `git`, `path`, `node`, `dotnet`, `time`). Determines what data is available in the template. |
+| `style` | Rendering style: `plain` (text only), `powerline` (colored backgrounds with arrow separators), or `diamond` (custom start/end characters). |
+| `template` | [Go template](https://ohmyposh.dev/docs/configuration/templates) defining the output. Uses `{{ .Property }}` syntax with access to segment-specific data. Supports `<color>text</>` for inline colors. |
+| `foreground` | Text color. Can be a named color (`white`, `red`, `lightYellow`) or hex (`#26C6DA`). |
+| `background` | Background color (used with `powerline` and `diamond` styles). |
+| `background_templates` | Conditional backgrounds using Go templates (e.g., red background on error). |
+| `properties` | Segment-specific settings (e.g., `style: "full"` for path, `time_format` for time). |
+
+##### The `ninja.omp.json` Theme
+
+The included `ninja.omp.json` theme is a three-line prompt designed for developer workflows. Here's how it looks in a terminal:
+
+![ninja.omp.json theme preview](images/ninja-omp-theme.png)
+
+The prompt shows the shell type, OS icon, full directory path, git branch, current time, .NET SDK version (when in a .NET project), and a `$` input character. Segments appear conditionally — for example, the Node.js version only shows when a `package.json` exists in the current directory.
+
+###### Line-by-line breakdown
+
+**Line 1** — Python environment (shown only when a Python virtualenv is active):
+
+```
+(venv 3.11.5)
+```
+
+**Line 2** — Main info line:
+
+```
+⚡ Core  in ~/Projects/MyApp on git:main 3:04:05 PM C:1
+```
+
+| Segment | Type | What it shows |
+|---------|------|---------------|
+| ⚡ | `root` | Lightning bolt when running as admin/root. |
+| Core / Desktop | `shell` | Maps `pwsh` → "Core", `powershell` → "Desktop". |
+| 🪟 / 🐧 / 🍎 | `os` | OS icon. Shows "WSL at" prefix when in WSL. |
+| `~/Projects/MyApp` | `path` | Full current directory path. |
+| `git:main` | `git` | Current branch and HEAD reference. |
+| `3:04:05 PM` | `time` | Current time in 12-hour format. |
+| `C:1` | `exit` | Last command exit code (only shown when non-zero). |
+
+**Line 3** — Language context and input:
+
+```
+ 🟢 node 18.17.0  # .NET 8.0.100  ⏱ 1.2s  ‼ 1: GenericError $
+```
+
+| Segment | Type | What it shows |
+|---------|------|---------------|
+| Node version | `node` | Node.js version and package manager icon (shown when `package.json` exists). |
+| .NET version | `dotnet` | .NET SDK version (shown when `.csproj`/`.sln` exists). ⚠️ if unsupported. |
+| Execution time | `executiontime` | Duration of last command (shown when >500ms). |
+| Exit details | `exit` | Exit code and meaning with red background (shown on error). |
+| `$` | `text` | The prompt character. |
+
+###### Full `ninja.omp.json` Source
+
+<details>
+<summary>Click to expand the complete theme file</summary>
+
+```json
+{
+  "$schema": "https://raw.githubusercontent.com/JanDeDobbeleer/oh-my-posh/main/themes/schema.json",
+  "blocks": [
+    {
+      "type": "prompt",
+      "alignment": "left",
+      "segments": [
+        {
+          "type": "python",
+          "style": "plain",
+          "foreground": "white",
+          "template": "({{ if .Error }}{{ .Error }}{{ else }}{{ if .Venv }}{{ .Venv }} {{ end }}{{ .Full }}{{ end }})",
+          "properties": {
+            "fetch_version": false
+          }
+        }
+      ]
+    },
+    {
+      "type": "prompt",
+      "alignment": "left",
+      "newline": true,
+      "segments": [
+        {
+          "type": "root",
+          "style": "powerline",
+          "powerline_symbol": "\ue0b0",
+          "foreground": "#111111",
+          "background": "#ffff66",
+          "template": "\uf0e7"
+        },
+        {
+          "type": "shell",
+          "style": "plain",
+          "foreground": "#26C6DA",
+          "template": "\u2800{{ .Name }}\u2800",
+          "properties": {
+            "mapped_shell_names": {
+              "powershell": "Desktop",
+              "pwsh": "Core"
+            }
+          }
+        },
+        {
+          "type": "os",
+          "style": "plain",
+          "foreground": "#26C6DA",
+          "template": "\u2800{{ if .WSL }}WSL at {{ end }}{{.Icon}}\u2800"
+        },
+        {
+          "type": "path",
+          "style": "plain",
+          "foreground": "lightYellow",
+          "template": "<darkGray>in </>{{ .Path }} ",
+          "properties": {
+            "style": "full"
+          }
+        },
+        {
+          "type": "git",
+          "style": "plain",
+          "template": "<darkGray>on</> <white>git:</>{{ .HEAD }} "
+        },
+        {
+          "type": "time",
+          "style": "plain",
+          "foreground": "darkGray",
+          "properties": {
+            "time_format": "3:04:05 PM"
+          }
+        },
+        {
+          "type": "exit",
+          "style": "plain",
+          "foreground": "red",
+          "template": " C:{{ if gt .Code 0 }}{{ .Code }}{{ end }} "
+        }
+      ]
+    },
+    {
+      "type": "prompt",
+      "alignment": "left",
+      "newline": true,
+      "segments": [
+        {
+          "type": "node",
+          "style": "plain",
+          "foreground": "#ffffff",
+          "background": "#6CA35E",
+          "template": " \ue718 {{ if .PackageManagerIcon }}{{ .PackageManagerIcon }} {{ end }}{{ .Full }} ",
+          "properties": {
+            "display_mode": "files",
+            "fetch_package_manager": true
+          }
+        },
+        {
+          "type": "dotnet",
+          "style": "plain",
+          "foreground": "#00ffff",
+          "template": " <white><b>#</b></> {{ if .Unsupported }}\uf071{{ else }}{{ .Full }}{{ end }} ",
+          "properties": {
+            "display_mode": "files"
+          }
+        },
+        {
+          "type": "executiontime",
+          "style": "plain",
+          "foreground": "#ffffff",
+          "template": " <#fefefe>\u231a</> {{ .FormattedMs }} ",
+          "properties": {
+            "style": "austin",
+            "threshold": 500
+          }
+        },
+        {
+          "type": "exit",
+          "style": "plain",
+          "foreground": "#ffffff",
+          "template": " \u203c {{.Code}}<yellow>:</> {{ .Meaning }} \u203c ",
+          "background_templates": [
+            "{{ if gt .Code 0 }}#9c1442{{ end }}"
+          ],
+          "properties": {
+            "always_enabled": false
+          }
+        },
+        {
+          "type": "text",
+          "style": "plain",
+          "foreground": "#ff2100",
+          "properties": {
+            "text": "$"
+          }
+        }
+      ]
+    }
+  ],
+  "version": 3,
+  "final_space": true
+}
+```
+
+</details>
+
+#### Customizing the Theme
+
+To customize the prompt:
+
+1. **Edit directly**: Modify `ninja.omp.json` in the Snippets directory. Changes take effect on the next shell launch.
+
+2. **Use a different theme**: Oh-My-Posh ships with [many built-in themes](https://ohmyposh.dev/docs/themes). To preview them:
+
+   ```powershell
+   # List available themes
+   Get-PoshThemes
+
+   # Or preview in the terminal
+   oh-my-posh init pwsh --config "$env:POSH_THEMES_PATH/jandedobbeleer.omp.json" | Invoke-Expression
+   ```
+
+3. **Use a custom theme file**: Place your `.omp.json` file anywhere and update the path in the oh-my-posh script, or set the `$POSH_THEMES_PATH` environment variable.
+
+4. **Live editing**: Use the Oh-My-Posh [configuration tool](https://ohmyposh.dev/docs/configuration/overview) or any JSON editor with schema support for IntelliSense.
+
+##### Adding a Segment
+
+To add a new segment (e.g., Kubernetes context), add it to the `segments` array of the desired block:
+
+```json
+{
+  "type": "kubectl",
+  "style": "plain",
+  "template": " ⎈ {{ .Context }}{{ if .Namespace }}:{{ .Namespace }}{{ end }} ",
+  "foreground": "#6495ED"
+}
+```
+
+##### Changing Colors
+
+Colors can be set using names (`white`, `red`, `lightYellow`, `darkGray`) or hex codes (`#26C6DA`). Use `<color>text</>` for inline coloring within templates:
+
+```json
+"template": "<darkGray>in </><lightYellow>{{ .Path }}</>"
+```
+
+#### Nerd Fonts
+
+Oh-My-Posh uses special glyphs (icons) that require a [Nerd Font](https://www.nerdfonts.com/). If you see squares or missing characters in your prompt:
+
+1. Install a Nerd Font (e.g., `CaskaydiaCove Nerd Font`, `FiraCode Nerd Font`, `MesloLGM Nerd Font`):
+
+   ```powershell
+   # Windows (via scoop)
+   scoop bucket add nerd-fonts
+   scoop install CascadiaCode-NF
+
+   # Or via Oh-My-Posh
+   oh-my-posh font install CascadiaCode
+   ```
+
+2. Configure your terminal emulator to use the Nerd Font:
+   - **Windows Terminal**: Settings → Profile → Appearance → Font face
+   - **VS Code**: `"terminal.integrated.fontFamily": "CaskaydiaCove Nerd Font"`
+   - **iTerm2**: Preferences → Profiles → Text → Font
+
 ### System Scripts
 
 | Script | Alias | Platforms | Description |
