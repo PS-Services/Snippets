@@ -1,0 +1,20 @@
+# Snippets Module Auto-Loader Configuration
+# Modules listed here are automatically installed (if missing) and imported during profile initialization.
+#
+# Schema:
+#   modules:
+#     - name: <string>          # Required. Module name.
+#       version: "<string>"     # Optional. Minimum required version (e.g. "1.0.0").
+#       source: <string>        # Optional. "PSGallery" (default) or a file path to a .psd1/.psm1.
+#       required: <bool>        # Optional. Default true. If false, load failure is non-fatal.
+#       parameters: []          # Optional. Arguments passed to Import-Module -ArgumentList.
+#
+# Override this file's location by setting $env:SnippetsModulesYaml to an absolute path.
+
+modules:
+  - name: powershell-yaml
+    required: true
+  # - name: posh-git
+  #   required: false
+  # - name: Terminal-Icons
+  #   required: false

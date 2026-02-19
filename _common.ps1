@@ -83,6 +83,13 @@ function Initialize-Snippets {
 
             $env:SnippetsInitialized="$true"
 
+            # Auto-load modules from modules.yml
+            $moduleLoaderPath = Join-Path $path -ChildPath 'module-loader.ps1'
+            if (Test-Path $moduleLoaderPath) {
+                Write-Verbose "[$script] Running module auto-loader..." -Verbose:$Verbose
+                . $moduleLoaderPath -VerboseSwitch:$Verbose
+            }
+
             if($env:IsUnix -eq "$true") { return "Powershell ready for Unix-like System."}
             elseif($env:IsDesktop -eq "$true") { return "Windows Powershell is ready."}
             else { return "Powershell Core is ready." }

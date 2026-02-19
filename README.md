@@ -24,12 +24,61 @@ Execute this script...
 curl 'https://raw.githubusercontent.com/PS-Services/Snippets/master/linux-setup.sh' -v | /bin/bash
 ```
 
+## Module Auto-Loader
+
+Modules can be declaratively defined in a `modules.yml` file and will be automatically installed (from PSGallery) and imported during profile initialization. The `powershell-yaml` module is used for YAML parsing and will be auto-installed if missing.
+
+### Configuration Path
+
+By default, the loader reads `$env:Snippets\modules.yml`. To use a user-specific configuration (recommended), set `$env:SnippetsModulesYaml` in your `$PROFILE` **before** the Snippets block:
+
+```powershell
+$env:Snippets = "$env:OneDrive\Documents\PowerShell\Snippets"
+$env:SnippetsModulesYaml = "$env:USERPROFILE\modules.yml"
+```
+
+### `modules.yml` Schema
+
+```yaml
+modules:
+  - name: ModuleName          # Required. Module name.
+    version: "1.0.0"          # Optional. Minimum required version.
+    source: PSGallery          # Optional. "PSGallery" (default) or a file path to a .psd1/.psm1.
+    required: true             # Optional. Default true. If false, failure is non-fatal.
+    parameters: []             # Optional. Arguments passed to Import-Module -ArgumentList.
+```
+
+### Behavior
+
+- **PSGallery modules**: Installed automatically to `CurrentUser` scope if missing or below the specified version.
+- **Path-based modules**: Imported directly from the specified `.psd1` or `.psm1` file path.
+- **Required modules** (`required: true`): Raise an error if they fail to load.
+- **Optional modules** (`required: false`): Fail silently with a verbose message.
+- **`powershell-yaml`**: Always loaded first as the YAML parser; include it in your `modules.yml` to make the dependency explicit.
+
+### Example
+
+```yaml
+modules:
+  - name: powershell-yaml
+    required: true
+  - name: posh-git
+    required: false
+  - name: Terminal-Icons
+    required: false
+    version: "0.11.0"
+  - name: MsixTools
+    source: "E:\\github\\remote-agent\\scripts\\MsixTools\\MsixTools.psd1"
+    required: false
+```
+
 | Win | *nix | Script           | Description                                                                                                                  |
 |-----|------|------------------|------------------------------------------------------------------------------------------------------------------------------|
 | :white_check_mark: | :white_check_mark:  | bing.ps1         | Search Bing from Powershell.                                                                                                 |
 | :white_check_mark: | :white_check_mark:  | clean&#x2011;folder.ps1 | Remove all `bin` and `obj` folders in current path.                                                                          |
 | :white_check_mark: | :white_check_mark:  | github.ps1       | **_Set `$env:GITHUB` first to the root of your github repositories._**  Use `hub` or `hub <repository>` to go to those folders. |
 | :white_check_mark: | :white_check_mark:  | oh&#x2011;my&#x2011;posh.ps1   | Initializes Oh-My-Posh for the current PowerShell
+| :white_check_mark: | :white_check_mark:  | module&#x2011;loader.ps1 | Auto-loads PowerShell modules defined in `modules.yml`.                                              |
 | :white_check_mark: | :white_check_mark:  | _repos.ps1       | A unified repository query system. |
 | :white_check_mark: |  | chocolatey.ps1   | Setup Chocolatey profile in PowerShell.                                                                                      |
 | :white_check_mark: |  | devmode.ps1      | Startup VS 2022 Dev Mode Tools.                                                                                              |
@@ -42,6 +91,7 @@ All scripts work in both PowerShell Core and Windows PowerShell 5.1!
 
 ```powershell
 $env:Snippets="$env:OneDrive\Documents\PowerShell\Snippets"
+$env:SnippetsModulesYaml = "$env:USERPROFILE\modules.yml"
 
 if ($env:VerboseStartup -eq 'true') {
     [switch]$Verbose = $true
