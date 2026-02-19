@@ -158,9 +158,71 @@ function Import-SnippetsModules {
     return "Module auto-load complete: $loaded loaded, $failed failed."
 }
 
+function Reload-SnippetsModule {
+    param(
+        [Parameter(Position = 0)][string]$ModuleName = '',
+        [switch]$VerboseSwitch = $false
+    )
+
+    if ($ModuleName) {
+        # Reload a single module by name
+        Remove-Module -Name $ModuleName -Force -ErrorAction SilentlyContinue
+        Import-Module -Name $ModuleName -Force -ErrorAction Stop -Verbose:$false
+        Write-Verbose "[$script] Reloaded [$ModuleName]." -Verbose:$VerboseSwitch
+        return "Reloaded module: $ModuleName"
+    }
+    else {
+        # Reload all modules from YAML
+        $yamlPath = $env:SnippetsModulesYaml
+        if (-not $yamlPath -or -not (Test-Path $yamlPath)) {
+            $yamlPath = Join-Path $env:Snippets -ChildPath 'modules.yml'
+        }
+
+        if (-not (Test-Path $yamlPath)) {
+            return "No modules.yml found."
+        }
+
+        $yamlContent = Get-Content -Path $yamlPath -Raw -ErrorAction Stop
+        $config = ConvertFrom-Yaml $yamlContent -ErrorAction Stop
+
+        if (-not $config -or -not $config.modules) {
+            return "No modules defined."
+        }
+
+        $reloaded = 0
+        foreach ($entry in $config.modules) {
+            $name = $entry.name
+            if (-not $name) { continue }
+
+            $source = if ($entry.source -and $entry.source -ine 'PSGallery' -and (Test-Path $entry.source)) { $entry.source } else { $name }
+
+            try {
+                Remove-Module -Name $name -Force -ErrorAction SilentlyContinue
+                Import-Module -Name $source -Force -ErrorAction Stop -Verbose:$false
+                Write-Verbose "[$script] Reloaded [$name]." -Verbose:$VerboseSwitch
+                $reloaded++
+            }
+            catch {
+                $isRequired = if ($null -ne $entry.required) { $entry.required } else { $true }
+                if ($isRequired) {
+                    Write-Error "[$script] Failed to reload required module [$name]: $_"
+                }
+                else {
+                    Write-Verbose "[$script] Optional module [$name] failed to reload: $_" -Verbose:$VerboseSwitch
+                }
+            }
+        }
+
+        return "Reloaded $reloaded modules from YAML."
+    }
+}
+
 try {
     $result = Import-SnippetsModules -Verbose:$Verbose
     Write-Verbose "[$script] $result" -Verbose:$Verbose
+
+    set-alias -Verbose:$Verbose -Scope Global -Description "Snippets: [modules] Reload a module or all YAML modules" -Name modrl -Value Reload-SnippetsModule
+
     return $result
 }
 catch {

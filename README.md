@@ -223,6 +223,7 @@ Write-Verbose 'PowerShell Ready.' -Verbose:$MasterVerbose
 - `np` NPM
 - `pp` pip
 - `pps` pip-search
+- `psg` PSGallery
 
 ### Windows
 

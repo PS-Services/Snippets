@@ -1234,6 +1234,150 @@ class DotnetToolManager : PackageManager {
     }
 }
 
+class PSGalleryManager : PackageManager {
+
+    PSGalleryManager() : base(
+        'PSGallery', 'pwsh', 'search', 'install',
+        'update', 'update', 'list', 'uninstall', 'show', $false
+    ) {
+        $this.IsPresent = $true
+    }
+
+    [Object]Execute(
+        [string]$Command,
+        [Object[]]$params,
+        [switch]$Install = $false,
+        [switch]$AllRepos = $false,
+        [switch]$Raw = $false,
+        [switch]$Describe = $false,
+        [switch]$Global = $false,
+        [bool]$Verbose = $false,
+        [bool]$Sudo = $false) {
+
+        # Extract the module name from params, skipping command words
+        $moduleName = ''
+        foreach ($p in $params) {
+            if ($p -and $p -notmatch '^(search|install|list|uninstall|show|update|upgrade)$') {
+                $moduleName = $p
+                break
+            }
+        }
+
+        # Detect whether PSResourceGet (modern) or PowerShellGet (legacy) is available
+        $usePSResourceGet = $null -ne (Get-Command 'Find-PSResource' -ErrorAction SilentlyContinue)
+
+        $executeResults = @()
+
+        Switch -regex ($Command) {
+            '^search|find' {
+                if ($moduleName) {
+                    if ($usePSResourceGet) {
+                        $executeResults = Find-PSResource -Name "*$moduleName*" -Type Module -ErrorAction SilentlyContinue |
+                            ForEach-Object { "> $($_.Name) | $($_.Version) | $($_.Description)" }
+                    }
+                    else {
+                        $executeResults = Find-Module -Name "*$moduleName*" -ErrorAction SilentlyContinue |
+                            ForEach-Object { "> $($_.Name) | $($_.Version) | $($_.Description)" }
+                    }
+                }
+            }
+            '^install' {
+                if ($moduleName) {
+                    if ($usePSResourceGet) {
+                        Install-PSResource -Name $moduleName -Scope CurrentUser -TrustRepository -ErrorAction Stop
+                    }
+                    else {
+                        Install-Module -Name $moduleName -Scope CurrentUser -Force -AllowClobber -AcceptLicense -ErrorAction Stop
+                    }
+                    $executeResults = @("> $moduleName | installed")
+                }
+            }
+            '^update|upgrade' {
+                if ($moduleName) {
+                    if ($usePSResourceGet) {
+                        Update-PSResource -Name $moduleName -Scope CurrentUser -TrustRepository -ErrorAction Stop
+                    }
+                    else {
+                        Update-Module -Name $moduleName -ErrorAction Stop
+                    }
+                    $executeResults = @("> $moduleName | updated")
+                }
+            }
+            '^uninstall|remove' {
+                if ($moduleName) {
+                    if ($usePSResourceGet) {
+                        Uninstall-PSResource -Name $moduleName -Scope CurrentUser -ErrorAction Stop
+                    }
+                    else {
+                        Uninstall-Module -Name $moduleName -Force -ErrorAction Stop
+                    }
+                    $executeResults = @("> $moduleName | uninstalled")
+                }
+            }
+            '^show|details|info' {
+                if ($moduleName) {
+                    if ($usePSResourceGet) {
+                        $executeResults = Find-PSResource -Name $moduleName -Type Module -ErrorAction SilentlyContinue |
+                            ForEach-Object { "> $($_.Name) | $($_.Version) | $($_.Description)" }
+                    }
+                    else {
+                        $executeResults = Find-Module -Name $moduleName -ErrorAction SilentlyContinue |
+                            ForEach-Object { "> $($_.Name) | $($_.Version) | $($_.Description)" }
+                    }
+                }
+            }
+            '^list' {
+                if ($usePSResourceGet) {
+                    $listParams = @{ ErrorAction = 'SilentlyContinue' }
+                    if ($moduleName) { $listParams['Name'] = "*$moduleName*" }
+                    $executeResults = Get-InstalledPSResource @listParams |
+                        ForEach-Object { "> $($_.Name) | $($_.Version) | $($_.Description)" }
+                }
+                else {
+                    $listParams = @{ ErrorAction = 'SilentlyContinue' }
+                    if ($moduleName) { $listParams['Name'] = "*$moduleName*" }
+                    $executeResults = Get-InstalledModule @listParams |
+                        ForEach-Object { "> $($_.Name) | $($_.Version) | $($_.Description)" }
+                }
+            }
+        }
+
+        if (-not $executeResults) {
+            return $null
+        }
+
+        return $this.ParseResults($executeResults, $Command, $Install, $AllRepos, $Raw, $Describe, $Global, $Verbose)
+    }
+
+    [ResultItem]ParseResultItem([string]$Line, [string]$Command, [Switch]$Global) {
+        $expression = '^>\s([@\w\d\-\/\.]+)\s\|\s([^\s]+)\s*(?:\|\s*(.*))?$'
+
+        if ($line -imatch $expression) {
+            $regex = [Regex]::new($expression)
+            $match = $regex.Match($line)
+            $id = $match.Groups[1].Value.Trim()
+            $ver = $match.Groups[2].Value.Trim()
+            $description = ''
+            if ($match.Groups[3].Success) { $description = $match.Groups[3].Value.Trim() }
+            $nme = $id
+            $inst = $Command
+            switch -regex ($Command) {
+                'search' {
+                    $inst = "Install-Module $id -RequiredVersion $ver -Scope CurrentUser"
+                }
+                'list' {
+                    $inst = "Uninstall-Module $id"
+                }
+            }
+            return [ResultItem]::new(
+                'PSGallery', $nme, $ver, $nme, $inst, $description, $this, $Line
+            )
+        }
+
+        return $null
+    }
+}
+
 function GetFirstItem([TypeInfo]$OfType, [IEnumerable]$Enum) {
     foreach ($currentItem in $Enum) {
         if ($currentItem -is $OfType) {
@@ -1313,6 +1457,9 @@ function Invoke-Any {
     ('pps') {
             $manager = [PipSearchManager]::new()
         }
+    ('psg') {
+            $manager = [PSGalleryManager]::new()
+        }
         default {
             throw "``$alias`` is not a known package manager."
         }
@@ -1349,6 +1496,7 @@ Set-Alias -Verbose:$Verbose -Scope Global -Description 'Snippets: [repos] NPM' -
 Set-Alias -Verbose:$Verbose -Scope Global -Description 'Snippets: [repos] NuGet' -Name ng -Value Invoke-Any -PassThru
 Set-Alias -Verbose:$Verbose -Scope Global -Description 'Snippets: [repos] Dotnet' -Name dn -Value Invoke-Any -PassThru
 Set-Alias -Verbose:$Verbose -Scope Global -Description 'Snippets: [repos] Dotnet Tool' -Name dt -Value Invoke-Any -PassThru
+Set-Alias -Verbose:$Verbose -Scope Global -Description 'Snippets: [repos] PSGallery' -Name psg -Value Invoke-Any -PassThru
 
 if ($env:IsWindows -eq 'false') {
     if ($IsLinux) {
@@ -1389,6 +1537,7 @@ if ($env:IsWindows -eq 'false') {
                 $snapResults = Invoke-Any $Command $Name -Subcommand $Subcommand -AllRepos -Raw:$Raw -Describe:$Describe -Exact:$Exact -Install:$Install -Global:$Global -managerCode 'sn'
             }
             $brewResults = Invoke-Any $Command $Name -Subcommand $Subcommand -AllRepos -Raw:$Raw -Describe:$Describe -Exact:$Exact -Install:$Install -Global:$Global -managerCode 'br'
+            $psgResults = Invoke-Any $Command $Name -AllRepos -Raw:$Raw -Describe:$Describe -Exact:$Exact -Install:$Install -Global:$Global -managerCode 'psg'
 
             $results = [List[Object]]::new()
             if ($IsLinux) {
@@ -1419,6 +1568,13 @@ if ($env:IsWindows -eq 'false') {
             }
             else {
                 $results.Add($brewResults)
+            }
+
+            if ($psgResults -is [ResultItem[]] -or $psgResults -is [Object[]]) {
+                $results.AddRange($psgResults)
+            }
+            else {
+                $results.Add($psgResults)
             }
 
             if ($Command -imatch 'search|list' -and -not $Raw) {
@@ -1469,7 +1625,7 @@ if ($env:IsWindows -eq 'false') {
     }
 }
 else {
-    Write-Verbose 'Using Windows Repos' -Verbose$Verbose
+    Write-Verbose 'Using Windows Repos' -Verbose:$Verbose
 
     try {
         function Invoke-All {
@@ -1496,6 +1652,7 @@ else {
             $wingetResults = Invoke-Any $Command $Name -Store $Store -Interactive:$Interactive -AllRepos -Raw:$Raw -Describe:$Describe -Exact:$Exact -Install:$Install -Global:$Global -managerCode 'wg'
             $scoopResults = Invoke-Any $Command $Name -Subcommand $Subcommand -AllRepos -Raw:$Raw -Describe:$Describe -Exact:$Exact -Install:$Install -Global:$Global -managerCode 'scp'
             $chocoResults += Invoke-Any $Command $Name -Subcommand $Subcommand -AllRepos -Raw:$Raw -Describe:$Describe -Exact:$Exact -Install:$Install -Global:$Global -managerCode 'ch'
+            $psgResults = Invoke-Any $Command $Name -AllRepos -Raw:$Raw -Describe:$Describe -Exact:$Exact -Install:$Install -Global:$Global -managerCode 'psg'
 
             $results = [List[Object]]::new()
             if ($wingetResults -is [ResultItem[]] -or $wingetResults -is [Object[]]) {
@@ -1517,6 +1674,13 @@ else {
             }
             else {
                 $results.Add($chocoResults)
+            }
+
+            if ($psgResults -is [ResultItem[]] -or $psgResults -is [Object[]]) {
+                $results.AddRange($psgResults)
+            }
+            else {
+                $results.Add($psgResults)
             }
 
             if ($Command -imatch 'search|list' -and -not $Raw) {
