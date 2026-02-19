@@ -64,6 +64,7 @@ function Import-SnippetsModules {
 
     $loaded = 0
     $failed = 0
+    $moduleStatuses = [System.Collections.Generic.List[PSCustomObject]]::new()
 
     foreach ($entry in $config.modules) {
         $moduleName = $entry.name
@@ -80,6 +81,7 @@ function Import-SnippetsModules {
         # Skip powershell-yaml since we already loaded it above
         if ($moduleName -ieq 'powershell-yaml') {
             $loaded++
+            $moduleStatuses.Add([PSCustomObject]@{ Module = $moduleName; Status = 'Loaded' })
             continue
         }
 
@@ -93,6 +95,7 @@ function Import-SnippetsModules {
                 if (-not $moduleVersion -or (-not [Version]::TryParse(($moduleVersion -replace '-.*$',''), [ref]$parsedVer)) -or $existing.Version -ge $parsedVer) {
                     Write-Verbose "[$script] Module [$moduleName] already imported." -Verbose:$Verbose
                     $loaded++
+                    $moduleStatuses.Add([PSCustomObject]@{ Module = $moduleName; Status = 'Already Loaded' })
                     continue
                 }
             }
@@ -156,9 +159,12 @@ function Import-SnippetsModules {
             Import-Module @importParams
             Write-Verbose "[$script] Loaded [$moduleName] successfully." -Verbose:$Verbose
             $loaded++
+            $moduleStatuses.Add([PSCustomObject]@{ Module = $moduleName; Status = 'Loaded' })
         }
         catch {
             $failed++
+            $statusLabel = if ($moduleRequired) { 'Failed (required)' } else { 'Failed (optional)' }
+            $moduleStatuses.Add([PSCustomObject]@{ Module = $moduleName; Status = $statusLabel })
             if ($moduleRequired) {
                 Write-Error "[$script] Failed to load required module [$moduleName]: $_"
             }
@@ -166,6 +172,20 @@ function Import-SnippetsModules {
                 Write-Verbose "[$script] Optional module [$moduleName] failed to load: $_" -Verbose:$Verbose
             }
         }
+    }
+
+    if ($moduleStatuses.Count -gt 0) {
+        Write-Host "`nLoaded modules from $([System.IO.Path]::GetFileName($yamlPath)):" -ForegroundColor Cyan
+        foreach ($entry in $moduleStatuses) {
+            $color = switch -Wildcard ($entry.Status) {
+                'Loaded'          { 'Green' }
+                'Already Loaded'  { 'DarkGreen' }
+                'Failed*'         { 'Red' }
+                default           { 'Gray' }
+            }
+            Write-Host ("  {0,-40} {1}" -f $entry.Module, $entry.Status) -ForegroundColor $color
+        }
+        Write-Host ""
     }
 
     return "Module auto-load complete: $loaded loaded, $failed failed."
@@ -231,7 +251,12 @@ function Reload-SnippetsModule {
 }
 
 try {
+    if ($env:SnippetsModulesLoaded) {
+        return "Modules already loaded."
+    }
+
     $result = Import-SnippetsModules -Verbose:$Verbose
+    $env:SnippetsModulesLoaded = $true
     Write-Verbose "[$script] $result" -Verbose:$Verbose
 
     set-alias -Verbose:$Verbose -Scope Global -Description "Snippets: [modules] Reload a module or all YAML modules" -Name modrl -Value Reload-SnippetsModule

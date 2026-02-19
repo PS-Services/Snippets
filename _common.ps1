@@ -61,7 +61,7 @@ function Initialize-Snippets {
             $versionFilePath = Join-Path (Get-Location) -Child ".version"  -Verbose:$VerboseSwitch
 
             if(-not (Test-Path $versionFilePath)){
-                if(Test-Path $PWD/set-version.ps1 -Verbose:$VerboseSwitch) {
+                if((Test-Path $PWD/.git) -and (Test-Path $PWD/set-version.ps1 -Verbose:$VerboseSwitch)) {
                     . $PWD/set-version.ps1 -Verbose:$VerboseSwitch
                     $versionFile = Get-Item $PWD/.version -ErrorAction Stop
                 }
