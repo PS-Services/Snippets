@@ -435,6 +435,7 @@ Oh-My-Posh uses special glyphs (icons) that require a [Nerd Font](https://www.ne
 | Script | Alias | Platforms | Description |
 |--------|-------|-----------|-------------|
 | `_common.ps1` | `snipps` | All | Bootstrap script. Initializes the Snippets environment, sets version info, detects OS. Use `snipps` to navigate to the Snippets folder. |
+| `_aliases.ps1` | `als` | All | Loads `SnippetsAliasManager.psm1`, applies YAML-defined aliases, and exposes the alias manager router. |
 | `_repos.ps1` | _(see Repositories)_ | All | Loads `SnippetsManager.psm1` and registers all package manager aliases. |
 | `module-loader.ps1` | `modrl` | All | Auto-loads modules from `modules.yml`. Use `modrl` to reload all or `modrl <name>` for a single module. |
 | `update-snippets.ps1` | `snipup` / `profileup` | All | `snipup` pulls the latest Snippets from GitHub. `profileup` updates your `$PROFILE` with the latest template. |
@@ -591,12 +592,88 @@ modules:
 
 ---
 
+## Alias Manager
+
+Declare your startup aliases in YAML and Snippets will apply them automatically during profile initialization.
+
+### Configuration
+
+The alias manager reads mappings from an `aliases.yml` file:
+
+1. **Default path**: `$env:Snippets\aliases.yml`
+2. **User override**: Set `$env:SnippetsAliasesYaml` in your `$PROFILE`
+
+```powershell
+# In $PROFILE, before the Snippets loading block:
+$env:SnippetsAliasesYaml = "$env:USERPROFILE\\aliases.yml"   # Windows
+$env:SnippetsAliasesYaml = "$env:HOME/aliases.yml"           # Linux/macOS
+```
+
+### YAML Schema
+
+```yaml
+aliases:
+  - name: ll
+    type: alias
+    target: Get-ChildItem
+    description: Directory listing
+    category: navigation
+    scope: Global
+    enabled: true
+
+  - name: gst
+    type: wrapper
+    command: git status
+    description: Git status wrapper
+    category: git
+    scope: Global
+    enabled: true
+
+  - name: cdx
+    type: wrapper
+    command: hub $Name; codex 'Start $start-mcp-session'
+    parameters:
+      - Name
+    description: Jump to a repo and start an MCP Codex flow
+    category: mcp
+    scope: Global
+    enabled: true
+```
+
+### Behavior
+
+| Feature | Details |
+|---------|---------|
+| **Startup load** | `_aliases.ps1` imports `SnippetsAliasManager.psm1`, reads YAML, and applies enabled entries. |
+| **Plain aliases** | `type: alias` entries become global PowerShell aliases using `Set-Alias`. |
+| **Wrappers** | `type: wrapper` entries become generated functions so fixed command lines and trailing arguments both work. |
+| **Parameterized wrappers** | Add `parameters` and reference them in `command` as `$ParameterName` or `${ParameterName}`. |
+| **Conflict policy** | Existing commands are skipped with a warning during startup rather than overwritten. |
+| **Overwrite flow** | `Add-SnippetsAlias` prompts before replacing an existing mapping; `-Force` skips the prompt. |
+| **Objects** | `New-SnippetsAliasEntry` creates YAML-row objects and `Get-SnippetsAlias -Raw` returns them for reuse. |
+
+### Examples
+
+```powershell
+als list
+als add ll Get-ChildItem
+als add gst "git status" -Type wrapper
+als add cdx 'hub $Name; codex ''Start $start-mcp-session''' -Type wrapper -Parameters Name
+
+$entry = New-SnippetsAliasEntry -Name ga -Value "git add" -Type wrapper -Category git
+Add-SnippetsAlias -InputObject $entry -Force
+Get-SnippetsAlias -Raw
+```
+
+---
+
 ## Environment Variables
 
 | Variable | Required | Description |
 |----------|:--------:|-------------|
 | `$env:Snippets` | **Yes** | Path to the Snippets repository. Set in `$PROFILE.AllUsersAllHosts`. |
 | `$env:SnippetsModulesYaml` | No | Path to user-specific `modules.yml`. Defaults to `$env:Snippets\modules.yml`. |
+| `$env:SnippetsAliasesYaml` | No | Path to user-specific `aliases.yml`. Defaults to `$env:Snippets\aliases.yml`. |
 | `$env:GITHUB` | No | Root folder of your GitHub repositories. Auto-detected from `$env:USERPROFILE` or `$env:HOME` if not set. |
 | `$env:BingApiKey` | No | Bing Search API subscription key. Required for the `bing` alias to function. |
 | `$env:VerboseStartup` | No | Set to `'true'` for verbose output during profile initialization. |
@@ -719,6 +796,7 @@ Get-Alias | Where-Object Description -imatch 'snippet' |
 | `snipup` | Snippets | Update Snippets from GitHub |
 | `profileup` | Snippets | Update `$PROFILE` from template |
 | `modrl` | Modules | Reload one or all YAML-defined modules |
+| `als` | Aliases | Manage YAML-defined aliases and wrapper commands |
 | `repos` | Repos | Search all OS package managers |
 | `dn` | Repos | dotnet package commands |
 | `dt` | Repos | dotnet tool commands |
@@ -744,8 +822,9 @@ Get-Alias | Where-Object Description -imatch 'snippet' |
 1. **`$PROFILE`** sets `$env:Snippets` and dot-sources all `.ps1` files in the Snippets folder.
 2. **`_common.ps1`** runs first via each snippet's initialization guard. It sets environment flags, loads the version, and runs the module auto-loader.
 3. **Each snippet** checks `$env:SnippetsInitialized` — if not set, it calls `Initialize-Snippets` to bootstrap.
-4. **`_repos.ps1`** imports `SnippetsManager.psm1`, which defines all package manager classes and registers aliases.
-5. **`module-loader.ps1`** is called by `Initialize-Snippets` to process `modules.yml`.
+4. **`_aliases.ps1`** imports `SnippetsAliasManager.psm1`, loads `aliases.yml`, and registers the `als` router alias.
+5. **`_repos.ps1`** imports `SnippetsManager.psm1`, which defines all package manager classes and registers aliases.
+6. **`module-loader.ps1`** is called by `Initialize-Snippets` to process `modules.yml`.
 
 ### SnippetsManager Class Hierarchy
 

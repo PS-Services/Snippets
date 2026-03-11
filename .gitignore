@@ -20,3 +20,4 @@ tags
 
 _site
 docs/Publish-ToMedium.ps1
+/aliases.yml

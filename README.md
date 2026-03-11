@@ -1,6 +1,6 @@
 # Sharp Ninja's PowerShell Snippets
 
-A collection of PowerShell profile tools providing a unified package manager abstraction, module auto-loading, Bing search, Oh-My-Posh setup, and developer utilities across Windows, Linux, WSL, and macOS.
+A collection of PowerShell profile tools providing unified package manager access, YAML-backed alias management, module auto-loading, Bing search, Oh-My-Posh setup, and developer utilities across Windows, Linux, WSL, and macOS.
 
 [docs](https://ps-services.github.io/Snippets/) 🏗️
 
@@ -35,6 +35,7 @@ curl 'https://raw.githubusercontent.com/PS-Services/Snippets/master/linux-setup.
 | ✅ | ✅ | `github.ps1` | `hub` | Navigate to GitHub repositories folder. Auto-detects `$env:GITHUB` or set it manually. |
 | ✅ | ✅ | `oh-my-posh-*.ps1` | `posh` | Initializes Oh-My-Posh for the current shell (Windows, Linux, or macOS). |
 | ✅ | ✅ | `module-loader.ps1` | `modrl` | Auto-loads PowerShell modules from `modules.yml`. Use `modrl` to reload all or `modrl <name>` for one. |
+| ✅ | ✅ | `_aliases.ps1` | `als` | Loads alias mappings from `aliases.yml` and manages them through the alias manager module. |
 | ✅ | ✅ | `update-snippets.ps1` | `snipup` / `profileup` | Update Snippets or Profile from GitHub. |
 | ✅ | ✅ | `_common.ps1` | `snipps` | Bootstrap script. Navigate to Snippets folder with `snipps`. |
 | ✅ | ✅ | `_repos.ps1` | _(see Repositories)_ | Unified package manager query system. |
@@ -92,12 +93,78 @@ modules:
     required: false
 ```
 
+## Alias Manager
+
+The alias manager loads alias mappings from `aliases.yml` during startup and exposes the `als` snippet alias for managing them. It supports plain PowerShell aliases and wrapper commands backed by generated functions.
+
+### Configuration Path
+
+By default, the loader reads `$env:Snippets\aliases.yml`. To use a user-specific alias file, set `$env:SnippetsAliasesYaml` in your `$PROFILE` before the Snippets block:
+
+```powershell
+$env:Snippets = "$env:OneDrive\Documents\PowerShell\Snippets"
+$env:SnippetsAliasesYaml = "$env:USERPROFILE\aliases.yml"
+```
+
+### `aliases.yml` Schema
+
+```yaml
+aliases:
+  - name: ll
+    type: alias
+    target: Get-ChildItem
+    description: Directory listing
+    category: navigation
+    scope: Global
+    enabled: true
+
+  - name: gst
+    type: wrapper
+    command: git status
+    description: Git status wrapper
+    category: git
+    scope: Global
+    enabled: true
+
+  - name: cdx
+    type: wrapper
+    command: hub $Name; codex 'Start $start-mcp-session'
+    parameters:
+      - Name
+    description: Jump to a repo and start an MCP Codex flow
+    category: mcp
+    scope: Global
+    enabled: true
+```
+
+### Behavior
+
+- **Plain aliases**: Applied with `Set-Alias` when the target command already exists.
+- **Wrapper aliases**: Materialized as generated functions so fixed command lines and extra arguments both work.
+- **Parameterized wrappers**: Declare `parameters` and reference them in `command` as `$ParameterName` or `${ParameterName}`.
+- **Conflicts**: Existing commands are skipped with a warning during startup.
+- **Overwrite flow**: `Add-SnippetsAlias` prompts before replacing an existing mapping; `-Force` overwrites immediately.
+- **Objects**: `New-SnippetsAliasEntry` creates row-shaped objects that `Add-SnippetsAlias` accepts directly, and `Get-SnippetsAlias -Raw` returns those same objects.
+
+### Examples
+
+```powershell
+als list
+als add ll Get-ChildItem
+als add gst "git status" -Type wrapper
+als add cdx 'hub $Name; codex ''Start $start-mcp-session''' -Type wrapper -Parameters Name
+
+$entry = New-SnippetsAliasEntry -Name ga -Value "git add" -Type wrapper -Category git
+Add-SnippetsAlias -InputObject $entry -Force
+```
+
 ## Environment Variables
 
 | Variable | Description |
 |----------|-------------|
 | `$env:Snippets` | **Required.** Path to the Snippets repository. Set in `$PROFILE.AllUsersAllHosts`. |
 | `$env:SnippetsModulesYaml` | Optional. Path to user-specific `modules.yml`. Defaults to `$env:Snippets\modules.yml`. |
+| `$env:SnippetsAliasesYaml` | Optional. Path to user-specific `aliases.yml`. Defaults to `$env:Snippets\aliases.yml`. |
 | `$env:GITHUB` | Optional. Root of your GitHub repositories folder. Auto-detected if not set. |
 | `$env:BingApiKey` | Optional. Bing Search API subscription key for the `bing` alias. |
 | `$env:VerboseStartup` | Optional. Set to `'true'` for verbose profile startup output. |
