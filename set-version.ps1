@@ -13,6 +13,26 @@ try {
         Set-Location Snippets
     }
 
+    $versionFilePath = Join-Path (Get-Location) -Child ".version"
+    if (Test-Path $versionFilePath) {
+        Write-Verbose "[$script] `$versionFilePath ($versionFilePath) exists: $(Test-Path $versionFilePath)"  -Verbose:$Verbose
+
+        $verifiedVersion = Get-Content -Path $versionFilePath -Verbose:$Verbose
+
+        Write-Verbose "[$script] `$verifiedVersion: $verifiedVersion" -Verbose:$Verbose
+
+        Write-Verbose "[$script] Current Semver is $verifiedVersion" -Verbose:$Verbose
+
+        $env:SnippetsVersion=$verifiedVersion
+
+        return "Current Semver is ${env:SnippetsVersion}"
+    }
+
+    $insideWorkTree = & git rev-parse --is-inside-work-tree 2>$null
+    if ($LASTEXITCODE -ne 0 -or $insideWorkTree -ine 'true') {
+        return "No Snippets version file found and current location is not a git work tree."
+    }
+
     $gitversion = Get-Command dotnet-gitversion -Verbose:$Verbose -ErrorAction SilentlyContinue
 
     if (-not $gitversion) {
@@ -27,8 +47,6 @@ try {
 
     $version = & $gitversion /showvariable FullSemVer
     $path = Get-Location
-    
-    $versionFilePath = Join-Path (Get-Location) -Child ".version"
 
     if(-not (Test-Path $versionFilePath)) {
         Write-Verbose "[$script] Writing $version to $versionFilePath" -Verbose:$Verbose
