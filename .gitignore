@@ -24,3 +24,5 @@ docs/Publish-ToMedium.ps1
 
 AGENTS-README-FIRST.yaml
 .mcpServer/
+cache/
+mcp.db
