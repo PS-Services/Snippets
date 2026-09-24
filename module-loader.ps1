@@ -21,7 +21,11 @@ function Install-YamlModuleIfMissing {
         $yamlMod = Get-Module -ListAvailable -Name 'powershell-yaml' -ErrorAction SilentlyContinue
         if (-not $yamlMod) {
             Write-Verbose "[$script] Installing powershell-yaml from PSGallery..." -Verbose:$Verbose
-            Install-Module -Name 'powershell-yaml' -Scope CurrentUser -Force -AllowClobber -AcceptLicense -ErrorAction Stop
+            $licenseOptions = @{}
+            if ((Get-Command Install-Module).Parameters.ContainsKey('AcceptLicense')) {
+                $licenseOptions.AcceptLicense = $true
+            }
+            Install-Module -Name 'powershell-yaml' -Scope CurrentUser -Force -AllowClobber @licenseOptions -ErrorAction Stop
         }
         Import-Module 'powershell-yaml' -ErrorAction Stop -Verbose:$false
         return $true
@@ -129,7 +133,6 @@ function Import-SnippetsModules {
                         Scope           = 'CurrentUser'
                         Force           = $true
                         AllowClobber    = $true
-                        AcceptLicense   = $true
                         ErrorAction     = 'Stop'
                     }
 
@@ -137,6 +140,9 @@ function Import-SnippetsModules {
                         $installParams['MinimumVersion'] = $moduleVersion
                     }
 
+                    if ((Get-Command Install-Module).Parameters.ContainsKey('AcceptLicense')) {
+                        $installParams.AcceptLicense = $true
+                    }
                     Install-Module @installParams
                 }
             }

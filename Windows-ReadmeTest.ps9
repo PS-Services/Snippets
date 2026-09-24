@@ -147,5 +147,3 @@ Get-Alias -Verbose:$MasterVerbose `
 | Format-Table Name, Description -AutoSize -Verbose:$MasterVerbose
 
 Write-Verbose 'PowerShell Ready.' -Verbose:$MasterVerbose
-
-profileup

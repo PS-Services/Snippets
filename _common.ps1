@@ -2,6 +2,7 @@ param([switch]$VerboseSwitch = $false)
 
 Write-Verbose "[_common.ps1] Entered common" -Verbose:$VerboseSwitch
 
+$env:IsDesktop = "$($PSVersionTable.PSEdition -eq 'Desktop')"
 switch ($env:IsDesktop)
 {
     ('true')
@@ -15,12 +16,6 @@ switch ($env:IsDesktop)
 }
 
 Write-Verbose "`$env:IsWindows: $($env:IsWindows)" -Verbose:$VerboseSwitch
-
-$utilities = Get-Module Microsoft.PowerShell.Utility -ErrorAction SilentlyContinue
-
-if(-not $utilities){
-    Install-Module Microsoft.PowerShell.Utility -AllowClobber -Scope CurrentUser -AcceptLicense -Force
-}
 
 Import-Module Microsoft.PowerShell.Utility
 

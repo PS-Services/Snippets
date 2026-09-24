@@ -63,11 +63,22 @@ if (-not $Destination) {
         $Destination = Join-Path $documents 'PowerShell\Snippets'
     }
 }
+$legacyProfilePaths = @()
 if (-not $ProfilePath) {
     $profilePaths = @(
         (Join-Path $documents 'WindowsPowerShell\profile.ps1')
         (Join-Path $documents 'PowerShell\profile.ps1')
     )
+    foreach ($defaultProfile in $profilePaths) {
+        foreach ($hostProfileName in @('Microsoft.PowerShell_profile.ps1', 'Microsoft.VSCode_profile.ps1')) {
+            $legacyPath = Join-Path (Split-Path $defaultProfile -Parent) $hostProfileName
+            if ((Test-Path -LiteralPath $legacyPath -PathType Leaf) -and
+                (@(Get-Content -LiteralPath $legacyPath) -contains '# SNIPPETS BEGIN')) {
+                $legacyProfilePaths += $legacyPath
+            }
+        }
+    }
+    $profilePaths += $legacyProfilePaths
 } else {
     $profilePaths = @($ProfilePath)
 }
@@ -96,6 +107,7 @@ if ($starts.Count -ne $ends.Count -or $starts.Count -gt 1 -or
         Lines = $profileLines
         Starts = $starts
         Ends = $ends
+        RemoveBlock = $legacyProfilePaths -contains $ProfilePath
     }
 })
 
@@ -139,7 +151,9 @@ $ends = $targetProfile.Ends
 $newLines = New-Object 'System.Collections.Generic.List[string]'
 if ($starts.Count -eq 1) {
     for ($index = 0; $index -lt $starts[0]; $index++) { $newLines.Add($profileLines[$index]) }
-    $newLines.AddRange([string[]]$block)
+    if (-not $targetProfile.RemoveBlock) {
+        $newLines.AddRange([string[]]$block)
+    }
     for ($index = $ends[0] + 1; $index -lt $profileLines.Count; $index++) { $newLines.Add($profileLines[$index]) }
 } else {
     $newLines.AddRange([string[]]$profileLines)

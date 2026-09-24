@@ -44,7 +44,11 @@ function Install-YamlModuleIfMissing {
         $yamlModule = Get-Module -ListAvailable -Name 'powershell-yaml' -ErrorAction SilentlyContinue
         if (-not $yamlModule) {
             Write-Verbose "[SnippetsAliasManager] Installing powershell-yaml from PSGallery..." -Verbose:$VerboseSwitch
-            Install-Module -Name 'powershell-yaml' -Scope CurrentUser -Force -AllowClobber -AcceptLicense -ErrorAction Stop
+            $licenseOptions = @{}
+            if ((Get-Command Install-Module).Parameters.ContainsKey('AcceptLicense')) {
+                $licenseOptions.AcceptLicense = $true
+            }
+            Install-Module -Name 'powershell-yaml' -Scope CurrentUser -Force -AllowClobber @licenseOptions -ErrorAction Stop
         }
 
         Import-Module 'powershell-yaml' -ErrorAction Stop -Verbose:$false

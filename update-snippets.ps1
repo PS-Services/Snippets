@@ -32,6 +32,12 @@ Write-Verbose "[$script] Set `$env:Snippets to [$env:Snippets]" -Verbose:$Verbos
 function Update-Profile {
     param([switch]$Verbose = $false)
 
+    $targetProfile = $PROFILE
+    if ($PROFILE.CurrentUserAllHosts -and (Test-Path -LiteralPath $PROFILE.CurrentUserAllHosts)) {
+        if (@(Get-Content -LiteralPath $PROFILE.CurrentUserAllHosts -ErrorAction Stop) -contains '# SNIPPETS BEGIN') {
+            $targetProfile = $PROFILE.CurrentUserAllHosts
+        }
+    }
     Push-Location -ErrorAction Stop
     try{
         if (Test-Path -LiteralPath $env:Snippets -PathType Container) {
@@ -42,7 +48,7 @@ function Update-Profile {
             $startLine='# SNIPPETS BEGIN'
             $endLine='# SNIPPETS END'
 
-            if($env:IsWindows -ieq "true") {
+            if($env:OS -eq 'Windows_NT') {
                 $readmeFile = "${env:Snippets}/Windows-ReadmeTest.ps9"
                 if (-not (Test-Path -LiteralPath $readmeFile -PathType Leaf)) {
                     $readmeFile = "${env:Snippets}/Windows-ReadmeTest.ps1"
@@ -57,8 +63,8 @@ function Update-Profile {
             $readme = @("`$env:Snippets = '$escapedSnippetsPath'") + $readme
 
             $myProfile = @()
-            if (Test-Path -LiteralPath $PROFILE) {
-                $myProfile = @(Get-Content -LiteralPath $PROFILE -ErrorAction Stop)
+            if (Test-Path -LiteralPath $targetProfile) {
+                $myProfile = @(Get-Content -LiteralPath $targetProfile -ErrorAction Stop)
             }
             $array=New-Object System.Collections.ArrayList
             $array.AddRange($myProfile)
@@ -77,19 +83,19 @@ function Update-Profile {
                 $array.AddRange($readme)
                 [void]$array.Add($endLine)
             } else {
-                throw "Invalid or duplicate Snippets markers in '$PROFILE'. Profile was not changed."
+                throw "Invalid or duplicate Snippets markers in '$targetProfile'. Profile was not changed."
             }
 
             $now=[System.DateTime]::Now.ToShortDateString()
             [void]$array.Add("# Snippets History: $now - ${env:SnippetsVersion}")
 
-            $profileDirectory = Split-Path -Path $PROFILE -Parent
+            $profileDirectory = Split-Path -Path $targetProfile -Parent
             if ($profileDirectory -and -not (Test-Path -LiteralPath $profileDirectory)) {
                 New-Item -ItemType Directory -Path $profileDirectory -Force -ErrorAction Stop | Out-Null
             }
-            $array | Out-File -LiteralPath $PROFILE -Encoding UTF8 -Verbose:$Verbose -ErrorAction Stop
+            $array | Out-File -LiteralPath $targetProfile -Encoding UTF8 -Verbose:$Verbose -ErrorAction Stop
 
-            return "Updated $PROFILE to version ${env:SnippetsVersion}"
+            return "Updated $targetProfile to version ${env:SnippetsVersion}"
         }
         else {
             throw "Cannot locate `$env:Snippets: [$env:Snippets]"

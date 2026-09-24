@@ -1,4 +1,4 @@
-using namespace System.Collections
+﻿using namespace System.Collections
 using namespace System.Collections.Generic
 using namespace System.IO
 using namespace System.Linq
@@ -1287,7 +1287,11 @@ class PSGalleryManager : PackageManager {
                         Install-PSResource -Name $moduleName -Scope CurrentUser -TrustRepository -ErrorAction Stop
                     }
                     else {
-                        Install-Module -Name $moduleName -Scope CurrentUser -Force -AllowClobber -AcceptLicense -ErrorAction Stop
+                        $licenseOptions = @{}
+                        if ((Get-Command Install-Module).Parameters.ContainsKey('AcceptLicense')) {
+                            $licenseOptions.AcceptLicense = $true
+                        }
+                        Install-Module -Name $moduleName -Scope CurrentUser -Force -AllowClobber @licenseOptions -ErrorAction Stop
                     }
                     $executeResults = @("> $moduleName | installed")
                 }

@@ -31,6 +31,8 @@ The installer reuses this checkout and configures both current-user profiles:
 `Documents\PowerShell\profile.ps1` for PowerShell 7, covering all hosts in each edition.
 It preserves unrelated profile content and backs up an existing profile before
 changing it. Rerunning setup replaces the Snippets block without duplicating it.
+Setup also backs up and removes old Snippets blocks from console and VS Code
+host-specific profiles so each shell loads Snippets once through `profile.ps1`.
 Open a new PowerShell session afterward. The installer does not load
 snippets; normal startup can install modules configured in `modules.yml`.
 
