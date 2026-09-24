@@ -18,6 +18,7 @@ Or download and run it directly from GitHub in Windows PowerShell 5.1:
 
 ```powershell
 [Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls12
+Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned
 irm https://raw.githubusercontent.com/PS-Services/Snippets/master/windows-setup.ps1 | iex
 ```
 
@@ -34,9 +35,11 @@ snippets; normal startup can install modules configured in `modules.yml`.
 
 Use `-WhatIf` to preview, or `-Destination C:\Tools\Snippets` to clone into a new
 location (requires Git). `-ProfilePath` overrides the target profile. No .NET SDK
-or PowerShell 7 installation is needed for setup. The command above sets execution
-policy only for the installer process; normal profile loading follows your existing
-execution policy.
+or PowerShell 7 installation is needed for setup. `-ExecutionPolicy Bypass` only
+applies to the installer process. Setup checks the policy used by future sessions;
+if it blocks profiles, use `-EnableScripts` to set `RemoteSigned` for the current
+user, or run the `Set-ExecutionPolicy` command above. Administrator-managed policies
+are respected and must be addressed by your administrator.
 
 Manual setup:
 

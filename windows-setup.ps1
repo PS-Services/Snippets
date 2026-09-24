@@ -13,6 +13,7 @@ Invoke-RestMethod https://raw.githubusercontent.com/PS-Services/Snippets/master/
 param(
     [string]$Destination,
     [string]$ProfilePath,
+    [switch]$EnableScripts,
     [ValidateNotNullOrEmpty()]
     [string]$RepositoryUrl = 'https://github.com/PS-Services/Snippets.git'
 )
@@ -24,11 +25,34 @@ if ($MyInvocation.InvocationName -eq '.') { return }
 # script block so ShouldProcess works for both downloaded text and -File.
 & {
     [CmdletBinding(SupportsShouldProcess = $true)]
-    param([string]$Destination, [string]$ProfilePath, [string]$RepositoryUrl)
+    param([string]$Destination, [string]$ProfilePath, [string]$RepositoryUrl, [switch]$EnableScripts)
 
 $ErrorActionPreference = 'Stop'
 if ($env:OS -ne 'Windows_NT') {
     throw 'This installer requires Windows. Use linux-setup.sh on Linux.'
+}
+
+# Process-scoped Bypass used to launch setup does not apply to future sessions.
+$startupPolicy = 'Restricted'
+$startupPolicyScope = 'Default'
+foreach ($policyScope in @('MachinePolicy', 'UserPolicy', 'CurrentUser', 'LocalMachine')) {
+    $policyValue = Get-ExecutionPolicy -Scope $policyScope
+    if ($policyValue -ne 'Undefined') {
+        $startupPolicy = [string]$policyValue
+        $startupPolicyScope = $policyScope
+        break
+    }
+}
+if ($startupPolicy -in @('Restricted', 'AllSigned')) {
+    if ($startupPolicyScope -in @('MachinePolicy', 'UserPolicy')) {
+        throw "The $startupPolicyScope execution policy is $startupPolicy and blocks this unsigned profile. Contact your administrator about allowing or signing it."
+    }
+    if (-not $EnableScripts) {
+        throw "The startup execution policy is $startupPolicy. Run 'Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned' and retry, or run setup with -EnableScripts."
+    }
+    if ($PSCmdlet.ShouldProcess('CurrentUser execution policy', 'Set RemoteSigned to allow local profiles and scripts')) {
+        Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned -Force
+    }
 }
 
 $documents = [Environment]::GetFolderPath('MyDocuments')
@@ -120,4 +144,4 @@ if (Test-Path -LiteralPath $ProfilePath) {
 }
 $newLines | Set-Content -LiteralPath $ProfilePath -Encoding UTF8
 Write-Output "Snippets installed at '$Destination'. Profile: '$ProfilePath'. Open a new Windows PowerShell session to load it."
-} -Destination $Destination -ProfilePath $ProfilePath -RepositoryUrl $RepositoryUrl
+} -Destination $Destination -ProfilePath $ProfilePath -RepositoryUrl $RepositoryUrl -EnableScripts:$EnableScripts
