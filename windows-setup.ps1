@@ -1,7 +1,7 @@
 #requires -Version 5.1
 <#
 .SYNOPSIS
-Installs Snippets for the current user's Windows PowerShell 5.1 sessions.
+Installs Snippets for the current user's Windows PowerShell 5.1 and PowerShell 7 sessions.
 .EXAMPLE
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\windows-setup.ps1
 .EXAMPLE
@@ -64,14 +64,19 @@ if (-not $Destination) {
     }
 }
 if (-not $ProfilePath) {
-    # Target Windows PowerShell even when this installer is launched with pwsh.
-    $ProfilePath = Join-Path $documents 'WindowsPowerShell\profile.ps1'
+    $profilePaths = @(
+        (Join-Path $documents 'WindowsPowerShell\profile.ps1')
+        (Join-Path $documents 'PowerShell\profile.ps1')
+    )
+} else {
+    $profilePaths = @($ProfilePath)
 }
 $Destination = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($Destination)
-$ProfilePath = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($ProfilePath)
 
 $startMarker = '# SNIPPETS BEGIN'
 $endMarker = '# SNIPPETS END'
+$profiles = @(foreach ($targetProfile in $profilePaths) {
+$ProfilePath = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($targetProfile)
 $profileLines = @()
 if (Test-Path -LiteralPath $ProfilePath) {
     $profileLines = @(Get-Content -LiteralPath $ProfilePath)
@@ -86,6 +91,13 @@ if ($starts.Count -ne $ends.Count -or $starts.Count -gt 1 -or
     ($starts.Count -eq 1 -and $starts[0] -ge $ends[0])) {
     throw "Invalid or duplicate Snippets markers in '$ProfilePath'. No changes made."
 }
+    [pscustomobject]@{
+        Path = $ProfilePath
+        Lines = $profileLines
+        Starts = $starts
+        Ends = $ends
+    }
+})
 
 $cloneNeeded = -not (Test-Path -LiteralPath $Destination)
 if (-not $cloneNeeded -and -not (Test-Path -LiteralPath $Destination -PathType Container)) {
@@ -94,7 +106,7 @@ if (-not $cloneNeeded -and -not (Test-Path -LiteralPath $Destination -PathType C
 if ($cloneNeeded -and -not (Get-Command git -CommandType Application -ErrorAction SilentlyContinue)) {
     throw 'Git is required to clone Snippets. Install Git for Windows, then rerun setup.'
 }
-if (-not $PSCmdlet.ShouldProcess("$Destination; $ProfilePath", 'Set up Snippets and back up any changed profile')) {
+if (-not $PSCmdlet.ShouldProcess("$Destination; $($profiles.Path -join '; ')", 'Set up Snippets and back up any changed profile')) {
     return
 }
 
@@ -119,6 +131,11 @@ if (-not (Test-Path -LiteralPath $templatePath -PathType Leaf)) {
 $template = @(Get-Content -LiteralPath $templatePath)
 $escapedDestination = $Destination.Replace("'", "''")
 $block = @($startMarker, "`$env:Snippets = '$escapedDestination'") + $template + @($endMarker)
+foreach ($targetProfile in $profiles) {
+$ProfilePath = $targetProfile.Path
+$profileLines = $targetProfile.Lines
+$starts = $targetProfile.Starts
+$ends = $targetProfile.Ends
 $newLines = New-Object 'System.Collections.Generic.List[string]'
 if ($starts.Count -eq 1) {
     for ($index = 0; $index -lt $starts[0]; $index++) { $newLines.Add($profileLines[$index]) }
@@ -131,7 +148,7 @@ if ($starts.Count -eq 1) {
 
 if (($profileLines -join "`n") -ceq ($newLines -join "`n")) {
     Write-Output "Snippets is already configured in '$ProfilePath'."
-    return
+    continue
 }
 $profileDirectory = Split-Path -Path $ProfilePath -Parent
 if (-not (Test-Path -LiteralPath $profileDirectory)) {
@@ -143,5 +160,6 @@ if (Test-Path -LiteralPath $ProfilePath) {
     Write-Output "Profile backup: $backupPath"
 }
 $newLines | Set-Content -LiteralPath $ProfilePath -Encoding UTF8
-Write-Output "Snippets installed at '$Destination'. Profile: '$ProfilePath'. Open a new Windows PowerShell session to load it."
+Write-Output "Snippets installed at '$Destination'. Profile: '$ProfilePath'. Open a new PowerShell session to load it."
+}
 } -Destination $Destination -ProfilePath $ProfilePath -RepositoryUrl $RepositoryUrl -EnableScripts:$EnableScripts

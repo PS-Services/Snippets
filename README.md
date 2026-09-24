@@ -26,15 +26,17 @@ The download command uses `irm` (`Invoke-RestMethod`). With `iwr`
 (`Invoke-WebRequest`), use `-UseBasicParsing` and pass `.Content` to `iex`.
 Downloaded setup clones into `Documents\PowerShell\Snippets` and requires Git.
 
-The installer reuses this checkout and configures the current user's
-`Documents\WindowsPowerShell\profile.ps1` for all Windows PowerShell hosts.
+The installer reuses this checkout and configures both current-user profiles:
+`Documents\WindowsPowerShell\profile.ps1` for Windows PowerShell 5.1 and
+`Documents\PowerShell\profile.ps1` for PowerShell 7, covering all hosts in each edition.
 It preserves unrelated profile content and backs up an existing profile before
 changing it. Rerunning setup replaces the Snippets block without duplicating it.
-Open a new Windows PowerShell session afterward. The installer does not load
+Open a new PowerShell session afterward. The installer does not load
 snippets; normal startup can install modules configured in `modules.yml`.
 
 Use `-WhatIf` to preview, or `-Destination C:\Tools\Snippets` to clone into a new
-location (requires Git). `-ProfilePath` overrides the target profile. No .NET SDK
+location (requires Git). `-ProfilePath` targets only the specified profile instead
+of both defaults. Setup configures profiles but does not install PowerShell 7. No .NET SDK
 or PowerShell 7 installation is needed for setup. `-ExecutionPolicy Bypass` only
 applies to the installer process. Setup checks the policy used by future sessions;
 if it blocks profiles, use `-EnableScripts` to set `RemoteSigned` for the current
