@@ -14,15 +14,17 @@ if (-not $env:SnippetsInitialized) {
     Initialize-Snippets -Verbose:$Verbose
 }
 
-if ($env:IsWindows -ieq 'true') {
-    if($env:OneDrive){
-        $env:Snippets = "$env:OneDrive\Documents\PowerShell\Snippets"
-    } else {
-        $env:Snippets = "$env:UserProfile\Documents\PowerShell\Snippets"
+if (-not $env:Snippets) {
+    if ($env:IsWindows -ieq 'true') {
+        if($env:OneDrive){
+            $env:Snippets = "$env:OneDrive\Documents\PowerShell\Snippets"
+        } else {
+            $env:Snippets = "$env:UserProfile\Documents\PowerShell\Snippets"
+        }
     }
-}
-else {
-    $env:Snippets = "$env:HOME/.config/powershell/Snippets"
+    else {
+        $env:Snippets = "$env:HOME/.config/powershell/Snippets"
+    }
 }
 
 Write-Verbose "[$script] Set `$env:Snippets to [$env:Snippets]" -Verbose:$Verbose
@@ -30,51 +32,62 @@ Write-Verbose "[$script] Set `$env:Snippets to [$env:Snippets]" -Verbose:$Verbos
 function Update-Profile {
     param([switch]$Verbose = $false)
 
+    Push-Location -ErrorAction Stop
     try{
-        if (Test-Path $env:Snippets) {
-            Push-Location
-            Set-Location $env:Snippets
-            Get-Item .version -ErrorAction SilentlyContinue -Verbose:$Verbose `
-                | Remove-Item -Verbose:$Verbose -ErrorAction Stop
+        if (Test-Path -LiteralPath $env:Snippets -PathType Container) {
+            Set-Location -LiteralPath $env:Snippets -ErrorAction Stop
 
             . ./set-version.ps1 -Verbose:$Verbose
 
             $startLine='# SNIPPETS BEGIN'
             $endLine='# SNIPPETS END'
 
-            if($env:IsWindows -ieq "true") { $readmeFile = "${env:Snippets}/Windows-ReadmeTest.ps9" }
+            if($env:IsWindows -ieq "true") {
+                $readmeFile = "${env:Snippets}/Windows-ReadmeTest.ps9"
+                if (-not (Test-Path -LiteralPath $readmeFile -PathType Leaf)) {
+                    $readmeFile = "${env:Snippets}/Windows-ReadmeTest.ps1"
+                }
+            }
             else { $readmeFile = "${env:Snippets}/Linux-ReadmeTest.ps9" }
 
             Write-Verbose -Verbose:$Verbose -Message "[$script] Source File: [$readmeFile] Exists: $(Test-Path $readmeFile)"
 
-            $readme = Get-Content $readmeFile
+            $readme = @(Get-Content -LiteralPath $readmeFile -ErrorAction Stop)
+            $escapedSnippetsPath = $env:Snippets.Replace("'", "''")
+            $readme = @("`$env:Snippets = '$escapedSnippetsPath'") + $readme
 
-            $myProfile=get-content $PROFILE
+            $myProfile = @()
+            if (Test-Path -LiteralPath $PROFILE) {
+                $myProfile = @(Get-Content -LiteralPath $PROFILE -ErrorAction Stop)
+            }
             $array=New-Object System.Collections.ArrayList
             $array.AddRange($myProfile)
 
-            $matchStart=$array.IndexOf($startLine) + 1
-            $matchEnd=$array.IndexOf($endLine) - 1
+            $matchStart=$array.IndexOf($startLine)
+            $matchEnd=$array.IndexOf($endLine)
 
-            if($matchStart -lt $matchEnd  -and $matchStart -gt 0) {
-                $range = ($matchEnd..$matchStart)
-
-                foreach($index in $range){
-                    $array.RemoveAt($index)
-                }
-
-                $array.InsertRange($matchStart, $readme)
-            } else {
+            if ($matchStart -ge 0 -and $matchEnd -gt $matchStart -and
+                @($array | Where-Object { $_ -eq $startLine }).Count -eq 1 -and
+                @($array | Where-Object { $_ -eq $endLine }).Count -eq 1) {
+                $array.RemoveRange($matchStart + 1, $matchEnd - $matchStart - 1)
+                $array.InsertRange($matchStart + 1, $readme)
+            } elseif ($matchStart -eq -1 -and $matchEnd -eq -1) {
                 # Append to End
-                $array.Add($startLine)
+                [void]$array.Add($startLine)
                 $array.AddRange($readme)
-                $array.Add($endLine)
+                [void]$array.Add($endLine)
+            } else {
+                throw "Invalid or duplicate Snippets markers in '$PROFILE'. Profile was not changed."
             }
 
             $now=[System.DateTime]::Now.ToShortDateString()
-            $array.Add("# Snippets History: $now - ${env:SnippetsVersion}")
+            [void]$array.Add("# Snippets History: $now - ${env:SnippetsVersion}")
 
-            $array | Out-File $PROFILE -Encoding UTF8 -Verbose:$Verbose
+            $profileDirectory = Split-Path -Path $PROFILE -Parent
+            if ($profileDirectory -and -not (Test-Path -LiteralPath $profileDirectory)) {
+                New-Item -ItemType Directory -Path $profileDirectory -Force -ErrorAction Stop | Out-Null
+            }
+            $array | Out-File -LiteralPath $PROFILE -Encoding UTF8 -Verbose:$Verbose -ErrorAction Stop
 
             return "Updated $PROFILE to version ${env:SnippetsVersion}"
         }
@@ -93,10 +106,10 @@ Write-Verbose -Verbose:$Verbose -Message "[$script] Set-Alias $alias"
 function Update-Snippets {
     param([switch]$Verbose = $false)
 
+    Push-Location -ErrorAction Stop
     try{
-        if (Test-Path $env:Snippets) {
-            Push-Location
-            Set-Location $env:Snippets
+        if (Test-Path -LiteralPath $env:Snippets -PathType Container) {
+            Set-Location -LiteralPath $env:Snippets -ErrorAction Stop
             & git pull
             if ($LASTEXITCODE -ne 0) {
                 throw "git pull failed with: $LASTEXITCODE"
@@ -105,12 +118,7 @@ function Update-Snippets {
             $exitCode = $LASTEXITCODE
 
             if($exitCode -eq 0) {
-                Get-Item .version -ErrorAction SilentlyContinue -Verbose:$Verbose `
-                    | Remove-Item -Verbose:$Verbose -ErrorAction Stop
-
-                . ./set-version.ps1 -Verbose:$Verbose
-
-                Update-Profile
+                Update-Profile -Verbose:$Verbose
             }
         }
         else {

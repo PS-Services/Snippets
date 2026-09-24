@@ -63,14 +63,17 @@ function Initialize-Snippets {
             if(-not (Test-Path $versionFilePath)){
                 if((Test-Path $PWD/.git) -and (Test-Path $PWD/set-version.ps1 -Verbose:$VerboseSwitch)) {
                     . $PWD/set-version.ps1 -Verbose:$VerboseSwitch
-                    $versionFile = Get-Item $PWD/.version -ErrorAction Stop
                 }
             }
 
             $versionFile = Get-Item $versionFilePath -ErrorAction SilentlyContinue -Verbose:$VerboseSwitch
             Write-Verbose "[$script] $versionFilePath == [${versionFile.FullName}]: $($versionFilePath -eq $versionFile.FullName)" -Verbose:$VerboseSwitch
 
-            $env:SnippetsVersion = get-content -Path $versionFilePath -Verbose:$VerboseSwitch -ErrorAction Stop
+            if (Test-Path -LiteralPath $versionFilePath) {
+                $env:SnippetsVersion = Get-Content -LiteralPath $versionFilePath -Verbose:$VerboseSwitch -ErrorAction Stop
+            } else {
+                $env:SnippetsVersion = 'unknown'
+            }
             Write-Verbose "[$script] `$env:SnippetsVersion: [$($env:SnippetsVersion)]" -Verbose:$VerboseSwitch
 
             $env:IsDesktop = "$($PSVersionTable.PSEdition -ieq 'desktop')"

@@ -36,7 +36,15 @@ try {
     $gitversion = Get-Command dotnet-gitversion -Verbose:$Verbose -ErrorAction SilentlyContinue
 
     if (-not $gitversion) {
+        if (-not (Get-Command dotnet -ErrorAction SilentlyContinue)) {
+            $env:SnippetsVersion = 'unknown'
+            Write-Verbose 'Skipping version generation: dotnet and dotnet-gitversion are unavailable.' -Verbose:$Verbose
+            return 'Snippets version unavailable (dotnet is not installed).'
+        }
         & dotnet tool install gitversion.tool -g
+        if ($LASTEXITCODE -ne 0) {
+            throw "Installing gitversion.tool failed with: $LASTEXITCODE"
+        }
     }
 
     $gitversion = Get-Command dotnet-gitversion -Verbose:$Verbose -ErrorAction SilentlyContinue
@@ -46,6 +54,9 @@ try {
     }
 
     $version = & $gitversion /showvariable FullSemVer
+    if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace(($version -join ''))) {
+        throw 'dotnet-gitversion failed to generate a version.'
+    }
     $path = Get-Location
 
     if(-not (Test-Path $versionFilePath)) {

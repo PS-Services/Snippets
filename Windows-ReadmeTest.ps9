@@ -1,15 +1,21 @@
 # $env:VerboseStartup = 'true'
-$profileScript = Split-Path $PROFILE -Leaf
+$profileScript = Split-Path $PSCommandPath -Leaf
 
-$env:SnippetsModulesYaml = "$env:USERPROFILE\modules.yml"
+if (-not $env:SnippetsModulesYaml) {
+    $env:SnippetsModulesYaml = "$env:USERPROFILE\modules.yml"
+}
 
 $exclusions = @()
 # EXCLUSIONS-START
 $exclusions += '*Linux*'
+$exclusions += '*macOS*'
+$exclusions += $profileScript
+$exclusions += '*ReadmeTest.ps1'
+$exclusions += 'windows-setup.ps1'
 $exclusions += '*ConvertFrom-WingetStdout.ps1'
 # EXCLUSIONS-END
 
-if ((-not $env:Snippets) -or (-not (Test-Path $env:Snippets))) {
+if (-not $env:Snippets) {
     if (Test-Path "$env:ONEDRIVE/Documents/Powershell") {
         $env:Snippets = "$env:ONEDRIVE/Documents/Powershell"
     }
@@ -25,59 +31,64 @@ else {
     [switch]$MasterVerbose = $false
 }
 
+Push-Location -Verbose:$MasterVerbose -ErrorAction Stop
 try {
-    Push-Location -Verbose:$MasterVerbose
 
     if(-not($env:GitRoot)){
         $env:GitRoot = "https://github.com/PS-Services"
     }
 
-    Write-Verbose "[$profileScript] `$GitRoot: $GitRoot" -Verbose:$MasterVerbose
+    Write-Verbose "[$profileScript] `$env:GitRoot: $env:GitRoot" -Verbose:$MasterVerbose
 
     Import-Module Microsoft.PowerShell.Utility #-Verbose:$MasterVerbose
 
     if ((Split-Path $env:Snippets -Leaf) -ieq 'powershell') {
-        Set-Location $env:Snippets
         $env:Snippets = Join-Path $env:Snippets -Child Snippets -Verbose:$MasterVerbose
     }
 
-    if (-not (Test-Path $env:Snippets -Verbose:$MasterVerbose)) {
-        git clone "$GitRoot/Snippets.git"
+    if (-not (Test-Path -LiteralPath $env:Snippets -Verbose:$MasterVerbose)) {
+        git clone "$($env:GitRoot.TrimEnd('/'))/Snippets.git" $env:Snippets
         if ($LASTEXITCODE -ne 0) {
-            throw "git clone `"$GitRoot/Snippets.git`" failed with: $LASTEXITCODE"
+            throw "git clone from '$env:GitRoot/Snippets.git' to '$env:Snippets' failed with: $LASTEXITCODE"
         }
     }
     else {
         Write-Verbose "[$profileScript] Found $env:Snippets" -Verbose:$MasterVerbose
     }
 
-    if (Test-Path $env:Snippets -Verbose:$MasterVerbose) {
-        Push-Location -Verbose:$MasterVerbose
-        Set-Location $env:Snippets -Verbose:$MasterVerbose
+    if (Test-Path -LiteralPath $env:Snippets -PathType Container -Verbose:$MasterVerbose) {
+        Set-Location -LiteralPath $env:Snippets -Verbose:$MasterVerbose -ErrorAction Stop
+        $env:Snippets = (Get-Location).ProviderPath
 
         $exclusions += '_common.ps1'
         Write-Verbose -Verbose:$MasterVerbose -Message "[$profileScript] Exclusions: $exclusions"
 
-        $snippets = Get-ChildItem *.ps1 -Verbose:$MasterVerbose -Exclude $exclusions | Sort-Object Name
+        $snippets = @(Get-ChildItem -LiteralPath $env:Snippets -Filter '*.ps1' -File -Verbose:$MasterVerbose -ErrorAction Stop | Sort-Object Name)
 
         $thirdPartyPath = $env:Snippets + '/3rdParty'
 
         if (Test-Path $thirdPartyPath) {
-            $thirdParty = Get-ChildItem *.ps1 -Path $thirdPartyPath -Recurse -Verbose:$MasterVerbose -Exclude $exclusions
+            $thirdParty = @(Get-ChildItem -LiteralPath $thirdPartyPath -Filter '*.ps1' -File -Recurse -Verbose:$MasterVerbose -ErrorAction Stop | Sort-Object FullName)
 
             $snippets += $thirdParty
         }
 
-        Pop-Location -Verbose:$MasterVerbose
+        # Windows PowerShell 5.1 ignores -Exclude when used with -LiteralPath.
+        $snippets = @($snippets | Where-Object {
+            $candidateName = $_.Name
+            -not @($exclusions | Where-Object { $candidateName -like $_ }).Count
+        })
 
         $resultList = [ordered]@{ }
-        $snippets.FullName | ForEach-Object -Verbose:$MasterVerbose -Process {
+        $snippets | ForEach-Object -Verbose:$MasterVerbose -Process {
+            $snippet = $_.FullName
+            $snippetName = $snippet.Substring($env:Snippets.TrimEnd('\', '/').Length).TrimStart('\', '/')
+            $result = $null
+            $savedErrorActionPreference = $ErrorActionPreference
             try {
-                $snippet = $_
-                $snippetName = Split-Path $snippet -Leaf
                 if ($snippetName) {
                     Write-Verbose "[$profileScript]->[$snippetName] Calling with: -Verbose:`$$MasterVerbose" -Verbose:$MasterVerbose
-                    $result = $null
+                    $ErrorActionPreference = 'Stop'
                     $result = . $snippet -Verbose:$MasterVerbose
                 }
             }
@@ -86,30 +97,19 @@ try {
                 $result = "[Error:] ${err}"
             }
             finally {
-                if ($null -ne $snippetName) {
-                    $resultList.Add($snippetName, $result)
-                }
-                elseif ($null -ne $_) {
-                    $resultList.Add($_, $result)
-                }
-                elseif ($null -ne $err) {
-                    $resultList.Add($err.ToString(), $result)
-                }
-                else {
-                    $counter += 1
-                    $resultList.Add("${counter}: `$null", $result)
-                }
+                $ErrorActionPreference = $savedErrorActionPreference
+                $resultList[$snippetName] = $result
             }
         }
 
-        if ($resultList.Length -gt 0) {
+        if ($resultList.Count -gt 0) {
             # "[$profileScript] Snippet Results`n---`n$([System.String]::Join("`n", $resultList))`n---`n"
-            $resultList `
+            $resultList.GetEnumerator() `
             | Sort-Object -Property key `
             | Format-Table @{Label = 'Snippet'; Expression = { $_.Name } }, @{Label = 'Result'; Expression = { $_.Value } }
         }
         else {
-            "[$profileScript] No snippets where executed."
+            "[$profileScript] No snippets were executed."
         }
     }
     else {
@@ -147,3 +147,5 @@ Get-Alias -Verbose:$MasterVerbose `
 | Format-Table Name, Description -AutoSize -Verbose:$MasterVerbose
 
 Write-Verbose 'PowerShell Ready.' -Verbose:$MasterVerbose
+
+profileup

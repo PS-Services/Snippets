@@ -8,6 +8,27 @@ A collection of PowerShell profile tools providing unified package manager acces
 
 ### Windows
 
+For Windows PowerShell 5.1, run the installer from this checkout:
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\windows-setup.ps1
+```
+
+The installer reuses this checkout and configures the current user's
+`Documents\WindowsPowerShell\profile.ps1` for all Windows PowerShell hosts.
+It preserves unrelated profile content and backs up an existing profile before
+changing it. Rerunning setup replaces the Snippets block without duplicating it.
+Open a new Windows PowerShell session afterward. The installer does not load
+snippets; normal startup can install modules configured in `modules.yml`.
+
+Use `-WhatIf` to preview, or `-Destination C:\Tools\Snippets` to clone into a new
+location (requires Git). `-ProfilePath` overrides the target profile. No .NET SDK
+or PowerShell 7 installation is needed for setup. The command above sets execution
+policy only for the installer process; normal profile loading follows your existing
+execution policy.
+
+Manual setup:
+
 1. Clone this repository to `$env:OneDrive\Documents\PowerShell\Snippets`
 2. In an Administrator elevated editor, edit `$PROFILE.AllUsersAllHosts`.
 3. Add `$env:Snippets="$env:OneDrive\Documents\PowerShell\Snippets"` to the end and save it.
