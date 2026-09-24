@@ -150,8 +150,9 @@ apps list                            # YAML entries, install state, and updates 
 apps list -Raw                       # Return objects instead of the display table
 apps -CheckOnly                      # Report installed/missing programs
 apps -WhatIf                         # Preview installations
-apps                                 # Install missing programs
-apps -Name Git.Git                    # Select exact IDs or display names
+apps                                 # Install missing Required programs only
+apps -IncludeOptional                # Also include active Optional programs
+apps -IncludeOptional -Name NVM       # Required programs, then selected Optional program
 apps -Path C:\Config\programs.yml     # Use another definition
 ```
 
@@ -203,10 +204,14 @@ repository. Scoop bucket names may be included in IDs, such as `main/jq`.
 
 Set `active: false` to skip an entry without deleting it. Required entries run
 first, regardless of YAML key order; a failed or declined required installation
-blocks Optional entries. All active Optional entries run when you invoke `apps`.
-`apps -Name NVM` includes the Required entries before NVM. Inactive Required
+blocks Optional entries. Optional entries are skipped unless `-IncludeOptional`
+is supplied, including for `-CheckOnly` and `-WhatIf`.
+`apps -IncludeOptional -Name NVM` includes the Required entries before NVM;
+selecting an Optional name without the flag reports how to opt in. `apps list`
+still shows the full YAML for visibility. Inactive Required
 entries are intentionally skipped. Legacy `programs` lists and `enabled` flags
-remain supported; do not mix the old list with the new sections. `Requeired` is
+remain supported with their previous behavior (unsectioned programs are not
+implicitly Optional); do not mix the old list with the new sections. `Requeired` is
 also accepted as an alias for `Required`.
 
 The command requires `powershell-yaml` (included in `modules.yml`). Built-in

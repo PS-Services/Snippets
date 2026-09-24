@@ -179,15 +179,26 @@ programs:
     }
     Copy-Item -LiteralPath (Join-Path $Repository 'programs.yml') -Destination $yamlPath -Force
     $result = @(Install-SnippetsPrograms -WhatIf)
+    Assert-ProgramTest ($result.Count -eq 3 -and @($result | Where-Object Section -eq 'Optional').Count -eq 0) 'Default preview included Optional'
+    $result = @(Install-SnippetsPrograms -CheckOnly)
+    Assert-ProgramTest ($result.Count -eq 3) 'Default CheckOnly included Optional'
+    $caught = $false
+    try { Install-SnippetsPrograms -Name NVM | Out-Null } catch { $caught = $_ -match 'IncludeOptional' }
+    Assert-ProgramTest $caught 'Selecting an Optional name bypassed opt-in'
+    $result = @(Install-SnippetsPrograms -WhatIf -IncludeOptional)
     Assert-ProgramTest (@($result | Where-Object Status -eq 'Would install').Count -eq 4) 'Fresh-machine preview failed'
     Assert-ProgramTest ((& $module { $script:Calls.Count }) -eq 0) 'Preview invoked bootstrap or queried a missing manager'
-    $result = @(Install-SnippetsPrograms -Name NVM)
+    $result = @(Invoke-SnippetsPrograms)
+    Assert-ProgramTest ($result.Count -eq 3 -and @($result | Where-Object Section -eq 'Optional').Count -eq 0) 'Default apps command included Optional'
+    Assert-ProgramTest ((& $module { @($script:Calls | Where-Object Source -eq 'scoop').Count }) -eq 0) 'Default apps queried/installed an Optional program'
+    & $module { $script:Managers.Clear(); $script:Calls.Clear() }
+    $result = @(Invoke-SnippetsPrograms -Name NVM -IncludeOptional)
     Assert-ProgramTest ($result.Count -eq 4 -and @($result | Where-Object Status -eq 'Installed').Count -eq 4) 'Required dependencies were not installed with selected NVM'
     Assert-ProgramTest (($result.Section -join ',') -eq 'Required,Required,Required,Optional') 'Required/Optional order changed'
     $calls = & $module { $script:Calls.ToArray() }
     Assert-ProgramTest (($calls[0..2].Source -join ',') -eq 'bootstrap,bootstrap,bootstrap') 'Optional packages ran before required managers'
     & $module { $script:Managers.Clear(); $script:Installed.Clear(); $script:Calls.Clear(); $script:BootstrapFailure = $true }
-    $result = @(Install-SnippetsPrograms)
+    $result = @(Install-SnippetsPrograms -IncludeOptional)
     Assert-ProgramTest ($result[-1].Status -eq 'Blocked') 'Required failure did not block Optional'
     Assert-ProgramTest (@($result | Where-Object Status -eq 'Failed').Count -eq 3) 'Remaining Required entries were not attempted'
 
@@ -201,7 +212,7 @@ Requeired:
     active: false
 '@ | Set-Content -LiteralPath $yamlPath
     & $module { $script:Calls.Clear() }
-    $result = @(Install-SnippetsPrograms)
+    $result = @(Install-SnippetsPrograms -IncludeOptional)
     Assert-ProgramTest ($result.Count -eq 2 -and @($result | Where-Object Status -eq 'Disabled').Count -eq 2) 'Inactive entries were not skipped'
     Assert-ProgramTest ($result[0].Section -eq 'Required') 'Requeired spelling or section ordering failed'
     Assert-ProgramTest ((& $module { $script:Calls.Count }) -eq 0) 'Inactive entries invoked a manager'

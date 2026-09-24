@@ -1,6 +1,7 @@
 # Run apps -CheckOnly, apps -WhatIf, or apps to install missing programs.
 # Override with $env:SnippetsProgramsYaml or apps -Path C:\Config\programs.yml.
 # Set active: false to skip an entry without deleting it (defaults to true).
+# Only Required runs by default. Use apps -IncludeOptional to include Optional.
 # Required runs first. Failed required entries block Optional installations.
 # Installing Chocolatey requires an administrator PowerShell session.
 Required:

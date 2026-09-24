@@ -84,7 +84,7 @@ function Read-SnippetsPrograms {
             Id = $id
             Name = if ($entry.name) { [string]$entry.name } else { $id }
             Source = $source
-            Section = if ($section -eq 'programs') { 'Optional' } else { $section }
+            Section = $section
             Active = if ($entry.Contains('active')) { $entry.active } else { -not $entry.Contains('enabled') -or $entry.enabled }
             Scope = [string]$entry.scope
             Arguments = [string[]]@($entry.arguments)
@@ -187,7 +187,8 @@ function Install-SnippetsPrograms {
     param(
         [string]$Path,
         [string[]]$Name,
-        [switch]$CheckOnly
+        [switch]$CheckOnly,
+        [switch]$IncludeOptional
     )
     if ($env:OS -ne 'Windows_NT') { throw 'This program installer currently supports Windows.' }
     if (-not $Path) {
@@ -200,8 +201,14 @@ function Install-SnippetsPrograms {
             if (-not @($programs | Where-Object { $_.Id -ieq $requested -or $_.Name -ieq $requested }).Count) {
                 throw "Program '$requested' is not defined in '$Path'."
             }
+            if (-not $IncludeOptional -and @($programs | Where-Object { $_.Section -eq 'Optional' -and ($_.Id -ieq $requested -or $_.Name -ieq $requested) }).Count) {
+                throw "Program '$requested' is Optional. Use -IncludeOptional to include it."
+            }
         }
         $programs = @($programs | Where-Object { $_.Section -eq 'Required' -or $_.Id -in $Name -or $_.Name -in $Name })
+    }
+    if (-not $IncludeOptional) {
+        $programs = @($programs | Where-Object { $_.Section -ne 'Optional' })
     }
     $requiredFailed = $false
     $pendingManagers = @{}
@@ -369,6 +376,7 @@ function Invoke-SnippetsPrograms {
         [string]$Path,
         [string[]]$Name,
         [switch]$CheckOnly,
+        [switch]$IncludeOptional,
         [switch]$Raw
     )
     $options = @{}
@@ -380,7 +388,7 @@ function Invoke-SnippetsPrograms {
     } else {
         if ($PSBoundParameters.ContainsKey('WhatIf')) { $options.WhatIf = $PSBoundParameters.WhatIf }
         if ($PSBoundParameters.ContainsKey('Confirm')) { $options.Confirm = $PSBoundParameters.Confirm }
-        Install-SnippetsPrograms @options -CheckOnly:$CheckOnly
+        Install-SnippetsPrograms @options -CheckOnly:$CheckOnly -IncludeOptional:$IncludeOptional
     }
 }
 
