@@ -75,6 +75,7 @@ curl 'https://raw.githubusercontent.com/PS-Services/Snippets/master/linux-setup.
 
 | Win | \*nix | Script | Alias | Description |
 |-----|-------|--------|-------|-------------|
+| Yes | | `programs.ps1` | `apps` | Install missing programs from `programs.yml` on command. Supports WinGet, Chocolatey, and Scoop. |
 | ✅ | ✅ | `bing.ps1` | `bing` | Search Bing from PowerShell. Requires `$env:BingApiKey`. |
 | ✅ | ✅ | `clean-folder.ps1` | `clean` | Remove all `bin` and `obj` folders in current path. |
 | ✅ | ✅ | `github.ps1` | `hub` | Navigate to GitHub repositories folder. Auto-detects `$env:GITHUB` or set it manually. |
@@ -137,6 +138,65 @@ modules:
     source: "E:\\github\\remote-agent\\scripts\\MsixTools\\MsixTools.psd1"
     required: false
 ```
+
+## Program Installer
+
+The `apps` snippet installs missing programs from YAML when explicitly invoked.
+Loading your profile only registers the command. It follows [FreshBuild's](https://github.com/PS-Services/FreshBuild)
+per-program package-source approach with WinGet, Chocolatey, and Scoop.
+
+```powershell
+apps -CheckOnly                      # Report installed/missing programs
+apps -WhatIf                         # Preview installations
+apps                                 # Install missing programs
+apps -Name Git.Git                    # Select exact IDs or display names
+apps -Path C:\Config\programs.yml     # Use another definition
+```
+
+Configuration defaults to `programs.yml` beside the snippet. Set
+`$env:SnippetsProgramsYaml` in your profile to use a personal file. The shipped
+list is empty; for example, replace it with:
+
+```yaml
+programs:
+  - id: Git.Git
+    name: Git
+    source: winget
+    detect:
+      command: git
+  - id: 7zip
+    source: choco
+  - id: main/jq
+    source: scoop
+```
+
+`id` is the exact package ID; `source` defaults to `winget`. Optional fields:
+`name` (display name), `enabled` (boolean), `arguments` (a list of quoted argument
+strings), and `scope` (`user` or `machine`, WinGet only). Optional `detect.command`
+or `detect.path` recognizes programs installed outside the selected manager;
+paths support `%ENVIRONMENT_VARIABLE%` expansion. Otherwise detection uses the
+manager's installed-package inventory. WinGet installations use the `winget`
+repository. Scoop bucket names may be included in IDs, such as `main/jq`.
+
+The command requires `powershell-yaml` (included in `modules.yml`) and the package
+managers you select. It reports a missing manager as a failure for that entry.
+Use an elevated shell for packages that require administrator access. It neither
+bootstraps package managers nor executes arbitrary installer scripts from YAML.
+Installed programs are skipped; this command does not upgrade them or enforce
+versions. Detection errors prevent installation of the affected program.
+
+Results are objects with `Name`, `Id`, `Source`, `Status`, `Message`, and `ExitCode`.
+Installation failures do not stop remaining entries; inspect `Status = Failed`:
+
+```powershell
+$results = apps
+$results | Where-Object Status -eq Failed | Format-List
+```
+
+The complete YAML list is validated before any package manager runs. Both
+`-CheckOnly` and `-WhatIf` perform detection without installing programs.
+Run `powershell.exe -NoProfile -File .\tests\Programs.Tests.ps1` (or use `pwsh`)
+for the regression tests; these mock package managers and install no software.
 
 ## Alias Manager
 

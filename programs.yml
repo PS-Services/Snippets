@@ -1,0 +1,21 @@
+# Run apps -CheckOnly, apps -WhatIf, or apps to install missing programs.
+# Override with $env:SnippetsProgramsYaml or apps -Path C:\Config\programs.yml.
+programs: []
+
+# Replace the empty list above with entries such as:
+# programs:
+#   - id: Git.Git
+#     name: Git
+#     source: winget
+#     scope: user
+#     detect:
+#       command: git
+#   - id: 7zip
+#     source: choco
+#   - id: main/jq
+#     source: scoop
+#     enabled: true
+#
+# source defaults to winget. name is an optional display name.
+# detect.command or detect.path can recognize programs installed by other means.
+# arguments is an optional list of individual package-manager arguments.
