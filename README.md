@@ -155,38 +155,56 @@ apps -Path C:\Config\programs.yml     # Use another definition
 
 Configuration defaults to `programs.yml` beside the snippet. Set
 `$env:SnippetsProgramsYaml` in your profile to use a personal file. The shipped
-list is empty; for example, replace it with:
+list contains required package managers and optional NVM:
 
 ```yaml
-programs:
-  - id: Git.Git
-    name: Git
-    source: winget
-    detect:
-      command: git
-  - id: 7zip
-    source: choco
-  - id: main/jq
+Required:
+  - id: winget
+    source: bootstrap
+    active: true
+  - id: scoop
+    source: bootstrap
+    active: true
+  - id: choco
+    source: bootstrap
+    active: true
+Optional:
+  - id: main/nvm
+    name: NVM
     source: scoop
+    active: true
 ```
 
 `id` is the exact package ID; `source` defaults to `winget`. Optional fields:
-`name` (display name), `enabled` (boolean), `arguments` (a list of quoted argument
+`name` (display name), `active` (boolean, defaults to true), `arguments` (a list of quoted argument
 strings), and `scope` (`user` or `machine`, WinGet only). Optional `detect.command`
 or `detect.path` recognizes programs installed outside the selected manager;
 paths support `%ENVIRONMENT_VARIABLE%` expansion. Otherwise detection uses the
 manager's installed-package inventory. WinGet installations use the `winget`
 repository. Scoop bucket names may be included in IDs, such as `main/jq`.
 
-The command requires `powershell-yaml` (included in `modules.yml`) and the package
-managers you select. It reports a missing manager as a failure for that entry.
-Use an elevated shell for packages that require administrator access. It neither
-bootstraps package managers nor executes arbitrary installer scripts from YAML.
+Set `active: false` to skip an entry without deleting it. Required entries run
+first, regardless of YAML key order; a failed or declined required installation
+blocks Optional entries. All active Optional entries run when you invoke `apps`.
+`apps -Name NVM` includes the Required entries before NVM. Inactive Required
+entries are intentionally skipped. Legacy `programs` lists and `enabled` flags
+remain supported; do not mix the old list with the new sections. `Requeired` is
+also accepted as an alias for `Required`.
+
+The command requires `powershell-yaml` (included in `modules.yml`). Built-in
+`source: bootstrap` entries support only `winget`, `scoop`, and `choco`. They use
+Microsoft's `Microsoft.WinGet.Client` repair command or the official Scoop and
+Chocolatey installers, then refresh PATH and verify command availability.
+Use an administrator PowerShell session when installing Chocolatey. Scoop is
+installed for the current user, including when the shell is elevated. These
+bootstraps run only through `apps`, never at profile startup. No arbitrary
+installer script or URL is read from YAML.
 Installed programs are skipped; this command does not upgrade them or enforce
 versions. Detection errors prevent installation of the affected program.
 
-Results are objects with `Name`, `Id`, `Source`, `Status`, `Message`, and `ExitCode`.
-Installation failures do not stop remaining entries; inspect `Status = Failed`:
+Results are objects with `Name`, `Id`, `Section`, `Source`, `Status`, `Message`, and `ExitCode`.
+Installation failures do not stop remaining Required entries or unrelated
+Optional entries; inspect `Status = Failed` and `Status = Blocked`:
 
 ```powershell
 $results = apps

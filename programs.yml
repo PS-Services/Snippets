@@ -1,21 +1,24 @@
 # Run apps -CheckOnly, apps -WhatIf, or apps to install missing programs.
 # Override with $env:SnippetsProgramsYaml or apps -Path C:\Config\programs.yml.
-programs: []
+# Set active: false to skip an entry without deleting it (defaults to true).
+# Required runs first. Failed required entries block Optional installations.
+# Installing Chocolatey requires an administrator PowerShell session.
+Required:
+  - id: winget
+    name: WinGet
+    source: bootstrap
+    active: true
+  - id: scoop
+    name: Scoop
+    source: bootstrap
+    active: true
+  - id: choco
+    name: Chocolatey
+    source: bootstrap
+    active: true
 
-# Replace the empty list above with entries such as:
-# programs:
-#   - id: Git.Git
-#     name: Git
-#     source: winget
-#     scope: user
-#     detect:
-#       command: git
-#   - id: 7zip
-#     source: choco
-#   - id: main/jq
-#     source: scoop
-#     enabled: true
-#
-# source defaults to winget. name is an optional display name.
-# detect.command or detect.path can recognize programs installed by other means.
-# arguments is an optional list of individual package-manager arguments.
+Optional:
+  - id: main/nvm
+    name: NVM
+    source: scoop
+    active: true

@@ -19,6 +19,28 @@ try {
         Invoke-SnippetsPackageCommand -Source $env:ComSpec -Arguments @('/d', '/c', 'echo fixture-diagnostic 1>&2 & exit /b 0')
     }
     Assert-ProgramTest ($nativeResult.ExitCode -eq 0 -and $nativeResult.Output -match 'fixture-diagnostic') 'Native stderr handling changed the exit code'
+    # Exercise actual bootstrap orchestration with downloaded content and child
+    # processes mocked, so it cannot change the test computer.
+    & $module {
+        function Invoke-WebRequest {
+            param($Uri, [switch]$UseBasicParsing, $OutFile, $ErrorAction)
+            if ($Uri -ne 'https://get.scoop.sh') { throw 'Unexpected bootstrap URL' }
+            'param([switch]$RunAsAdmin)' | Set-Content -LiteralPath $OutFile
+        }
+        function Invoke-SnippetsPackageCommand {
+            param($Source, $Arguments)
+            if ($Arguments[0] -ne '-NoProfile' -or $Arguments[3] -ne '-File') { throw 'Bootstrap child arguments are incorrect' }
+            $script:BootstrapFile = $Arguments[4]
+            $errors = $null
+            [Management.Automation.Language.Parser]::ParseFile($script:BootstrapFile, [ref]$null, [ref]$errors) | Out-Null
+            if ($errors) { throw 'Generated bootstrap script does not parse' }
+            [pscustomobject]@{ ExitCode = 0; Output = 'mock bootstrap complete' }
+        }
+        Install-SnippetsPackageManager winget | Out-Null
+        if (Test-Path -LiteralPath $script:BootstrapFile) { throw 'WinGet bootstrap temporary file leaked' }
+        Install-SnippetsPackageManager scoop | Out-Null
+        if (Test-Path -LiteralPath $script:BootstrapFile) { throw 'Scoop bootstrap temporary file leaked' }
+    }
     & $module {
         $script:Calls = New-Object 'System.Collections.Generic.List[object]'
         $script:Installed = @{}
@@ -133,6 +155,67 @@ programs:
     $result = @(Install-SnippetsPrograms)
     Assert-ProgramTest ($result[0].Status -eq 'Already installed') 'Custom file detection failed'
     Assert-ProgramTest ((& $module { $script:Calls.Count }) -eq 0) 'Custom detection still required a package manager'
+
+    # Required manager bootstraps must run before optional packages, without
+    # installing anything in the test process.
+    & $module {
+        $script:Managers = @{}
+        $script:BootstrapFailure = $false
+        function script:Get-Command {
+            param($Name, $CommandType, $ErrorAction)
+            if ($Name -in @('winget', 'scoop', 'choco')) {
+                if ($script:Managers[$Name]) { [pscustomobject]@{ Name = $Name } }
+            } else { Microsoft.PowerShell.Core\Get-Command $Name -ErrorAction Stop }
+        }
+        function script:Install-SnippetsPackageManager {
+            param($Name)
+            $script:Calls.Add(@{ Source = 'bootstrap'; Arguments = @('install', $Name) })
+            if ($script:BootstrapFailure) { throw 'mock bootstrap failure' }
+            $script:Managers[$Name] = $true
+            [pscustomobject]@{ ExitCode = 0; Output = 'manager installed' }
+        }
+        $script:Calls.Clear()
+        $script:Installed.Clear()
+    }
+    Copy-Item -LiteralPath (Join-Path $Repository 'programs.yml') -Destination $yamlPath -Force
+    $result = @(Install-SnippetsPrograms -WhatIf)
+    Assert-ProgramTest (@($result | Where-Object Status -eq 'Would install').Count -eq 4) 'Fresh-machine preview failed'
+    Assert-ProgramTest ((& $module { $script:Calls.Count }) -eq 0) 'Preview invoked bootstrap or queried a missing manager'
+    $result = @(Install-SnippetsPrograms -Name NVM)
+    Assert-ProgramTest ($result.Count -eq 4 -and @($result | Where-Object Status -eq 'Installed').Count -eq 4) 'Required dependencies were not installed with selected NVM'
+    Assert-ProgramTest (($result.Section -join ',') -eq 'Required,Required,Required,Optional') 'Required/Optional order changed'
+    $calls = & $module { $script:Calls.ToArray() }
+    Assert-ProgramTest (($calls[0..2].Source -join ',') -eq 'bootstrap,bootstrap,bootstrap') 'Optional packages ran before required managers'
+    & $module { $script:Managers.Clear(); $script:Installed.Clear(); $script:Calls.Clear(); $script:BootstrapFailure = $true }
+    $result = @(Install-SnippetsPrograms)
+    Assert-ProgramTest ($result[-1].Status -eq 'Blocked') 'Required failure did not block Optional'
+    Assert-ProgramTest (@($result | Where-Object Status -eq 'Failed').Count -eq 3) 'Remaining Required entries were not attempted'
+
+    @'
+Optional:
+  - id: Ignored.App
+    active: false
+Requeired:
+  - id: scoop
+    source: bootstrap
+    active: false
+'@ | Set-Content -LiteralPath $yamlPath
+    & $module { $script:Calls.Clear() }
+    $result = @(Install-SnippetsPrograms)
+    Assert-ProgramTest ($result.Count -eq 2 -and @($result | Where-Object Status -eq 'Disabled').Count -eq 2) 'Inactive entries were not skipped'
+    Assert-ProgramTest ($result[0].Section -eq 'Required') 'Requeired spelling or section ordering failed'
+    Assert-ProgramTest ((& $module { $script:Calls.Count }) -eq 0) 'Inactive entries invoked a manager'
+    foreach ($invalid in @(
+        "Required:`n  - id: scoop`n    source: bootstrap`n    active: 'false'",
+        "Optional:`n  - id: Example.App`n    active: false`n    enabled: true",
+        "Required: []`nprograms: []",
+        "Required:`n  - id: arbitrary-installer`n    source: bootstrap"
+    )) {
+        Set-Content -LiteralPath $yamlPath -Value $invalid
+        $caught = $false
+        try { Install-SnippetsPrograms | Out-Null } catch { $caught = $true }
+        Assert-ProgramTest $caught 'Invalid active/section/bootstrap definition was accepted'
+    }
 
     # The actual snippet must register the command without querying/installing programs.
     & $module { $script:Calls.Clear() }
