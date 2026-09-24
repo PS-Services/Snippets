@@ -146,12 +146,30 @@ Loading your profile only registers the command. It follows [FreshBuild's](https
 per-program package-source approach with WinGet, Chocolatey, and Scoop.
 
 ```powershell
+apps list                            # YAML entries, install state, and updates via repos
+apps list -Raw                       # Return objects instead of the display table
 apps -CheckOnly                      # Report installed/missing programs
 apps -WhatIf                         # Preview installations
 apps                                 # Install missing programs
 apps -Name Git.Git                    # Select exact IDs or display names
 apps -Path C:\Config\programs.yml     # Use another definition
 ```
+
+`apps list` shows `Name`, `Section`, `Active`, `State`, `UpdateState`, and versions
+when reported by the manager. Missing and inactive entries remain in the list;
+inactive entries are shown as `Disabled` without running detection or update checks.
+Use `apps list -Name NVM` to filter, or `apps list -Raw | Format-List` to include
+diagnostic messages. Listing does not install missing Required entries and never
+upgrades software.
+
+Update checks go through `repos updates -Source <winget|scoop|choco> -Name <id>`.
+This read-only command uses WinGet's update-filtered `list`, Chocolatey's
+`outdated`, and Scoop's `status`. It does not call `repos upgrade`. Failed checks
+or unrecognized output are `Unknown`, not a claim that software is current.
+`No update reported` reflects the manager's available metadata; Scoop may report
+stale buckets, which are not upgraded by this command. Load the normal profile
+to register `repos`; if unavailable, the list retains install state and reports
+an unknown update state with a diagnostic.
 
 Configuration defaults to `programs.yml` beside the snippet. Set
 `$env:SnippetsProgramsYaml` in your profile to use a personal file. The shipped
@@ -213,7 +231,8 @@ $results | Where-Object Status -eq Failed | Format-List
 
 The complete YAML list is validated before any package manager runs. Both
 `-CheckOnly` and `-WhatIf` perform detection without installing programs.
-Run `powershell.exe -NoProfile -File .\tests\Programs.Tests.ps1` (or use `pwsh`)
+Run `powershell.exe -NoProfile -File .\tests\Programs.Tests.ps1` and
+`powershell.exe -NoProfile -File .\tests\ProgramsList.Tests.ps1` (or use `pwsh`)
 for the regression tests; these mock package managers and install no software.
 
 ## Alias Manager

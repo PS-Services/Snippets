@@ -220,7 +220,7 @@ Requeired:
     # The actual snippet must register the command without querying/installing programs.
     & $module { $script:Calls.Clear() }
     . (Join-Path $Repository 'programs.ps1') | Out-Null
-    Assert-ProgramTest ((Get-Alias apps).Definition -eq 'Install-SnippetsPrograms') 'apps alias missing'
+    Assert-ProgramTest ((Get-Alias apps).Definition -eq 'Invoke-SnippetsPrograms') 'apps alias missing'
     Assert-ProgramTest ((& $module { $script:Calls.Count }) -eq 0) 'Profile startup executed the program list'
     Write-Output "PASS: YAML validation, detection, install, rerun, selection, preview, failures, providers, and startup on PowerShell $($PSVersionTable.PSVersion)"
 } finally {

@@ -9,11 +9,11 @@ function Invoke-SnippetsPackageCommand {
         $global:LASTEXITCODE = 0
         $PSNativeCommandUseErrorActionPreference = $false
         $ErrorActionPreference = 'Continue'
-        $output = @(& $command @Arguments 2>&1)
+        $output = @(& $command @Arguments 2>&1 6>&1)
         $succeeded = $?
         $exitCode = $LASTEXITCODE
         if (-not $succeeded -and $exitCode -eq 0) { $exitCode = 1 }
-        [pscustomobject]@{ ExitCode = $exitCode; Output = ($output | Out-String).Trim() }
+        [pscustomobject]@{ ExitCode = $exitCode; Output = ($output | Out-String).Trim(); Items = $output }
     } finally {
         $global:LASTEXITCODE = $savedExitCode
         $ErrorActionPreference = $savedPreference
@@ -255,4 +255,133 @@ function Install-SnippetsPrograms {
     }
 }
 
-Export-ModuleMember -Function Install-SnippetsPrograms
+function Get-SnippetsRepositoryUpdates {
+    # Read-only backend for repos updates. Never invoke upgrade/install commands.
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)][ValidateSet('winget', 'scoop', 'choco')][string]$Source,
+        [Parameter(Mandatory = $true)][ValidatePattern('^[A-Za-z0-9][A-Za-z0-9._+/-]*$')][string]$Name
+    )
+    $row = [ordered]@{ Source = $Source; Id = $Name; UpdateState = 'Unknown'; InstalledVersion = ''; AvailableVersion = ''; Message = '' }
+    try {
+        switch ($Source) {
+            'winget' {
+                $query = Invoke-SnippetsPackageCommand winget @('list', '--id', $Name, '--exact', '--upgrade-available', '--accept-source-agreements', '--disable-interactivity')
+                if ($query.ExitCode -in @(-1978335212, 2316632084)) { $row.UpdateState = 'No update reported' }
+                elseif ($query.ExitCode -ne 0) { throw "WinGet update check failed ($($query.ExitCode)): $($query.Output)" }
+                elseif ($query.Output -match ('(?im)(?:^|\s)' + [regex]::Escape($Name) + '\s+(\S+)\s+(\S+)')) {
+                    $row.UpdateState = 'Update available'
+                    $row.InstalledVersion = $Matches[1]
+                    $row.AvailableVersion = $Matches[2]
+                } else { $row.Message = 'WinGet returned no recognizable exact package row; output may be truncated or localized.' }
+            }
+            'choco' {
+                $query = Invoke-SnippetsPackageCommand choco @('outdated', '--limit-output', '--no-color')
+                if ($query.ExitCode -notin @(0, 2)) { throw "Chocolatey update check failed ($($query.ExitCode)): $($query.Output)" }
+                $row.UpdateState = 'No update reported'
+                if ($query.Output -match ('(?im)^' + [regex]::Escape($Name) + '\|([^|]+)\|([^|\r\n]+)')) {
+                    $row.UpdateState = 'Update available'
+                    $row.InstalledVersion = $Matches[1]
+                    $row.AvailableVersion = $Matches[2]
+                } elseif ($query.Output.Trim() -and $query.Output -notmatch '(?m)^[^|\r\n]+\|[^|\r\n]+\|[^|\r\n]+\|(?:true|false)\s*$') {
+                    $row.UpdateState = 'Unknown'
+                    $row.Message = 'Chocolatey returned unrecognized update output.'
+                }
+            }
+            'scoop' {
+                $query = Invoke-SnippetsPackageCommand scoop @('status')
+                if ($query.ExitCode -ne 0) { throw "Scoop update check failed ($($query.ExitCode)): $($query.Output)" }
+                $appName = ($Name -split '/')[-1]
+                $item = @($query.Items | Where-Object { $_.Name -ieq $appName -and $_.PSObject.Properties['Latest Version'] } | Select-Object -First 1)
+                if ($appName -eq 'scoop' -and $query.Output -match 'Scoop out of date') {
+                    $row.UpdateState = 'Update available'
+                } elseif ($item.Count) {
+                    $row.InstalledVersion = [string]$item[0].'Installed Version'
+                    $row.AvailableVersion = [string]$item[0].'Latest Version'
+                    $row.UpdateState = if ($row.AvailableVersion) { 'Update available' } else { 'No update reported' }
+                    $row.Message = [string]$item[0].Info
+                } elseif ($query.Output -match 'Everything is ok!' -and $query.Output -notmatch 'out of date|failed|error') {
+                    $row.UpdateState = 'No update reported'
+                } elseif ($appName -eq 'scoop' -and $query.Output -match 'Scoop is up to date') {
+                    $row.UpdateState = 'No update reported'
+                } elseif (@($query.Items | Where-Object { $_.PSObject.Properties['Latest Version'] }).Count -and $query.Output -notmatch 'out of date|network|fatal:') {
+                    $row.UpdateState = 'No update reported'
+                } else { $row.Message = 'Scoop did not confirm current package metadata; inspect repos updates output or refresh Scoop buckets.' }
+                if ($query.Output -match 'bucket\(s\) out of date|network|fatal:') {
+                    $row.Message = 'Scoop bucket metadata may be stale; available versions reflect local manifests.'
+                }
+            }
+        }
+    } catch { $row.Message = $_.Exception.Message }
+    [pscustomobject]$row
+}
+
+function Get-SnippetsPrograms {
+    [CmdletBinding()]
+    param([string]$Path, [string[]]$Name)
+    if (-not $Path) {
+        $Path = if ($env:SnippetsProgramsYaml) { $env:SnippetsProgramsYaml } else { Join-Path $PSScriptRoot 'programs.yml' }
+    }
+    $programs = @(Read-SnippetsPrograms -Path $Path)
+    if ($Name) {
+        foreach ($requested in $Name) {
+            if (-not @($programs | Where-Object { $_.Id -ieq $requested -or $_.Name -ieq $requested }).Count) { throw "Program '$requested' is not defined in '$Path'." }
+        }
+        $programs = @($programs | Where-Object { $_.Id -in $Name -or $_.Name -in $Name })
+    }
+    foreach ($program in $programs) {
+        $row = [ordered]@{
+            Name = $program.Name; Id = $program.Id; Section = $program.Section; Active = $program.Active
+            Source = $program.Source; State = 'Unknown'; UpdateState = 'Not checked'
+            InstalledVersion = ''; AvailableVersion = ''; Message = ''
+        }
+        try {
+            if (-not $program.Active) { $row.State = 'Disabled' }
+            elseif (-not (Test-SnippetsProgramInstalled $program)) { $row.State = 'Missing' }
+            else {
+                $row.State = 'Installed'
+                $row.UpdateState = 'Unknown'
+                $source = $program.Source
+                $id = $program.Id
+                if ($source -eq 'bootstrap') {
+                    $source = $id.ToLowerInvariant()
+                    if ($source -eq 'winget') { $id = 'Microsoft.AppInstaller' }
+                    if ($source -eq 'choco') { $id = 'chocolatey' }
+                }
+                $reposCommand = Get-Command repos -ErrorAction Stop
+                $updates = @(& $reposCommand -Command updates -Name $id -Source $source -Raw -ErrorAction Stop)
+                $update = @($updates | Where-Object { $_.Id -ieq $id -and $_.Source -ieq $source } | Select-Object -First 1)
+                if (-not $update.Count) { throw 'repos returned no matching update status.' }
+                $row.UpdateState = $update[0].UpdateState
+                $row.InstalledVersion = $update[0].InstalledVersion
+                $row.AvailableVersion = $update[0].AvailableVersion
+                $row.Message = $update[0].Message
+            }
+        } catch { $row.Message = $_.Exception.Message }
+        [pscustomobject]$row
+    }
+}
+
+function Invoke-SnippetsPrograms {
+    [CmdletBinding(SupportsShouldProcess = $true)]
+    param(
+        [Parameter(Position = 0)][ValidateSet('install', 'list')][string]$Command = 'install',
+        [string]$Path,
+        [string[]]$Name,
+        [switch]$CheckOnly,
+        [switch]$Raw
+    )
+    $options = @{}
+    if ($Path) { $options.Path = $Path }
+    if ($Name) { $options.Name = $Name }
+    if ($Command -eq 'list') {
+        if ($Raw) { Get-SnippetsPrograms @options }
+        else { Get-SnippetsPrograms @options | Format-Table Name, Section, Active, State, UpdateState, InstalledVersion, AvailableVersion -AutoSize }
+    } else {
+        if ($PSBoundParameters.ContainsKey('WhatIf')) { $options.WhatIf = $PSBoundParameters.WhatIf }
+        if ($PSBoundParameters.ContainsKey('Confirm')) { $options.Confirm = $PSBoundParameters.Confirm }
+        Install-SnippetsPrograms @options -CheckOnly:$CheckOnly
+    }
+}
+
+Export-ModuleMember -Function Install-SnippetsPrograms, Get-SnippetsPrograms, Invoke-SnippetsPrograms, Get-SnippetsRepositoryUpdates

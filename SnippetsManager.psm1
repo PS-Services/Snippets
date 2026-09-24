@@ -1638,6 +1638,7 @@ else {
                 [Parameter(Position = 0)][string]$Command = 'search',
                 [Parameter(Position = 1)][string]$Name = $null,
                 [string]$SubCommand = $null,
+                [ValidateSet('winget', 'scoop', 'choco')][string]$Source,
                 [string]$Store = 'winget',
                 [switch]$Install = $false,
                 [switch]$Interactive = $false,
@@ -1647,6 +1648,11 @@ else {
                 [Switch]$Global = $false
             )
 
+            if ($Command -eq 'updates') {
+                if (-not $Source -or -not $Name) { throw 'Use repos updates -Source winget|scoop|choco -Name <package-id>.' }
+                Import-Module (Join-Path $PSScriptRoot 'SnippetsPrograms.psm1') -ErrorAction Stop -Verbose:$false
+                return SnippetsPrograms\Get-SnippetsRepositoryUpdates -Source $Source -Name $Name
+            }
             if ($Name -eq '' -and -not($Command -imatch 'list|upgrade')) {
                 $Name = $Command
                 $Command = 'search'
