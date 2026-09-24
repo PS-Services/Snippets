@@ -6,6 +6,8 @@ Installs Snippets for the current user's Windows PowerShell 5.1 sessions.
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\windows-setup.ps1
 .EXAMPLE
 .\windows-setup.ps1 -Destination C:\Tools\Snippets -WhatIf
+.EXAMPLE
+Invoke-RestMethod https://raw.githubusercontent.com/PS-Services/Snippets/master/windows-setup.ps1 | Invoke-Expression
 #>
 [CmdletBinding(SupportsShouldProcess = $true)]
 param(
@@ -18,6 +20,12 @@ param(
 # Older profiles dot-source every root-level .ps1 file during startup.
 if ($MyInvocation.InvocationName -eq '.') { return }
 
+# Invoke-Expression does not create a script cmdlet context. Use an advanced
+# script block so ShouldProcess works for both downloaded text and -File.
+& {
+    [CmdletBinding(SupportsShouldProcess = $true)]
+    param([string]$Destination, [string]$ProfilePath, [string]$RepositoryUrl)
+
 $ErrorActionPreference = 'Stop'
 if ($env:OS -ne 'Windows_NT') {
     throw 'This installer requires Windows. Use linux-setup.sh on Linux.'
@@ -25,7 +33,7 @@ if ($env:OS -ne 'Windows_NT') {
 
 $documents = [Environment]::GetFolderPath('MyDocuments')
 if (-not $Destination) {
-    if (Test-Path -LiteralPath (Join-Path $PSScriptRoot '.git')) {
+    if ($PSScriptRoot -and (Test-Path -LiteralPath (Join-Path $PSScriptRoot '.git'))) {
         $Destination = $PSScriptRoot
     } else {
         $Destination = Join-Path $documents 'PowerShell\Snippets'
@@ -112,3 +120,4 @@ if (Test-Path -LiteralPath $ProfilePath) {
 }
 $newLines | Set-Content -LiteralPath $ProfilePath -Encoding UTF8
 Write-Output "Snippets installed at '$Destination'. Profile: '$ProfilePath'. Open a new Windows PowerShell session to load it."
+} -Destination $Destination -ProfilePath $ProfilePath -RepositoryUrl $RepositoryUrl

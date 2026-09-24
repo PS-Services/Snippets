@@ -14,6 +14,17 @@ For Windows PowerShell 5.1, run the installer from this checkout:
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\windows-setup.ps1
 ```
 
+Or download and run it directly from GitHub in Windows PowerShell 5.1:
+
+```powershell
+[Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls12
+irm https://raw.githubusercontent.com/PS-Services/Snippets/master/windows-setup.ps1 | iex
+```
+
+The download command uses `irm` (`Invoke-RestMethod`). With `iwr`
+(`Invoke-WebRequest`), use `-UseBasicParsing` and pass `.Content` to `iex`.
+Downloaded setup clones into `Documents\PowerShell\Snippets` and requires Git.
+
 The installer reuses this checkout and configures the current user's
 `Documents\WindowsPowerShell\profile.ps1` for all Windows PowerShell hosts.
 It preserves unrelated profile content and backs up an existing profile before
