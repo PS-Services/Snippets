@@ -17,40 +17,23 @@ function Setup-OMP {
 
     if ($env:IsWindows -ieq 'true') {
         try {
-            if ($PSVersionTable.PSEdition -ieq 'core') {
-                $powershell = 'pwsh'
-            }
-            else {
-                $powershell = 'powershell'
-            }
-
-            $ohMyPosh = Get-Command oh-my-posh
-
-            if (-not $ohMyPosh) {
-                . scoop install 'https://github.com/JanDeDobbeleer/oh-my-posh/releases/latest/download/oh-my-posh.json'
-
-                $ohMyPosh = Get-Command oh-my-posh
-            }
-
-            if (-not $ohMyPosh) {
-                Write-Host 'Cannot find Oh-My-Posh and cannot install with scoop.'
-            }
-            else {
+            $ohMyPosh = Get-Command oh-my-posh -ErrorAction Stop
+            if ($ohMyPosh) {
                 Write-Verbose "[$script] `$ohMyPosh: $($ohMyPosh.Source)" -Verbose:$Verbose
-
-                $ompFolder = [System.IO.Path]::GetDirectoryName($ohMyPosh.Source)
 
                 $env:ohMyPosh=$ohMyPosh.Source
 
-                Write-Verbose -Verbose:$Verbose -Message "(oh-my-posh --init --shell $powershell --config `"$PSScriptRoot\ninja.omp.json`" | Invoke-Expression)"
+                Write-Verbose -Verbose:$Verbose -Message "(oh-my-posh init pwsh --config `"$PSScriptRoot\ninja.omp.json`" | Invoke-Expression)"
 
-                $log = (oh-my-posh --init --shell $powershell --config "$PSScriptRoot\ninja.omp.json" | Invoke-Expression)
+                $initScript = & $ohMyPosh init pwsh --config "$PSScriptRoot\ninja.omp.json"
+                if ($LASTEXITCODE -ne 0) { throw "Oh My Posh initialization failed with exit code $LASTEXITCODE." }
+                $log = ($initScript -join "`n") | Invoke-Expression
                 if(-not $log -or $log.Length -eq 0) { $log = "Exit Code: $LASTEXITCODE" }
                 return "OH-MY-POSH startup: [$log]"
             }
         }
         catch {
-            Write-Host $Error
+            throw
         }
         finally {
             Write-Verbose "[$script] Leaving..." -Verbose:$Verbose
@@ -72,6 +55,24 @@ function Execute-OMP {
 }
 
 if ($env:IsWindows -ieq 'true') {
+    if (-not (Get-Command oh-my-posh -ErrorAction SilentlyContinue)) {
+        $winget = Get-Command winget -ErrorAction SilentlyContinue
+        if (-not $winget) {
+            return 'Oh My Posh is missing and WinGet is unavailable. Install WinGet or run windows-setup.ps1.'
+        }
+        & $winget install --id JanDeDobbeleer.OhMyPosh --exact --source winget --scope user --accept-source-agreements --accept-package-agreements | Out-Host
+        if ($LASTEXITCODE -ne 0) {
+            throw "Oh My Posh installation failed with exit code $LASTEXITCODE."
+        }
+        foreach ($scope in @('Machine', 'User')) {
+            foreach ($entry in ([Environment]::GetEnvironmentVariable('Path', $scope) -split ';')) {
+                if ($entry -and $entry -notin ($env:Path -split ';')) { $env:Path += ";$entry" }
+            }
+        }
+        if (-not (Get-Command oh-my-posh -ErrorAction SilentlyContinue)) {
+            throw 'Oh My Posh is still unavailable after WinGet installation. Restart your terminal to refresh PATH.'
+        }
+    }
     $setupResult = Setup-OMP -Verbose:$Verbose
     Write-Verbose -Verbose:$Verbose -Message "[$script] Setup-OMP: [$setupResult]"
     Write-Verbose -Verbose:$Verbose -Message "[$script] `$env:ohMyPosh `$args: [$env:ohMyPosh $args]"

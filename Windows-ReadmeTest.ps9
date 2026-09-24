@@ -1,6 +1,10 @@
 # $env:VerboseStartup = 'true'
 $profileScript = Split-Path $PSCommandPath -Leaf
 
+if (-not $env:GITHUB) {
+    $env:GITHUB = 'C:\GitHub'
+}
+
 if (-not $env:SnippetsModulesYaml) {
     $env:SnippetsModulesYaml = "$env:USERPROFILE\modules.yml"
 }

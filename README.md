@@ -26,6 +26,12 @@ The download command uses `irm` (`Invoke-RestMethod`). With `iwr`
 (`Invoke-WebRequest`), use `-UseBasicParsing` and pass `.Content` to `iex`.
 Downloaded setup clones into `Documents\PowerShell\Snippets` and requires Git.
 
+Setup installs Oh My Posh when missing, using WinGet or the
+[official installer](https://ohmyposh.dev/docs/installation/windows) when WinGet
+is unavailable. It refreshes the session PATH and verifies the executable before
+writing profiles. Normal profile startup also tries WinGet when Oh My Posh is
+missing, refreshes PATH, and registers `posh` only after successful initialization.
+
 The installer reuses this checkout and configures both current-user profiles:
 `Documents\WindowsPowerShell\profile.ps1` for Windows PowerShell 5.1 and
 `Documents\PowerShell\profile.ps1` for PowerShell 7, covering all hosts in each edition.
@@ -204,7 +210,7 @@ Add-SnippetsAlias -InputObject $entry -Force
 | `$env:Snippets` | **Required.** Path to the Snippets repository. Set in `$PROFILE.AllUsersAllHosts`. |
 | `$env:SnippetsModulesYaml` | Optional. Path to user-specific `modules.yml`. Defaults to `$env:Snippets\modules.yml`. |
 | `$env:SnippetsAliasesYaml` | Optional. Path to user-specific `aliases.yml`. Defaults to `$env:Snippets\aliases.yml`. |
-| `$env:GITHUB` | Optional. Root of your GitHub repositories folder. Auto-detected if not set. |
+| `$env:GITHUB` | Optional. Root of your GitHub repositories folder. Defaults to `C:\GitHub` on Windows; auto-detected on other platforms. Existing values are preserved. |
 | `$env:BingApiKey` | Optional. Bing Search API subscription key for the `bing` alias. |
 | `$env:VerboseStartup` | Optional. Set to `'true'` for verbose profile startup output. |
 

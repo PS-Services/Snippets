@@ -13,6 +13,9 @@ if (-not $env:SnippetsInitialized) {
 }
 
 try {
+	if (-not $env:GITHUB -and $env:OS -eq 'Windows_NT') {
+		$env:GITHUB = 'C:\GitHub'
+	}
 	if (-not $env:GITHUB) {
 		# Search common locations instead of the entire drive
 		$searchPaths = @()
@@ -49,7 +52,14 @@ try {
 
 		Write-Verbose "[$script] `$env:GITHUB:  [$($env:GITHUB)]" -Verbose:$V
 		Write-Verbose "[$script] `$Repository:  [$Repository]" -Verbose:$V
-		Set-Location (Join-Path $env:GITHUB -Child $Repository) -Verbose:$V
+		if (-not $env:GITHUB) {
+			throw 'Set $env:GITHUB to your repositories directory before using hub.'
+		}
+		$target = if ($Repository) { Join-Path $env:GITHUB -ChildPath $Repository } else { $env:GITHUB }
+		if (-not (Test-Path -LiteralPath $target -PathType Container)) {
+			throw "GitHub directory not found: '$target'. Create it or set `$env:GITHUB to an existing directory."
+		}
+		Set-Location -LiteralPath $target -Verbose:$V -ErrorAction Stop
 	}
 
 	$alias = set-alias -Verbose:$Verbose -Scope Global -Description $description -Name hub -Value Set-LocationGitHub

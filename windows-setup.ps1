@@ -28,6 +28,36 @@ if ($MyInvocation.InvocationName -eq '.') { return }
     param([string]$Destination, [string]$ProfilePath, [string]$RepositoryUrl, [switch]$EnableScripts)
 
 $ErrorActionPreference = 'Stop'
+function Install-SnippetsOhMyPosh {
+    # Include paths persisted by an earlier install without discarding session paths.
+    foreach ($scope in @('Machine', 'User')) {
+        foreach ($entry in ([Environment]::GetEnvironmentVariable('Path', $scope) -split ';')) {
+            if ($entry -and $entry -notin ($env:Path -split ';')) { $env:Path += ";$entry" }
+        }
+    }
+    $command = Get-Command oh-my-posh -CommandType Application -ErrorAction SilentlyContinue
+    if (-not $command) {
+        $winget = Get-Command winget -CommandType Application -ErrorAction SilentlyContinue
+        if ($winget) {
+            & $winget install --id JanDeDobbeleer.OhMyPosh --exact --source winget --scope user --accept-source-agreements --accept-package-agreements | Out-Host
+            if ($LASTEXITCODE -ne 0) { throw "Oh My Posh installation failed with exit code $LASTEXITCODE." }
+        } else {
+            [Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls12
+            $installerSource = Invoke-RestMethod -Uri 'https://ohmyposh.dev/install.ps1' -ErrorAction Stop
+            & ([scriptblock]::Create($installerSource)) | Out-Host
+        }
+        foreach ($scope in @('Machine', 'User')) {
+            foreach ($entry in ([Environment]::GetEnvironmentVariable('Path', $scope) -split ';')) {
+                if ($entry -and $entry -notin ($env:Path -split ';')) { $env:Path += ";$entry" }
+            }
+        }
+        $command = Get-Command oh-my-posh -CommandType Application -ErrorAction SilentlyContinue
+        if (-not $command) { throw 'Oh My Posh installation did not produce an executable on PATH. Profiles were not changed.' }
+    }
+    & $command --version | Out-Host
+    if ($LASTEXITCODE -ne 0) { throw 'Oh My Posh could not run after installation. Profiles were not changed.' }
+}
+
 if ($env:OS -ne 'Windows_NT') {
     throw 'This installer requires Windows. Use linux-setup.sh on Linux.'
 }
@@ -118,7 +148,7 @@ if (-not $cloneNeeded -and -not (Test-Path -LiteralPath $Destination -PathType C
 if ($cloneNeeded -and -not (Get-Command git -CommandType Application -ErrorAction SilentlyContinue)) {
     throw 'Git is required to clone Snippets. Install Git for Windows, then rerun setup.'
 }
-if (-not $PSCmdlet.ShouldProcess("$Destination; $($profiles.Path -join '; ')", 'Set up Snippets and back up any changed profile')) {
+if (-not $PSCmdlet.ShouldProcess("$Destination; $($profiles.Path -join '; ')", 'Install missing Oh My Posh, set up Snippets, and back up changed profiles')) {
     return
 }
 
@@ -141,6 +171,7 @@ if (-not (Test-Path -LiteralPath $templatePath -PathType Leaf)) {
     throw "Missing Windows-ReadmeTest.ps9 or Windows-ReadmeTest.ps1 in '$Destination'. Profile was not changed."
 }
 $template = @(Get-Content -LiteralPath $templatePath)
+Install-SnippetsOhMyPosh
 $escapedDestination = $Destination.Replace("'", "''")
 $block = @($startMarker, "`$env:Snippets = '$escapedDestination'") + $template + @($endMarker)
 foreach ($targetProfile in $profiles) {
